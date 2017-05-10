@@ -1,0 +1,41 @@
+package: github.com/axiomzen/authentication
+import:
+- package: github.com/ajg/form
+  version: ^1.5.0
+- package: github.com/axiomzen/envconfig
+  version: ^1.2.2
+- package: github.com/joho/godotenv
+- package: github.com/axiomzen/gorelic
+  version: ^0.0.8
+- package: github.com/Sirupsen/logrus
+  version: ^0.11.0
+- package: github.com/axiomzen/yawgh
+  version: ^2.0.1
+- package: github.com/gocraft/web
+- package: github.com/mailgun/mailgun-go
+  version: ^1.0.2
+
+- package: github.com/onsi/gomega
+- package: github.com/rcrowley/go-metrics
+- package: github.com/twinj/uuid
+- package: golang.org/x/crypto
+  subpackages:
+  - bcrypt
+- package: github.com/axiomzen/null
+  version: ^5.0.0
+  subpackages:
+  - zero
+- package: gopkg.in/dgrijalva/jwt-go.v3
+  version: ^3.0.0
+- package: gopkg.in/pg.v4
+  version: ^4.9.4
+- package: gopkg.in/tylerb/graceful.v1
+  version: ^1.2.13
+- package: github.com/mattes/migrate
+  version: ^3.0.0
+testImport:
+- package: github.com/axiomzen/compare
+  version: ^0.1.3
+- package: github.com/axiomzen/golorem
+  version: ^0.1.1
+- package: github.com/onsi/ginkgo

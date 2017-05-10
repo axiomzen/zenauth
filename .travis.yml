@@ -1,0 +1,27 @@
+language: go
+go:
+- 1.7
+branches:
+  only:
+  - master
+  - staging
+
+sudo: required
+dist: trusty
+addons:
+  postgresql: "9.5"
+
+before_install:
+- go get github.com/onsi/gomega
+- go get github.com/onsi/ginkgo/ginkgo
+install:
+- export PATH=$PATH:$HOME/gopath/bin
+- export GOPATH=$HOME/gopath
+- go install
+script:
+- ginkgo -race -cover --randomizeAllSpecs test/integration
+deploy:
+  provider: heroku
+  app:
+    master: authentication
+    staging: authentication-staging
