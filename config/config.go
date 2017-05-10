@@ -24,9 +24,7 @@ type AUTHENTICATIONConfig struct {
 	APIToken                           string        `required:"true"`
 	PasswordResetValidTokenDuration    time.Duration `default:"60m"`
 	RandomPasswordLengthBeforeEncoding uint16        `default:"8"`
-	JwtAdminTokenDuration              time.Duration `default:"8760h"`
 	JwtUserTokenDuration               time.Duration `default:"8760h"`
-	JwtClaimAdminID                    string        `default:"adminid"`
 	JwtClaimUserID                     string        `default:"userid"`
 	JwtClaimUserEmail                  string        `default:"emailaddr"`
 	DefaultContentType                 string        `default:"application/json"`
