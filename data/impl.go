@@ -5,12 +5,14 @@ package data
 
 import (
 	"errors"
-	"github.com/axiomzen/authentication/models"
 	"strings"
 
-	"gopkg.in/pg.v4"
+	"github.com/axiomzen/zenauth/models"
+
 	"io/ioutil"
 	"regexp"
+
+	"gopkg.in/pg.v4"
 )
 
 // errNoneAffected there were no rows affected by the call

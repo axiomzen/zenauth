@@ -12,12 +12,12 @@ import (
 	"time"
 
 	log "github.com/Sirupsen/logrus"
-	"github.com/axiomzen/authentication/config"
-	"github.com/axiomzen/authentication/constants"
-	"github.com/axiomzen/authentication/data"
-	"github.com/axiomzen/authentication/helpers"
-	"github.com/axiomzen/authentication/helpers/header"
-	"github.com/axiomzen/authentication/models"
+	"github.com/axiomzen/zenauth/config"
+	"github.com/axiomzen/zenauth/constants"
+	"github.com/axiomzen/zenauth/data"
+	"github.com/axiomzen/zenauth/helpers"
+	"github.com/axiomzen/zenauth/helpers/header"
+	"github.com/axiomzen/zenauth/models"
 	"github.com/axiomzen/gorelic"
 	"github.com/gocraft/web"
 	"github.com/newrelic/go-agent"
@@ -36,8 +36,8 @@ type (
 		Log            *log.Entry
 		statusCode     constants.HTTPStatusCode
 		responseObject interface{}
-		Config         *config.AUTHENTICATIONConfig
-		DAL            data.AUTHENTICATIONProvider
+		Config         *config.ZENAUTHConfig
+		DAL            data.ZENAUTHProvider
 		NewRelic       newrelic.Transaction
 	}
 
@@ -63,7 +63,7 @@ var (
 	newRelicPlugin *gorelic.Agent
 )
 
-func InitNewRelicApp(c *config.AUTHENTICATIONConfig) bool {
+func InitNewRelicApp(c *config.ZENAUTHConfig) bool {
 	if c.NewRelicEnabled {
 		cfg := newrelic.NewConfig(c.NewRelicName, c.NewRelicKey)
 		app, err := newrelic.NewApplication(cfg)
@@ -85,7 +85,7 @@ func GoRelicHandler(w web.ResponseWriter, r *web.Request, next web.NextMiddlewar
 }
 
 // InitNewRelicPlugin private helper function for initialization of new relic handler
-func InitNewRelicPlugin(c *config.AUTHENTICATIONConfig) bool {
+func InitNewRelicPlugin(c *config.ZENAUTHConfig) bool {
 
 	if c.NewRelicEnabled {
 		newRelicPlugin = gorelic.NewAgent()

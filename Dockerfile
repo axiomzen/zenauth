@@ -17,7 +17,7 @@ RUN apt-get update && apt-get install -y golang
 EXPOSE 5000
 
 # Set working directory
-WORKDIR /gopath/src/github.com/axiomzen/authentication
+WORKDIR /gopath/src/github.com/axiomzen/zenauth
 
 # Entry point command
-CMD ["/gopath/src/github.com/axiomzen/authentication/authentication"]
+CMD ["/gopath/src/github.com/axiomzen/zenauth/authentication"]

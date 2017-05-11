@@ -6,15 +6,16 @@ package config
 import (
 	"bytes"
 	"errors"
-	"github.com/axiomzen/authentication/constants"
-	"github.com/axiomzen/authentication/routes"
 	"regexp"
 	"strconv"
+
+	"github.com/axiomzen/zenauth/constants"
+	"github.com/axiomzen/zenauth/routes"
 )
 
 // GetURL returns a full url based off of the config
 // and passed in path
-func (c *AUTHENTICATIONConfig) GetURL(path string) string {
+func (c *ZENAUTHConfig) GetURL(path string) string {
 	var buffer bytes.Buffer
 	buffer.WriteString(c.Transport)
 	buffer.WriteString("://")
@@ -36,7 +37,7 @@ func (c *AUTHENTICATIONConfig) GetURL(path string) string {
 
 // ComputeDependents computes variables that depend on previous config vars
 // and it performs sanity checks on convienent defaults
-func (c *AUTHENTICATIONConfig) ComputeDependents() error {
+func (c *ZENAUTHConfig) ComputeDependents() error {
 
 	c.PasswordResetLinkBase = c.GetURL(routes.V1 + routes.ResourceUsers + routes.ResourceResetPassword + "?token=")
 	// check secret value if in production

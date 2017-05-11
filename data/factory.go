@@ -5,7 +5,7 @@ package data
 
 import (
 	"errors"
-	"github.com/axiomzen/authentication/config"
+	"github.com/axiomzen/zenauth/config"
 	"sync"
 
 	"gopkg.in/pg.v4"
@@ -17,11 +17,11 @@ import (
 
 // CreateProvider creates a new data provider
 // Exposed for the tests - call Get() instead
-func CreateProvider(conf *config.AUTHENTICATIONConfig) (AUTHENTICATIONProvider, error) {
+func CreateProvider(conf *config.ZENAUTHConfig) (ZENAUTHProvider, error) {
 	var err = errors.New("temp")
 	var numtries uint16
 
-	var provider AUTHENTICATIONProvider
+	var provider ZENAUTHProvider
 	for err != nil && numtries < conf.PostgreSQLRetryNumTimes {
 		pgdb := pg.Connect(&pg.Options{
 			Addr:     conf.PostgreSQLHost + ":" + strconv.FormatUint(uint64(conf.PostgreSQLPort), 10),
@@ -51,14 +51,14 @@ func CreateProvider(conf *config.AUTHENTICATIONConfig) (AUTHENTICATIONProvider, 
 
 }
 
-var instance AUTHENTICATIONProvider
+var instance ZENAUTHProvider
 var once sync.Once
 var initerr error
 
 // Get retrieves the data provider instance
 // returns an error if there is a problem
 // re: http://marcio.io/2015/07/singleton-pattern-in-go/
-func Get(conf *config.AUTHENTICATIONConfig) (AUTHENTICATIONProvider, error) {
+func Get(conf *config.ZENAUTHConfig) (ZENAUTHProvider, error) {
 	once.Do(func() {
 		instance, initerr = CreateProvider(conf)
 	})

@@ -3,9 +3,7 @@
 
 package analytics
 
-import (
-//"github.com/axiomzen/authentication/models"
-)
+//"github.com/axiomzen/zenauth/models"
 
 // Event example analytics event
 type Event struct {
@@ -21,8 +19,8 @@ type Options struct {
 	OS         string `json:"os,omitempty"`
 }
 
-// AUTHENTICATIONAnalyticsProvider is the data provider for this app
+// ZENAUTHAnalyticsProvider is the data provider for this app
 // TODO: consistency in API usage (pass in struct or return it?)
-type AUTHENTICATIONAnalyticsProvider interface {
+type ZENAUTHAnalyticsProvider interface {
 	SendEvent(event *Event) error
 }

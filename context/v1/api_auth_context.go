@@ -1,9 +1,9 @@
 package v1
 
 import (
-	"github.com/axiomzen/authentication/constants"
-	"github.com/axiomzen/authentication/context/core"
-	"github.com/axiomzen/authentication/models"
+	"github.com/axiomzen/zenauth/constants"
+	"github.com/axiomzen/zenauth/context/core"
+	"github.com/axiomzen/zenauth/models"
 	"github.com/gocraft/web"
 )
 

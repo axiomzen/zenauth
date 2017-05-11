@@ -4,9 +4,9 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/axiomzen/authentication/helpers"
-	"github.com/axiomzen/authentication/models"
-	"github.com/axiomzen/authentication/routes"
+	"github.com/axiomzen/zenauth/helpers"
+	"github.com/axiomzen/zenauth/models"
+	"github.com/axiomzen/zenauth/routes"
 	"github.com/axiomzen/golorem"
 	"github.com/onsi/ginkgo"
 	"github.com/onsi/gomega"

@@ -1,16 +1,16 @@
 package main
 
 import (
-	"github.com/axiomzen/authentication/config"
-	"github.com/axiomzen/authentication/constants"
-	"github.com/axiomzen/authentication/context/core"
-	"github.com/axiomzen/authentication/context/v1"
-	"github.com/axiomzen/authentication/routes"
+	"github.com/axiomzen/zenauth/config"
+	"github.com/axiomzen/zenauth/constants"
+	"github.com/axiomzen/zenauth/context/core"
+	"github.com/axiomzen/zenauth/context/v1"
+	"github.com/axiomzen/zenauth/routes"
 	"github.com/gocraft/web"
 )
 
 // InitRouter initializes the router
-func InitRouter(c *config.AUTHENTICATIONConfig) *web.Router {
+func InitRouter(c *config.ZENAUTHConfig) *web.Router {
 	// Setup Base router with middleware
 	coreRouter := web.New(core.RequestContext{})
 

@@ -2,19 +2,20 @@ package integration
 
 import (
 	"fmt"
+	"os"
+	"os/exec"
+
 	log "github.com/Sirupsen/logrus"
-	"github.com/axiomzen/authentication/config"
-	"github.com/axiomzen/authentication/constants"
-	"github.com/axiomzen/authentication/data"
-	"github.com/axiomzen/authentication/helpers"
-	"github.com/axiomzen/authentication/routes"
 	"github.com/axiomzen/envconfig"
 	"github.com/axiomzen/yawgh"
+	"github.com/axiomzen/zenauth/config"
+	"github.com/axiomzen/zenauth/constants"
+	"github.com/axiomzen/zenauth/data"
+	"github.com/axiomzen/zenauth/helpers"
+	"github.com/axiomzen/zenauth/routes"
 	"github.com/joho/godotenv"
 	"github.com/onsi/gomega"
 	"github.com/twinj/uuid"
-	"os"
-	"os/exec"
 
 	"github.com/mattes/migrate"
 	_ "github.com/mattes/migrate/database/postgres"
@@ -32,7 +33,7 @@ const (
 var (
 	fakeUUID = uuid.NewV4().String()
 	theApp   *exec.Cmd
-	theConf  *config.AUTHENTICATIONConfig
+	theConf  *config.ZENAUTHConfig
 	// Do() does create a new request each time
 	// but we may not want to pollute the settings across requests
 	marshaler marshalerFunc = func(v interface{}, contentType string) ([]byte, error) {
@@ -111,13 +112,13 @@ func TestRequestV1() *yawgh.Request {
 	return testRequest().URLComponent(routes.V1)
 }
 
-func getTempConf() *config.AUTHENTICATIONConfig {
+func getTempConf() *config.ZENAUTHConfig {
 	// create a new (temp) conf to call
 	// Our DAL, then we can create and setup the DB
 	// TODO: we could use a "fill defaults" call on
 	// env config that would populate all the config
 	// vars with their default values
-	tempConf := &config.AUTHENTICATIONConfig{}
+	tempConf := &config.ZENAUTHConfig{}
 	// postgres
 	tempConf.PostgreSQLHost = "localhost"
 	tempConf.PostgreSQLUsername = "postgres"
@@ -135,7 +136,7 @@ func getTempConf() *config.AUTHENTICATIONConfig {
 func createDatabase() {
 	// connect to a database (temporarily)
 	testDAL, err := data.CreateProvider(getTempConf())
-	defer func(dal data.AUTHENTICATIONProvider) {
+	defer func(dal data.ZENAUTHProvider) {
 		if dal != nil {
 			dal.Close()
 		}
@@ -146,7 +147,7 @@ func createDatabase() {
 
 func dropDatabase() {
 	testDAL, err := data.CreateProvider(getTempConf())
-	defer func(dal data.AUTHENTICATIONProvider) {
+	defer func(dal data.ZENAUTHProvider) {
 		if dal != nil {
 			dal.Close()
 		}
@@ -221,7 +222,7 @@ func fireUpApp() error {
 	fmt.Println("Firing up the app...")
 
 	// populated from Hatch
-	theApp = exec.Command("authentication")
+	theApp = exec.Command("zenauth")
 	// so lets force the tests to be called from
 	// `make test` which will boot up a db on the fly
 	// so we can then hard code these values based on hatch
@@ -236,7 +237,7 @@ func fireUpApp() error {
 	//
 	// so we need to somehow make sure these are all set
 	// we need a lib or function that takes a config var and writes out this array
-	theConf = &config.AUTHENTICATIONConfig{}
+	theConf = &config.ZENAUTHConfig{}
 	// let the  defaults take care of most of it
 	// the others are hardcoded
 	theConf.APIToken = "123"
@@ -268,7 +269,7 @@ func fireUpApp() error {
 
 	// we want export and fill in defaults
 	// populated from Hatch
-	envi, err := envconfig.Export("AXIOMZEN_AUTHENTICATION", theConf, true)
+	envi, err := envconfig.Export("ZENAUTH", theConf, true)
 	if err != nil {
 		return err
 	}

@@ -4,7 +4,7 @@
 package data
 
 import (
-	"github.com/axiomzen/authentication/models"
+	"github.com/axiomzen/zenauth/models"
 
 	pg "gopkg.in/pg.v4"
 )
@@ -26,9 +26,9 @@ type Provider interface {
 	Tx(func(*pg.Tx) error) error
 }
 
-// AUTHENTICATIONProvider is the data provider for this app
+// ZENAUTHProvider is the data provider for this app
 // TODO: consistency in API usage (pass in struct or return it?)
-type AUTHENTICATIONProvider interface {
+type ZENAUTHProvider interface {
 	Provider
 
 	// GetUserByEmail retrieves a user via email

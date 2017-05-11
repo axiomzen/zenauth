@@ -10,7 +10,7 @@ import (
 	"io"
 
 	"github.com/ajg/form"
-	"github.com/axiomzen/authentication/helpers/mime"
+	"github.com/axiomzen/zenauth/helpers/mime"
 )
 
 type (

@@ -4,8 +4,8 @@ import (
 	"net/http"
 
 	"errors"
-	"github.com/axiomzen/authentication/models"
-	"github.com/axiomzen/authentication/routes"
+	"github.com/axiomzen/zenauth/models"
+	"github.com/axiomzen/zenauth/routes"
 	"github.com/axiomzen/compare"
 	"github.com/axiomzen/yawgh"
 	"github.com/onsi/ginkgo"

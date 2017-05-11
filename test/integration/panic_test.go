@@ -3,9 +3,9 @@ package integration
 import (
 	"net/http"
 
-	"github.com/axiomzen/authentication/constants"
-	"github.com/axiomzen/authentication/models"
-	"github.com/axiomzen/authentication/routes"
+	"github.com/axiomzen/zenauth/constants"
+	"github.com/axiomzen/zenauth/models"
+	"github.com/axiomzen/zenauth/routes"
 	"github.com/onsi/ginkgo"
 	"github.com/onsi/gomega"
 )

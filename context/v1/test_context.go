@@ -1,10 +1,10 @@
 package v1
 
 import (
-	"github.com/axiomzen/authentication/constants"
-	"github.com/axiomzen/authentication/data"
-	"github.com/axiomzen/authentication/helpers"
-	"github.com/axiomzen/authentication/models"
+	"github.com/axiomzen/zenauth/constants"
+	"github.com/axiomzen/zenauth/data"
+	"github.com/axiomzen/zenauth/helpers"
+	"github.com/axiomzen/zenauth/models"
 	"github.com/gocraft/web"
 
 	"fmt"

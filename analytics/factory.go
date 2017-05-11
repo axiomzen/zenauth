@@ -4,11 +4,12 @@
 package analytics
 
 import (
-	"github.com/axiomzen/authentication/config"
 	"sync"
+
+	"github.com/axiomzen/zenauth/config"
 )
 
-var instance AUTHENTICATIONAnalyticsProvider
+var instance ZENAUTHAnalyticsProvider
 var once sync.Once
 var initerr error
 
@@ -16,7 +17,7 @@ var initerr error
 // returns an error if there is a problem
 // re: http://marcio.io/2015/07/singleton-pattern-in-go/
 // TODO: perhaps we should be passed in the conf instead
-func Get(conf *config.AUTHENTICATIONConfig) (AUTHENTICATIONAnalyticsProvider, error) {
+func Get(conf *config.ZENAUTHConfig) (ZENAUTHAnalyticsProvider, error) {
 	once.Do(func() {
 		if conf.AnalyticsEnabled {
 			// TODO: conf.MixPanelAPIKey

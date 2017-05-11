@@ -9,20 +9,21 @@ import (
 	"strings"
 	"time"
 
+	logger "log"
+
 	log "github.com/Sirupsen/logrus"
-	"github.com/axiomzen/authentication/config"
-	"github.com/axiomzen/authentication/constants"
-	"github.com/axiomzen/authentication/data"
 	nullformat "github.com/axiomzen/null/format"
+	"github.com/axiomzen/zenauth/config"
+	"github.com/axiomzen/zenauth/constants"
+	"github.com/axiomzen/zenauth/data"
 	"github.com/joho/godotenv"
 	pg "gopkg.in/pg.v4"
 	"gopkg.in/tylerb/graceful.v1"
-	logger "log"
 )
 
 func main() {
 	// set local dev env
-	if strings.EqualFold(os.Getenv("AXIOMZEN_AUTHENTICATION_ENVIRONMENT"), constants.EnvironmentDevelopment) {
+	if strings.EqualFold(os.Getenv("ZENAUTH_ENVIRONMENT"), constants.EnvironmentDevelopment) {
 		if err := godotenv.Load(); err != nil {
 			// Do not fail here, incase they've manually loaded env variables
 			// Will fail out at config.Get() if any require env variables not set

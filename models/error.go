@@ -5,7 +5,7 @@ import (
 	"runtime"
 	"strconv"
 
-	"github.com/axiomzen/authentication/constants"
+	"github.com/axiomzen/zenauth/constants"
 )
 
 //go:generate ffjson $GOFILE

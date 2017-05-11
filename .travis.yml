@@ -23,5 +23,5 @@ script:
 deploy:
   provider: heroku
   app:
-    master: authentication
-    staging: authentication-staging
+    master: zenauth
+    staging: zenauth-staging

@@ -14,9 +14,9 @@ import "time"
 // variable naming: [PROJECT]_[APP]_[VARNAME]
 // [PROJECT]_[APP] is the Hatch prefix
 
-// AUTHENTICATIONConfig the configuration
+// ZENAUTHConfig the configuration
 // TODO: fill in descriptions for each entry
-type AUTHENTICATIONConfig struct {
+type ZENAUTHConfig struct {
 	LogQueries                         bool          `default:"false"`
 	LogLevel                           string        `default:"INFO"`
 	HashSecret                         string        `required:"true"`
