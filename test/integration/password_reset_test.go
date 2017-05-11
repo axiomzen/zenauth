@@ -1,14 +1,15 @@
 package integration
 
 import (
+	"net/http"
+	"time"
+
 	"github.com/axiomzen/authentication/helpers"
 	"github.com/axiomzen/authentication/models"
 	"github.com/axiomzen/authentication/routes"
 	"github.com/axiomzen/golorem"
 	"github.com/onsi/ginkgo"
 	"github.com/onsi/gomega"
-	"net/http"
-	"time"
 )
 
 var _ = ginkgo.Describe("Password Reset Functionality", func() {
@@ -44,7 +45,7 @@ var _ = ginkgo.Describe("Password Reset Functionality", func() {
 			ginkgo.It("should be able to reset password using correct email", func() {
 
 				// ask for reset
-				statusCode, err := TestRequestV1().Put(routes.ResourceUsers+routes.ResourceForgotPassword).URLParam("email", *user.Email).Do()
+				statusCode, err := TestRequestV1().Put(routes.ResourceUsers+routes.ResourceForgotPassword).URLParam("email", user.Email).Do()
 				gomega.Expect(err).ToNot(gomega.HaveOccurred())
 				gomega.Expect(statusCode).To(gomega.Equal(http.StatusNoContent))
 			})
@@ -65,7 +66,7 @@ var _ = ginkgo.Describe("Password Reset Functionality", func() {
 			})
 
 			ginkgo.It("should not be able to get the password reset page without any token", func() {
-				statusCode, err := TestRequestV1().Get(routes.ResourceUsers+routes.ResourceResetPassword).URLParam("email", *user.Email).Header(theConf.APITokenHeader, "").Do()
+				statusCode, err := TestRequestV1().Get(routes.ResourceUsers+routes.ResourceResetPassword).URLParam("email", user.Email).Header(theConf.APITokenHeader, "").Do()
 				gomega.Expect(err).ToNot(gomega.HaveOccurred())
 				gomega.Expect(statusCode).To(gomega.Equal(http.StatusBadRequest))
 			})
@@ -73,7 +74,7 @@ var _ = ginkgo.Describe("Password Reset Functionality", func() {
 			ginkgo.It("should not be able to get the password reset page without a valid token", func() {
 				statusCode, err := TestRequestV1().
 					Get(routes.ResourceUsers+routes.ResourceResetPassword).
-					URLParam("email", *user.Email).
+					URLParam("email", user.Email).
 					URLParam("token", "invalidtoken").
 					Header(theConf.APITokenHeader, "").Do()
 				gomega.Expect(err).ToNot(gomega.HaveOccurred())
@@ -83,7 +84,7 @@ var _ = ginkgo.Describe("Password Reset Functionality", func() {
 			ginkgo.It("should not be able to actually reset their password without any token", func() {
 				var userPasswordReset models.UserPasswordReset
 				lorem.Fill(&userPasswordReset)
-				userPasswordReset.Email = *user.Email
+				userPasswordReset.Email = user.Email
 
 				statusCode, err := TestRequestV1().Post(routes.ResourceUsers + routes.ResourceResetPassword).RequestBody(&userPasswordReset).Do()
 				gomega.Expect(err).ToNot(gomega.HaveOccurred())
@@ -93,7 +94,7 @@ var _ = ginkgo.Describe("Password Reset Functionality", func() {
 			ginkgo.It("should not be able to actually reset their password without a valid token", func() {
 				var userPasswordReset models.UserPasswordReset
 				lorem.Fill(&userPasswordReset)
-				userPasswordReset.Email = *user.Email
+				userPasswordReset.Email = user.Email
 				userPasswordReset.Token = "invalidToken"
 
 				statusCode, err := TestRequestV1().Post(routes.ResourceUsers + routes.ResourceResetPassword).RequestBody(&userPasswordReset).Do()
@@ -110,13 +111,13 @@ var _ = ginkgo.Describe("Password Reset Functionality", func() {
 				ginkgo.BeforeEach(func() {
 
 					// hit forget password
-					statusCode, err := TestRequestV1().Put(routes.ResourceUsers+routes.ResourceForgotPassword).URLParam("email", *user.Email).Do()
+					statusCode, err := TestRequestV1().Put(routes.ResourceUsers+routes.ResourceForgotPassword).URLParam("email", user.Email).Do()
 					gomega.Expect(err).ToNot(gomega.HaveOccurred())
 					gomega.Expect(statusCode).To(gomega.Equal(http.StatusNoContent))
 
 					// use the test route to get the actual token
 					statusCode, err = TestRequestV1().
-						Get(routes.ResourceTest+routes.ResourceUsers+routes.ResourcePasswordReset).URLParam("email", *user.Email).
+						Get(routes.ResourceTest+routes.ResourceUsers+routes.ResourcePasswordReset).URLParam("email", user.Email).
 						ResponseBody(&trt).
 						Do()
 					gomega.Expect(err).ToNot(gomega.HaveOccurred())
@@ -140,7 +141,7 @@ var _ = ginkgo.Describe("Password Reset Functionality", func() {
 				})
 
 				ginkgo.It("should not be able to get the password reset page without any token", func() {
-					statusCode, err := TestRequestV1().Get(routes.ResourceUsers+routes.ResourceResetPassword).URLParam("email", *user.Email).Header(theConf.APITokenHeader, "").Do()
+					statusCode, err := TestRequestV1().Get(routes.ResourceUsers+routes.ResourceResetPassword).URLParam("email", user.Email).Header(theConf.APITokenHeader, "").Do()
 					gomega.Expect(err).ToNot(gomega.HaveOccurred())
 					gomega.Expect(statusCode).To(gomega.Equal(http.StatusBadRequest))
 				})
@@ -148,7 +149,7 @@ var _ = ginkgo.Describe("Password Reset Functionality", func() {
 				ginkgo.It("should not be able to get the password reset page without a valid token", func() {
 					statusCode, err := TestRequestV1().
 						Get(routes.ResourceUsers+routes.ResourceResetPassword).
-						URLParam("email", *user.Email).
+						URLParam("email", user.Email).
 						URLParam("token", "invalidtoken").
 						Header(theConf.APITokenHeader, "").Do()
 					gomega.Expect(err).ToNot(gomega.HaveOccurred())
@@ -158,7 +159,7 @@ var _ = ginkgo.Describe("Password Reset Functionality", func() {
 				ginkgo.It("should not be able to actually reset their password without any token", func() {
 					var userPasswordReset models.UserPasswordReset
 					lorem.Fill(&userPasswordReset)
-					userPasswordReset.Email = *user.Email
+					userPasswordReset.Email = user.Email
 
 					statusCode, err := TestRequestV1().Post(routes.ResourceUsers + routes.ResourceResetPassword).RequestBody(&userPasswordReset).Do()
 					gomega.Expect(err).ToNot(gomega.HaveOccurred())
@@ -168,7 +169,7 @@ var _ = ginkgo.Describe("Password Reset Functionality", func() {
 				ginkgo.It("should not be able to actually reset their password without a valid token", func() {
 					var userPasswordReset models.UserPasswordReset
 					lorem.Fill(&userPasswordReset)
-					userPasswordReset.Email = *user.Email
+					userPasswordReset.Email = user.Email
 					userPasswordReset.Token = "invalidToken"
 
 					statusCode, err := TestRequestV1().Post(routes.ResourceUsers + routes.ResourceResetPassword).RequestBody(&userPasswordReset).Do()
@@ -192,7 +193,7 @@ var _ = ginkgo.Describe("Password Reset Functionality", func() {
 
 					var userPasswordReset models.UserPasswordReset
 					lorem.Fill(&userPasswordReset)
-					userPasswordReset.Email = *user.Email
+					userPasswordReset.Email = user.Email
 					userPasswordReset.Token = trt.Token
 					userPasswordReset.NewPassword = lorem.Word(0, int(theConf.MinPasswordLength)-1)
 
@@ -211,7 +212,7 @@ var _ = ginkgo.Describe("Password Reset Functionality", func() {
 
 					var userPasswordReset models.UserPasswordReset
 					lorem.Fill(&userPasswordReset)
-					userPasswordReset.Email = *user.Email
+					userPasswordReset.Email = user.Email
 					userPasswordReset.Token = jwt.Token
 
 					statusCode, err := TestRequestV1().Post(routes.ResourceUsers + routes.ResourceResetPassword).RequestBody(&userPasswordReset).Do()
@@ -232,7 +233,7 @@ var _ = ginkgo.Describe("Password Reset Functionality", func() {
 
 					ginkgo.BeforeEach(func() {
 						lorem.Fill(&userPasswordReset)
-						userPasswordReset.Email = *user.Email
+						userPasswordReset.Email = user.Email
 						userPasswordReset.Token = trt.Token
 
 						var newUser models.User

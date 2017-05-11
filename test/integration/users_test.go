@@ -1,6 +1,10 @@
 package integration
 
 import (
+	"net/http"
+	"strings"
+	"time"
+
 	"github.com/axiomzen/authentication/constants"
 	"github.com/axiomzen/authentication/helpers"
 	"github.com/axiomzen/authentication/models"
@@ -9,9 +13,6 @@ import (
 	"github.com/axiomzen/golorem"
 	"github.com/onsi/ginkgo"
 	"github.com/onsi/gomega"
-	"net/http"
-	"strings"
-	"time"
 
 	"fmt"
 )
@@ -71,9 +72,7 @@ var _ = ginkgo.Describe("Users", func() {
 				gomega.Expect(user.Verified).ToNot(gomega.BeTrue())
 
 				// check that the user returned has all the things we expected
-				gomega.Expect(signup.FirstName).To(gomega.Equal(user.FirstName))
-				gomega.Expect(signup.LastName).To(gomega.Equal(user.LastName))
-				gomega.Expect(compare.New().DeepEquals(signup.Email, *user.Email, "signup.Email")).To(gomega.Succeed(), "signup.Email")
+				gomega.Expect(compare.New().DeepEquals(signup.Email, user.Email, "signup.Email")).To(gomega.Succeed(), "signup.Email")
 				gomega.Expect(user.CreatedAt.Valid).To(gomega.BeTrue())
 				gomega.Expect(user.CreatedAt.Time.IsZero()).NotTo(gomega.BeTrue())
 				gomega.Expect(user.UpdatedAt.Valid).To(gomega.BeTrue())
@@ -95,7 +94,7 @@ var _ = ginkgo.Describe("Users", func() {
 					RequestBody(&struct {
 						Email    string `form:"email" json:"email"`
 						Password string `form:"password" json:"password"`
-					}{*userAuth.Email, userAuth.Password}).
+					}{userAuth.Email, userAuth.Password}).
 					ResponseBody(&userResponse).
 					Do()
 
@@ -123,10 +122,8 @@ var _ = ginkgo.Describe("Users", func() {
 				var errResp models.ErrorResponse
 
 				statusCode, err := TestRequestV1().Post(routes.ResourceUsers + routes.ResourceSignup).RequestBody(&struct {
-					FirstName string `form:"firstName" json:"firstName"`
-					Password  string `form:"password" json:"password"`
-				}{*userAuth.FirstName, userAuth.Password}).ErrorResponseBody(&errResp).Do()
-				//}{userAuth.FirstName.String, userAuth.Password}).ErrorResponseBody(&errResp).Do()
+					Password string `form:"password" json:"password"`
+				}{userAuth.Password}).ErrorResponseBody(&errResp).Do()
 
 				gomega.Expect(err).ToNot(gomega.HaveOccurred())
 				gomega.Expect(statusCode).To(gomega.Equal(http.StatusBadRequest))
@@ -139,9 +136,8 @@ var _ = ginkgo.Describe("Users", func() {
 				gomega.Expect(lorem.Fill(&userAuth)).To(gomega.Succeed())
 				var errResp models.ErrorResponse
 				statusCode, err := TestRequestV1().Post(routes.ResourceUsers + routes.ResourceSignup).RequestBody(&struct {
-					LastName string `form:"lastName" json:"lastName"`
-					Email    string `form:"email" json:"email"`
-				}{*userAuth.LastName, *userAuth.Email}).ErrorResponseBody(&errResp).Do()
+					Email string `form:"email" json:"email"`
+				}{userAuth.Email}).ErrorResponseBody(&errResp).Do()
 
 				gomega.Expect(err).ToNot(gomega.HaveOccurred())
 				gomega.Expect(statusCode).To(gomega.Equal(http.StatusBadRequest))
@@ -208,8 +204,8 @@ var _ = ginkgo.Describe("Users", func() {
 			ginkgo.It("should not be able to sign up with the same email (But different case) as an existing user", func() {
 				var newUserAuth models.UserAuth
 				gomega.Expect(lorem.Fill(&newUserAuth)).To(gomega.Succeed())
-				newemail := strings.ToUpper(*userAuth.Email)
-				newUserAuth.Email = &newemail
+				newemail := strings.ToUpper(userAuth.Email)
+				newUserAuth.Email = newemail
 				var errResp models.ErrorResponse
 				statusCode, err := TestRequestV1().Post(routes.ResourceUsers + routes.ResourceSignup).RequestBody(&newUserAuth).ErrorResponseBody(&errResp).Do()
 				gomega.Expect(err).ToNot(gomega.HaveOccurred())
@@ -222,7 +218,7 @@ var _ = ginkgo.Describe("Users", func() {
 				var exists models.Exists
 				statusCode, err := TestRequestV1().
 					Get(routes.ResourceUsers+routes.ResourceExists).
-					URLParam("email", *userAuth.Email).
+					URLParam("email", userAuth.Email).
 					ResponseBody(&exists).Do()
 				gomega.Expect(err).ToNot(gomega.HaveOccurred())
 				gomega.Expect(statusCode).To(gomega.Equal(http.StatusOK))
@@ -230,7 +226,7 @@ var _ = ginkgo.Describe("Users", func() {
 			})
 
 			ginkgo.It("should return email does exist (even with a different case)", func() {
-				upperEmail := strings.ToUpper(*userAuth.Email)
+				upperEmail := strings.ToUpper(userAuth.Email)
 				var exists models.Exists
 				statusCode, err := TestRequestV1().
 					Get(routes.ResourceUsers+routes.ResourceExists).
@@ -275,8 +271,8 @@ var _ = ginkgo.Describe("Users", func() {
 
 			ginkgo.It("should be able to log in with the same credentials (But with a different case and whitespace) as used on sign up and be able to access gated user page", func() {
 				auth := models.UserAuth{UserBase: models.UserBase{Email: userAuth.Email}, Password: userAuth.Password}
-				email := "  " + strings.ToUpper(*auth.Email) + " "
-				auth.Email = &email
+				email := "  " + strings.ToUpper(auth.Email) + " "
+				auth.Email = email
 				var userResponse models.User
 				statusCode, err := TestRequestV1().Post(routes.ResourceUsers + routes.ResourceLogin).RequestBody(&auth).ResponseBody(&userResponse).Do()
 				gomega.Expect(err).ToNot(gomega.HaveOccurred())
@@ -298,8 +294,8 @@ var _ = ginkgo.Describe("Users", func() {
 
 			ginkgo.It("should not be able to log in with the wrong email", func() {
 				login := models.UserAuth{UserBase: models.UserBase{Email: userAuth.Email}, Password: userAuth.Password}
-				email := "dfd" + *login.Email
-				login.Email = &email
+				email := "dfd" + login.Email
+				login.Email = email
 				statusCode, err := TestRequestV1().Post(routes.ResourceUsers + routes.ResourceLogin).RequestBody(&login).Do()
 				gomega.Expect(err).ToNot(gomega.HaveOccurred())
 				gomega.Expect(statusCode).To(gomega.Equal(http.StatusUnauthorized))
@@ -308,7 +304,7 @@ var _ = ginkgo.Describe("Users", func() {
 			ginkgo.It("should not be able to log in with no password", func() {
 				statusCode, err := TestRequestV1().Post(routes.ResourceUsers + routes.ResourceLogin).RequestBody(&struct {
 					Email string `form:"email" json:"email"`
-				}{*userAuth.Email}).Do()
+				}{userAuth.Email}).Do()
 				gomega.Expect(err).ToNot(gomega.HaveOccurred())
 				gomega.Expect(statusCode).To(gomega.Equal(http.StatusUnauthorized))
 			})
@@ -330,7 +326,7 @@ var _ = ginkgo.Describe("Users", func() {
 
 				statusCode, err = TestRequestV1().Post(routes.ResourceUsers + routes.ResourceLogin).RequestBody(&struct {
 					Email string `form:"email" json:"email"`
-				}{*userAuth.Email}).Do()
+				}{userAuth.Email}).Do()
 				gomega.Expect(err).ToNot(gomega.HaveOccurred())
 				gomega.Expect(statusCode).To(gomega.Equal(http.StatusUnauthorized))
 			})
@@ -340,45 +336,27 @@ var _ = ginkgo.Describe("Users", func() {
 				ginkgo.Context("User has updated all thier information", func() {
 
 					var (
-						userUpdate  models.UserUpdate
 						updatedUser models.User
 						newPassword string
 					)
 
 					ginkgo.BeforeEach(func() {
-						// update the info
-						gomega.Expect(lorem.Fill(&userUpdate)).To(gomega.Succeed())
-						userUpdate.ID = user.ID
-
-						// update basic stuff
-						statusCode, err := TestRequestV1().Put(routes.ResourceUsers).Header(theConf.AuthTokenHeader, user.AuthToken).RequestBody(&userUpdate).ResponseBody(&updatedUser).Do()
-						gomega.Expect(err).ToNot(gomega.HaveOccurred())
-						gomega.Expect(statusCode).To(gomega.Equal(http.StatusOK))
-						// compare stuff
-						// because the two structs are so different, we need to manually add them in
-						gomega.Expect(userUpdate.Preferences).To(gomega.Equal(updatedUser.Preferences))
-						gomega.Expect(userUpdate.FirstName).To(gomega.Equal(updatedUser.FirstName))
-						gomega.Expect(userUpdate.LastName).To(gomega.Equal(updatedUser.LastName))
-						t1 := time.Unix(updatedUser.UpdatedAt.Time.Unix(), 0)
-						gomega.Expect(user.UpdatedAt.Time.Before(updatedUser.UpdatedAt.Time)).To(gomega.BeTrue())
-
 						//gomega.Ω(compare.New().DeepEquals(userUpdate, updatedUser, "userUpdate")).Should(gomega.Succeed())
 
 						// update email
 						var userChangeEmail models.UserChangeEmail
 						gomega.Expect(lorem.Fill(&userChangeEmail)).To(gomega.Succeed())
 						userChangeEmail.ID = user.ID
-						statusCode, err = TestRequestV1().Put(routes.ResourceUsers+routes.ResourceEmail).RequestBody(&userChangeEmail).ResponseBody(&updatedUser).Header(theConf.AuthTokenHeader, user.AuthToken).Do()
+						statusCode, err := TestRequestV1().Put(routes.ResourceUsers+routes.ResourceEmail).RequestBody(&userChangeEmail).ResponseBody(&updatedUser).Header(theConf.AuthTokenHeader, user.AuthToken).Do()
 						gomega.Expect(err).ToNot(gomega.HaveOccurred())
 						gomega.Expect(statusCode).To(gomega.Equal(http.StatusOK))
 						// compare stuff
 						// structs are too different (how would we keep track of which anyonymous fields to match etc)
 						//gomega.Expect(userChangeEmail.Email).To(gomega.Equal(updatedUser.Email))
 
-						gomega.Ω(compare.New().DeepEquals(userChangeEmail.Email, *updatedUser.Email, "updatedUser.Email")).Should(gomega.Succeed())
-						t2 := time.Unix(updatedUser.UpdatedAt.Time.Unix(), 0)
+						gomega.Ω(compare.New().DeepEquals(userChangeEmail.Email, updatedUser.Email, "updatedUser.Email")).Should(gomega.Succeed())
+						t1 := time.Unix(updatedUser.UpdatedAt.Time.Unix(), 0)
 						gomega.Expect(user.UpdatedAt.Time.Before(updatedUser.UpdatedAt.Time)).To(gomega.BeTrue())
-						gomega.Expect(t1.Before(updatedUser.UpdatedAt.Time)).To(gomega.BeTrue())
 
 						// statusCode, err = TestRequestV1().Get(routes.ResourceUsers).Header(theConf.AuthTokenHeader, user.AuthToken).Do()
 
@@ -396,7 +374,6 @@ var _ = ginkgo.Describe("Users", func() {
 						// we can't really compare the password
 						gomega.Expect(user.UpdatedAt.Time.Before(updatedUser.UpdatedAt.Time)).To(gomega.BeTrue())
 						gomega.Expect(t1.Before(updatedUser.UpdatedAt.Time)).To(gomega.BeTrue())
-						gomega.Expect(t2.Before(updatedUser.UpdatedAt.Time)).To(gomega.BeTrue())
 
 						// try a user get
 						var userGet models.User
@@ -433,61 +410,6 @@ var _ = ginkgo.Describe("Users", func() {
 
 				}) // updated all info
 
-				ginkgo.Context("User has updated some of their info (not email or password)", func() {
-					var (
-						userUpdate  models.UserUpdate
-						updatedUser models.User
-					)
-
-					ginkgo.BeforeEach(func() {
-						// update the info
-						gomega.Expect(lorem.Fill(&userUpdate)).To(gomega.Succeed())
-
-						statusCode, err := TestRequestV1().Put(routes.ResourceUsers).RequestBody(&userUpdate).Header(theConf.AuthTokenHeader, user.AuthToken).ResponseBody(&updatedUser).Do()
-						gomega.Expect(err).ToNot(gomega.HaveOccurred())
-						gomega.Expect(statusCode).To(gomega.Equal(http.StatusOK))
-
-						// compare stuff
-						gomega.Expect(userUpdate.Preferences).To(gomega.Equal(updatedUser.Preferences))
-						gomega.Expect(userUpdate.FirstName).To(gomega.Equal(updatedUser.FirstName))
-						gomega.Expect(userUpdate.LastName).To(gomega.Equal(updatedUser.LastName))
-						//gomega.Ω(compare.New().DeepEquals(userUpdate, updatedUser, "userUpdate")).Should(gomega.Succeed())
-
-						// do a get, to see if server took the updates
-						var newUser models.User
-						statusCode, err = TestRequestV1().Get(routes.ResourceUsers).Header(theConf.AuthTokenHeader, user.AuthToken).ResponseBody(&newUser).Do()
-						gomega.Expect(err).ToNot(gomega.HaveOccurred())
-						gomega.Expect(statusCode).To(gomega.Equal(http.StatusOK))
-
-						// compare stuff
-						gomega.Ω(compare.New().DeepEquals(updatedUser, newUser, "updatedUser")).Should(gomega.Succeed())
-					})
-
-					ginkgo.It("should still be able to login with same credential if these haven't been updated", func() {
-						login := models.UserAuth{UserBase: models.UserBase{Email: user.Email}, Password: userAuth.Password}
-						var newUser models.User
-						statusCode, err := TestRequestV1().Post(routes.ResourceUsers + routes.ResourceLogin).RequestBody(&login).ResponseBody(&newUser).Do()
-						gomega.Expect(err).ToNot(gomega.HaveOccurred())
-						gomega.Expect(statusCode).To(gomega.Equal(http.StatusOK))
-
-						gomega.Expect(newUser.AuthToken).ToNot(gomega.BeEmpty())
-
-						// compare stuff
-						// AuthToken will be updated
-						gomega.Ω(compare.New().Ignore(".AuthToken").DeepEquals(updatedUser, newUser, "updatedUser")).Should(gomega.Succeed())
-
-						var getUser models.User
-						statusCode, err = TestRequestV1().Get(routes.ResourceUsers).Header(theConf.AuthTokenHeader, newUser.AuthToken).ResponseBody(&getUser).Do()
-						gomega.Expect(err).ToNot(gomega.HaveOccurred())
-						gomega.Expect(statusCode).To(gomega.Equal(http.StatusOK))
-
-						// compare stuff
-						gomega.Ω(compare.New().Ignore(".AuthToken").DeepEquals(updatedUser, newUser, "updatedUser")).Should(gomega.Succeed())
-						// compare stuff
-						gomega.Ω(compare.New().DeepEquals(newUser, getUser, "getUser")).Should(gomega.Succeed())
-					})
-				}) // updated some
-
 				ginkgo.Context("User has updated their password", func() {
 
 					var (
@@ -507,7 +429,7 @@ var _ = ginkgo.Describe("Users", func() {
 
 					ginkgo.It("should be able to login with the new password", func() {
 						var login models.Login
-						login.Email = *userAuth.Email
+						login.Email = userAuth.Email
 						login.Password = userChangePassword.NewPassword
 						var newUser models.User
 						statusCode, err := TestRequestV1().Post(routes.ResourceUsers + routes.ResourceLogin).RequestBody(&login).ResponseBody(&newUser).Do()
@@ -519,122 +441,13 @@ var _ = ginkgo.Describe("Users", func() {
 
 					ginkgo.It("should not be able to login with their old password", func() {
 						var login models.Login
-						login.Email = *userAuth.Email
+						login.Email = userAuth.Email
 						login.Password = userAuth.Password
 						var errResp models.ErrorResponse
 						statusCode, err := TestRequestV1().Post(routes.ResourceUsers + routes.ResourceLogin).RequestBody(&login).ResponseBody(&errResp).Do()
 						gomega.Expect(err).ToNot(gomega.HaveOccurred())
 						gomega.Expect(statusCode).To(gomega.Equal(http.StatusUnauthorized))
 					})
-				})
-
-				ginkgo.It("should allow a user to update their firstname to blank", func() {
-					var userUpdate models.UserUpdate
-					gomega.Expect(lorem.Fill(&userUpdate)).To(gomega.Succeed())
-					blank := ""
-					userUpdate.FirstName = &blank
-					var updatedUser models.User
-					statusCode, err := TestRequestV1().Put(routes.ResourceUsers).RequestBody(&userUpdate).Header(theConf.AuthTokenHeader, user.AuthToken).ResponseBody(&updatedUser).Do()
-					gomega.Expect(err).ToNot(gomega.HaveOccurred())
-					gomega.Expect(statusCode).To(gomega.Equal(http.StatusOK))
-
-					// compare, first name should be blank
-					gomega.Expect(userUpdate.Preferences).To(gomega.Equal(updatedUser.Preferences))
-					gomega.Expect(userUpdate.FirstName).To(gomega.Equal(updatedUser.FirstName))
-					gomega.Expect(userUpdate.LastName).To(gomega.Equal(updatedUser.LastName))
-
-					//gomega.Ω(compare.New().DeepEquals(update, updatedUser, "update")).Should(gomega.Succeed())
-
-					// do a get, compare result
-					var newUser models.User
-					statusCode, err = TestRequestV1().Get(routes.ResourceUsers).Header(theConf.AuthTokenHeader, updatedUser.AuthToken).ResponseBody(&newUser).Do()
-					gomega.Expect(err).ToNot(gomega.HaveOccurred())
-					gomega.Expect(statusCode).To(gomega.Equal(http.StatusOK))
-
-					// compare stuff
-					gomega.Ω(compare.New().DeepEquals(updatedUser, newUser, "updatedUser")).Should(gomega.Succeed())
-				})
-
-				ginkgo.It("should allow a user to update their firstname to null", func() {
-					var userUpdate models.UserUpdate
-					gomega.Expect(lorem.Fill(&userUpdate)).To(gomega.Succeed())
-					userUpdate.FirstName = nil
-					var updatedUser models.User
-					statusCode, err := TestRequestV1().Put(routes.ResourceUsers).
-						RequestBody(&userUpdate).
-						Header(theConf.AuthTokenHeader, user.AuthToken).
-						ResponseBody(&updatedUser).
-						//RequestInterceptor(printRequest).
-						//ResponseInterceptor(printResponse).
-						Do()
-					gomega.Expect(err).ToNot(gomega.HaveOccurred())
-					gomega.Expect(statusCode).To(gomega.Equal(http.StatusOK))
-
-					// compare, first name should be blank
-					gomega.Expect(userUpdate.Preferences).To(gomega.Equal(updatedUser.Preferences))
-					gomega.Expect(userUpdate.FirstName).To(gomega.Equal(updatedUser.FirstName))
-					gomega.Expect(userUpdate.LastName).To(gomega.Equal(updatedUser.LastName))
-					//gomega.Ω(compare.New().DeepEquals(update, updatedUser, "update")).Should(gomega.Succeed())
-
-					// do a get, compare result
-					var newUser models.User
-					statusCode, err = TestRequestV1().Get(routes.ResourceUsers).Header(theConf.AuthTokenHeader, updatedUser.AuthToken).ResponseBody(&newUser).Do()
-					gomega.Expect(err).ToNot(gomega.HaveOccurred())
-					gomega.Expect(statusCode).To(gomega.Equal(http.StatusOK))
-
-					// compare stuff
-					gomega.Ω(compare.New().DeepEquals(updatedUser, newUser, "updatedUser")).Should(gomega.Succeed())
-				})
-
-				ginkgo.It("should allow a user to update their lastname to blank", func() {
-					var userUpdate models.UserUpdate
-					gomega.Expect(lorem.Fill(&userUpdate)).To(gomega.Succeed())
-					blank := ""
-					userUpdate.LastName = &blank
-					var updatedUser models.User
-					statusCode, err := TestRequestV1().Put(routes.ResourceUsers).RequestBody(&userUpdate).Header(theConf.AuthTokenHeader, user.AuthToken).ResponseBody(&updatedUser).Do()
-					gomega.Expect(err).ToNot(gomega.HaveOccurred())
-					gomega.Expect(statusCode).To(gomega.Equal(http.StatusOK))
-
-					// compare, first name should be blank
-					//gomega.Ω(compare.New().DeepEquals(update, updatedUser, "update")).Should(gomega.Succeed())
-					gomega.Expect(userUpdate.Preferences).To(gomega.Equal(updatedUser.Preferences))
-					gomega.Expect(userUpdate.FirstName).To(gomega.Equal(updatedUser.FirstName))
-					gomega.Expect(userUpdate.LastName).To(gomega.Equal(updatedUser.LastName))
-
-					// do a get, compare result
-					var newUser models.User
-					statusCode, err = TestRequestV1().Get(routes.ResourceUsers).Header(theConf.AuthTokenHeader, updatedUser.AuthToken).ResponseBody(&newUser).Do()
-					gomega.Expect(err).ToNot(gomega.HaveOccurred())
-					gomega.Expect(statusCode).To(gomega.Equal(http.StatusOK))
-
-					// compare stuff
-					gomega.Ω(compare.New().DeepEquals(updatedUser, newUser, "updatedUser")).Should(gomega.Succeed())
-				})
-
-				ginkgo.It("should allow a user to update their lastname to null", func() {
-					var userUpdate models.UserUpdate
-					gomega.Expect(lorem.Fill(&userUpdate)).To(gomega.Succeed())
-					userUpdate.LastName = nil
-					var updatedUser models.User
-					statusCode, err := TestRequestV1().Put(routes.ResourceUsers).RequestBody(&userUpdate).Header(theConf.AuthTokenHeader, user.AuthToken).ResponseBody(&updatedUser).Do()
-					gomega.Expect(err).ToNot(gomega.HaveOccurred())
-					gomega.Expect(statusCode).To(gomega.Equal(http.StatusOK))
-
-					// compare, first name should be blank
-					gomega.Expect(userUpdate.Preferences).To(gomega.Equal(updatedUser.Preferences))
-					gomega.Expect(userUpdate.FirstName).To(gomega.Equal(updatedUser.FirstName))
-					gomega.Expect(userUpdate.LastName).To(gomega.Equal(updatedUser.LastName))
-					//gomega.Ω(compare.New().DeepEquals(update, updatedUser, "update")).Should(gomega.Succeed())
-
-					// do a get, compare result
-					var newUser models.User
-					statusCode, err = TestRequestV1().Get(routes.ResourceUsers).Header(theConf.AuthTokenHeader, updatedUser.AuthToken).ResponseBody(&newUser).Do()
-					gomega.Expect(err).ToNot(gomega.HaveOccurred())
-					gomega.Expect(statusCode).To(gomega.Equal(http.StatusOK))
-
-					// compare stuff
-					gomega.Ω(compare.New().DeepEquals(updatedUser, newUser, "updatedUser")).Should(gomega.Succeed())
 				})
 
 				ginkgo.It("should not allow a user to pass in blank for email", func() {
@@ -714,41 +527,6 @@ var _ = ginkgo.Describe("Users", func() {
 					gomega.Expect(statusCode).To(gomega.Equal(http.StatusBadRequest))
 				})
 
-				ginkgo.It("should allow a user to update other fields without sending password or email", func() {
-					var userUpdate models.UserUpdate
-					gomega.Expect(lorem.Fill(&userUpdate)).To(gomega.Succeed())
-					var updatedUser models.User
-					statusCode, err := TestRequestV1().Put(routes.ResourceUsers).RequestBody(&struct {
-						Firstname string `form:"firstname" json:"firstname"`
-						Lastname  string `form:"lastname" json:"lastname"`
-					}{*userUpdate.FirstName, *userUpdate.LastName}).Header(theConf.AuthTokenHeader, user.AuthToken).ResponseBody(&updatedUser).Do()
-
-					gomega.Expect(err).ToNot(gomega.HaveOccurred())
-					gomega.Expect(statusCode).To(gomega.Equal(http.StatusOK))
-
-					// compare to input
-					gomega.Expect(userUpdate.FirstName).To(gomega.Equal(updatedUser.FirstName))
-					gomega.Expect(userUpdate.LastName).To(gomega.Equal(updatedUser.LastName))
-
-					// compare to old self
-					gomega.Ω(compare.New().Ignore(".UserBase.UpdatedAt").
-						Ignore(".UserBase.FirstName").
-						Ignore(".UserBase.LastName").
-						DeepEquals(updatedUser, user, "updatedUser")).Should(gomega.Succeed())
-
-					// json := getJson(respUserInfoPage)
-
-					var newUser models.User
-					statusCode, err = TestRequestV1().Get(routes.ResourceUsers).Header(theConf.AuthTokenHeader, user.AuthToken).ResponseBody(&newUser).Do()
-					gomega.Expect(err).ToNot(gomega.HaveOccurred())
-					gomega.Expect(statusCode).To(gomega.Equal(http.StatusOK))
-
-					gomega.Ω(compare.New().Ignore(".UserBase.UpdatedAt").
-						Ignore(".UserBase.FirstName").
-						Ignore(".UserBase.LastName").
-						DeepEquals(newUser, user, "updatedUser")).Should(gomega.Succeed())
-				})
-
 				ginkgo.Context("Another user has signed up", func() {
 
 					var (
@@ -773,7 +551,7 @@ var _ = ginkgo.Describe("Users", func() {
 					ginkgo.It("should not be able for another another user to update their email to another users email", func() {
 						var changeEmail models.UserChangeEmail
 						//gomega.Expect(lorem.Fill(&changeEmail)).To(gomega.Succeed())
-						changeEmail.Email = *user.Email
+						changeEmail.Email = user.Email
 						statusCode, err := TestRequestV1().Put(routes.ResourceUsers+routes.ResourceEmail).RequestBody(&changeEmail).Header(theConf.AuthTokenHeader, anotherUser.AuthToken).Do()
 						gomega.Expect(err).ToNot(gomega.HaveOccurred())
 						gomega.Expect(statusCode).To(gomega.Equal(http.StatusBadRequest))
@@ -842,8 +620,8 @@ var _ = ginkgo.Describe("Users", func() {
 				statusCode, err := TestRequestV1().Post(routes.ResourceUsers + routes.ResourceSignup).RequestBody(&signup).ResponseBody(&user).Do()
 				gomega.Expect(err).ToNot(gomega.HaveOccurred())
 				gomega.Expect(statusCode).To(gomega.Equal(http.StatusCreated))
-				gomega.Expect(*user.Email).To(gomega.Equal(strings.ToLower(strings.Trim(signup.Email, " "))))
-				//gomega.Expect(compare.New().DeepEquals(*user.Email, ), "user.Email")).To(gomega.Succeed(), "user.Email")
+				gomega.Expect(user.Email).To(gomega.Equal(strings.ToLower(strings.Trim(signup.Email, " "))))
+				//gomega.Expect(compare.New().DeepEquals(user.Email, ), "user.Email")).To(gomega.Succeed(), "user.Email")
 			})
 
 			ginkgo.AfterEach(func() {
@@ -879,7 +657,7 @@ var _ = ginkgo.Describe("Users", func() {
 
 			ginkgo.It("should be able to log in with the same credentials as used on sign up and be able to access gated user page", func() {
 				var login models.Login
-				login.Email = *user.Email
+				login.Email = user.Email
 				login.Password = signup.Password
 				var newUser models.User
 				statusCode, err := TestRequestV1().Post(routes.ResourceUsers + routes.ResourceLogin).RequestBody(&login).ResponseBody(&newUser).Do()
@@ -895,7 +673,7 @@ var _ = ginkgo.Describe("Users", func() {
 
 			ginkgo.It("should be able to log in with the same credentials (With different case) as used on sign up and be able to access gated user page", func() {
 				var login models.Login
-				login.Email = strings.ToUpper(*user.Email)
+				login.Email = strings.ToUpper(user.Email)
 				login.Password = signup.Password
 				var newUser models.User
 				statusCode, err := TestRequestV1().Post(routes.ResourceUsers + routes.ResourceLogin).RequestBody(&login).ResponseBody(&newUser).Do()
@@ -933,18 +711,14 @@ var _ = ginkgo.Describe("Users", func() {
 				gomega.Expect(statusCode).To(gomega.Equal(http.StatusNoContent))
 			})
 
-			ginkgo.It("should return user's id, firstname, lastname, email and empty preferences", func() {
+			ginkgo.It("should return user's id and", func() {
 
 				statusCode, err := TestRequestV1().Get(routes.ResourceUsers).Header(theConf.AuthTokenHeader, user.AuthToken).Do()
 				gomega.Expect(err).ToNot(gomega.HaveOccurred())
 				gomega.Expect(statusCode).To(gomega.Equal(http.StatusOK))
 
 				gomega.Expect(user.ID).ToNot(gomega.BeEmpty())
-				gomega.Expect(user.FirstName).ToNot(gomega.BeNil())
-				gomega.Expect(user.LastName).ToNot(gomega.BeNil())
-				// TODO: do we want empty preferences or nil?
-				gomega.Expect(user.Preferences).To(gomega.BeNil())
-				// TODO: more tests around setting and getting preferences (JSON) object
+				gomega.Expect(user.Email).ToNot(gomega.BeEmpty())
 			})
 		})
 	})

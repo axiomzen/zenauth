@@ -73,7 +73,7 @@ func (c *TestContext) UserPasswordResetTokenGet(rw web.ResponseWriter, req *web.
 	email := emailValues[0]
 	fmt.Printf("test email: %s\n", email)
 	var user models.User
-	user.Email = &email
+	user.Email = email
 
 	if err := c.DAL.GetUserByEmail(&user); err != nil {
 		dalErr, _ := err.(data.DALError)

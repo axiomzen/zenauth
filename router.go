@@ -88,7 +88,6 @@ func InitRouter(c *config.AUTHENTICATIONConfig) *web.Router {
 				Middleware((*v1.UserContext).AuthRequired)
 			v1APIAuthUserAuthRouter.
 				Get(routes.ResourceRoot, (*v1.UserContext).Get).
-				Put(routes.ResourceRoot, (*v1.UserContext).Put).
 				Put(routes.ResourcePassword, (*v1.UserContext).PasswordPut).
 				Put(routes.ResourceEmail, (*v1.UserContext).EmailPut)
 

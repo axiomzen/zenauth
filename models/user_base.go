@@ -12,12 +12,10 @@ import (
 // UserBase is the base user struct
 type UserBase struct {
 	ID        string    `json:"id" lorem:"-" sql:",pk"`
-	TableName TableName `sql:"users,alias:user"       json:"-" lorem:"-"`
+	TableName TableName `json:"-" sql:"users,alias:user" lorem:"-"`
 
-	CreatedAt null.Time `bson:"created_at" json:"createdAt,omitempty" sql:",null" lorem:"-"`
-	UpdatedAt null.Time `bson:"updated_at" json:"updatedAt,omitempty" sql:",null" lorem:"-"`
-	FirstName *string   `bson:"first_name" json:"firstName"  lorem:"word,2,10"`
-	LastName  *string   `bson:"last_name" json:"lastName"  lorem:"word,2,10"`
-	Email     *string   `bson:"email,omitempty" json:"email"  lorem:"email"`
+	CreatedAt null.Time `json:"createdAt,omitempty" sql:",null" lorem:"-"`
+	UpdatedAt null.Time `json:"updatedAt,omitempty" sql:",null" lorem:"-"`
+	Email     string    `json:"email" lorem:"email"`
 	Verified  bool      `json:"verified"`
 }

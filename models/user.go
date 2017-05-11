@@ -1,21 +1,15 @@
 package models
 
-import (
 // "github.com/axiomzen/null"
-)
 
 //go:generate ffjson $GOFILE
 
 // User struct holds our complete user information
 type User struct {
-	UserBase    `bson:",inline"`
-	Preferences map[string]string `bson:"-" json:"preferences" lorem:"-"`
-	ResetToken  *string           `bson:"reset_token" json:"-" lorem:"-"`
-	Hash        *string           `bson:"hash" json:"-"  lorem:"-"`
-	AuthToken   string            `bson:"-" json:"authToken,omitempty" lorem:"-" sql:"-"`
-
-	// TODO: figure this out
-	SocialLogin bool `bson:"social_login" json:"socialLogin"`
+	UserBase
+	ResetToken *string `json:"-" lorem:"-"`
+	Hash       *string `json:"-" lorem:"-"`
+	AuthToken  string  `json:"authToken,omitempty" lorem:"-" sql:"-"`
 }
 
 // Users is a slice of User pointers

@@ -3,15 +3,16 @@ package v1
 import (
 	"bytes"
 	"fmt"
+	"net/http"
+	"regexp"
+	"strings"
+
 	"github.com/axiomzen/authentication/constants"
 	"github.com/axiomzen/authentication/data"
 	"github.com/axiomzen/authentication/email"
 	"github.com/axiomzen/authentication/helpers"
 	"github.com/axiomzen/authentication/models"
 	"github.com/gocraft/web"
-	"net/http"
-	"regexp"
-	"strings"
 
 	"github.com/twinj/uuid"
 )
@@ -98,7 +99,7 @@ func (c *UserContext) renderUserResponseWithNewToken(user *models.User, status c
 	c.Render(status, user, w, r)
 
 	// TODO
-	if sendVerificationEmail && !helpers.IsZeroString(user.Email) {
+	if sendVerificationEmail && user.Email != "" {
 		// create the user email validation email
 		// send the email
 		// TODO: do we even have the route to verify the email for the user?
@@ -155,7 +156,7 @@ func (c *UserContext) VerifyEmail(rw web.ResponseWriter, req *web.Request) {
 			// we're not going to know to look by email, so we need a custom
 			// method
 			var user models.User
-			user.Email = &emailAddr
+			user.Email = emailAddr
 			user.Verified = true
 			if err := c.DAL.UpdateUserVerified(&user); err != nil {
 				// render error response
@@ -227,7 +228,7 @@ func (c *UserContext) ForgotPassword(rw web.ResponseWriter, req *web.Request) {
 
 	var user models.User
 	//fmt.Printf("user email: %s\n", emailSlice[0])
-	user.Email = &emailSlice[0]
+	user.Email = emailSlice[0]
 	user.ResetToken = &jwt.Token
 	//fmt.Printf("reset token before: %s\n", user.ResetToken.String)
 
@@ -309,7 +310,7 @@ func (c *UserContext) ValidateResetToken(rw web.ResponseWriter, req *web.Request
 		// get user by email and check the token
 		// could also just return a bool
 		var user models.User
-		user.Email = &emailSlice[0]
+		user.Email = emailSlice[0]
 		if err := c.DAL.GetUserByEmail(&user); err != nil {
 			dalErr, _ := err.(data.DALError)
 			// no such user/email
@@ -395,7 +396,7 @@ func (c *UserContext) ResetPassword(rw web.ResponseWriter, req *web.Request) {
 
 		var user models.User
 		user.ResetToken = &userPasswordReset.Token
-		user.Email = &userPasswordReset.Email
+		user.Email = userPasswordReset.Email
 
 		newHash, hashErr := helpers.HashPasswordBcrypt(userPasswordReset.NewPassword, int(c.Config.BcryptCost))
 
@@ -462,7 +463,7 @@ func (c *UserContext) Exists(rw web.ResponseWriter, req *web.Request) {
 
 	// check to see if user exists
 	var user models.User
-	user.Email = &email
+	user.Email = email
 	response.Exists = c.DAL.GetUserByEmail(&user) == nil
 
 	// render resposne
@@ -483,7 +484,7 @@ func (c *UserContext) Get(rw web.ResponseWriter, req *web.Request) {
 	var userErr error
 
 	if ok {
-		user.Email = &email[0]
+		user.Email = email[0]
 		userErr = c.DAL.GetUserByEmail(&user)
 	} else {
 		user.ID = c.UserID
@@ -508,44 +509,6 @@ func (c *UserContext) Get(rw web.ResponseWriter, req *web.Request) {
 	user.AuthToken = req.Header.Get(c.Config.AuthTokenHeader)
 	// render response
 	c.Render(constants.StatusOK, user, rw, req)
-}
-
-// Put route modifies a user
-//
-//   PUT /users
-//
-// Returns
-//   200 Status OK
-func (c *UserContext) Put(rw web.ResponseWriter, req *web.Request) {
-	// updates a user, although I think we need to ignore password and email ?
-	// or UserAuth ?
-	var userUpdate models.UserUpdate
-	// decode request
-	if !c.DecodeHelper(&userUpdate, "Couldn't decode UserUpdate", rw, req) {
-		return
-	}
-
-	// set the id from the auth token
-	userUpdate.ID = c.UserID
-	var user models.User
-
-	if err := c.DAL.UpdateUser(&userUpdate, &user); err != nil {
-		dalErr, _ := err.(data.DALError)
-		// no such user
-		if dalErr.ErrorCode == data.DALErrorCodeNoneAffected {
-			c.NotFound(rw, req)
-			return
-		}
-
-		model := models.NewErrorResponse(constants.APIDatabaseUpdateUser, models.NewAZError(err.Error()), "Could not get user")
-		c.Render(constants.StatusInternalServerError, model, rw, req)
-		return
-	}
-
-	// get token from header
-	user.AuthToken = req.Header.Get(c.Config.AuthTokenHeader)
-	// render response
-	c.Render(constants.StatusOK, &user, rw, req)
 }
 
 // PasswordPut changes the user password
@@ -595,8 +558,8 @@ func (c *UserContext) PasswordPut(rw web.ResponseWriter, req *web.Request) {
 	// if we have no hash, then we have no old password
 	if helpers.IsZeroString(user.Hash) {
 		email := "NULL"
-		if !helpers.IsZeroString(user.Email) {
-			email = *user.Email
+		if user.Email != "" {
+			email = user.Email
 		}
 		model := models.NewErrorResponse(constants.APIDatabaseUpdateUser,
 			models.NewAZError("No password associated with this email: "+email), "Could not update user")
@@ -765,7 +728,7 @@ func (c *UserContext) Login(w web.ResponseWriter, req *web.Request) {
 	login.Email = strings.ToLower(strings.Trim(login.Email, " "))
 
 	var user models.User
-	user.Email = &login.Email
+	user.Email = login.Email
 	//fmt.Println("user email: " +  user.Email.String)
 
 	if err := c.DAL.GetUserByEmail(&user); err != nil {
@@ -791,7 +754,7 @@ func (c *UserContext) Login(w web.ResponseWriter, req *web.Request) {
 
 	// check that they have a password - not sure how they wouldn't
 	if helpers.IsZeroString(user.Hash) {
-		model := models.NewErrorResponse(constants.APILoginSignupInvalidCombination, models.NewAZError("No password associated with this email: "+*user.Email), "Invalid email/password combination")
+		model := models.NewErrorResponse(constants.APILoginSignupInvalidCombination, models.NewAZError("No password associated with this email: "+user.Email), "Invalid email/password combination")
 		c.Render(constants.StatusBadRequest, model, w, req)
 		return
 	}
@@ -832,8 +795,6 @@ func (c *UserContext) Login(w web.ResponseWriter, req *web.Request) {
 //
 // Assumes format:
 //   {
-//     "FirstName":"Full",
-//     "LastName":"Name",
 //     "email":"example@email.ca",
 //     "password":"aPassword1"
 //   }
@@ -870,9 +831,7 @@ func (c *UserContext) Signup(w web.ResponseWriter, req *web.Request) {
 
 	// create a user var
 	user := models.User{}
-	user.FirstName = signup.FirstName
-	user.LastName = signup.LastName
-	user.Email = &signup.Email
+	user.Email = signup.Email
 
 	hash, hashErr := helpers.HashPasswordBcrypt(signup.Password, int(c.Config.BcryptCost))
 
