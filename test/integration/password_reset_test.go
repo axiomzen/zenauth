@@ -4,10 +4,10 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/axiomzen/golorem"
 	"github.com/axiomzen/zenauth/helpers"
 	"github.com/axiomzen/zenauth/models"
 	"github.com/axiomzen/zenauth/routes"
-	"github.com/axiomzen/golorem"
 	"github.com/onsi/ginkgo"
 	"github.com/onsi/gomega"
 )
@@ -57,30 +57,6 @@ var _ = ginkgo.Describe("Password Reset Functionality", func() {
 				gomega.Expect(statusCode).To(gomega.Equal(http.StatusNoContent))
 			})
 
-			ginkgo.It("should not be able to get the password reset page without any token or email", func() {
-				// /reset_password
-				// email, token
-				statusCode, err := TestRequestV1().Get(routes.ResourceUsers+routes.ResourceResetPassword).Header(theConf.APITokenHeader, "").Do()
-				gomega.Expect(err).ToNot(gomega.HaveOccurred())
-				gomega.Expect(statusCode).To(gomega.Equal(http.StatusBadRequest))
-			})
-
-			ginkgo.It("should not be able to get the password reset page without any token", func() {
-				statusCode, err := TestRequestV1().Get(routes.ResourceUsers+routes.ResourceResetPassword).URLParam("email", user.Email).Header(theConf.APITokenHeader, "").Do()
-				gomega.Expect(err).ToNot(gomega.HaveOccurred())
-				gomega.Expect(statusCode).To(gomega.Equal(http.StatusBadRequest))
-			})
-
-			ginkgo.It("should not be able to get the password reset page without a valid token", func() {
-				statusCode, err := TestRequestV1().
-					Get(routes.ResourceUsers+routes.ResourceResetPassword).
-					URLParam("email", user.Email).
-					URLParam("token", "invalidtoken").
-					Header(theConf.APITokenHeader, "").Do()
-				gomega.Expect(err).ToNot(gomega.HaveOccurred())
-				gomega.Expect(statusCode).To(gomega.Equal(http.StatusBadRequest))
-			})
-
 			ginkgo.It("should not be able to actually reset their password without any token", func() {
 				var userPasswordReset models.UserPasswordReset
 				lorem.Fill(&userPasswordReset)
@@ -123,37 +99,6 @@ var _ = ginkgo.Describe("Password Reset Functionality", func() {
 					gomega.Expect(err).ToNot(gomega.HaveOccurred())
 					gomega.Expect(statusCode).To(gomega.Equal(http.StatusOK))
 					gomega.Expect(len(trt.Token) > 0).To(gomega.BeTrue())
-				})
-
-				ginkgo.It("should not be able to get the password reset page without any email", func() {
-					// TODO: improve the request lib to take in query params and have "append path" functionality
-					statusCode, err := TestRequestV1().Get(routes.ResourceUsers+routes.ResourceResetPassword).URLParam("token", trt.Token).Header(theConf.APITokenHeader, "").Do()
-					gomega.Expect(err).ToNot(gomega.HaveOccurred())
-					gomega.Expect(statusCode).To(gomega.Equal(http.StatusBadRequest))
-				})
-
-				ginkgo.It("should not be able to get the password reset page without any token or email", func() {
-					// /reset_password
-					// email, token
-					statusCode, err := TestRequestV1().Get(routes.ResourceUsers+routes.ResourceResetPassword).Header(theConf.APITokenHeader, "").Do()
-					gomega.Expect(err).ToNot(gomega.HaveOccurred())
-					gomega.Expect(statusCode).To(gomega.Equal(http.StatusBadRequest))
-				})
-
-				ginkgo.It("should not be able to get the password reset page without any token", func() {
-					statusCode, err := TestRequestV1().Get(routes.ResourceUsers+routes.ResourceResetPassword).URLParam("email", user.Email).Header(theConf.APITokenHeader, "").Do()
-					gomega.Expect(err).ToNot(gomega.HaveOccurred())
-					gomega.Expect(statusCode).To(gomega.Equal(http.StatusBadRequest))
-				})
-
-				ginkgo.It("should not be able to get the password reset page without a valid token", func() {
-					statusCode, err := TestRequestV1().
-						Get(routes.ResourceUsers+routes.ResourceResetPassword).
-						URLParam("email", user.Email).
-						URLParam("token", "invalidtoken").
-						Header(theConf.APITokenHeader, "").Do()
-					gomega.Expect(err).ToNot(gomega.HaveOccurred())
-					gomega.Expect(statusCode).To(gomega.Equal(http.StatusBadRequest))
 				})
 
 				ginkgo.It("should not be able to actually reset their password without any token", func() {
