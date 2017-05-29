@@ -1,0 +1,290 @@
+swagger: "2.0"
+info:
+  title: "ZenAuth"
+  description:
+    This is a generic microservice to handle user authentication through a
+    RESTful API.
+  version: "1.0.0"
+  contact:
+    email: "dev@axiomzen.co"
+host: "zenauth.axiomzen.co"
+basePath: "/v1"
+schemes:
+- "https"
+paths:
+  /ping:
+    get:
+      summary: "health check for the API"
+      responses:
+        200:
+          description: "API is up and running"
+
+
+  /users/signup:
+    post:
+      summary: "signs up a new user"
+      parameters:
+      - in: "body"
+        name: "body"
+        description: "request body"
+        required: true
+        schema:
+          $ref: "#/definitions/Signup"
+      responses:
+        201:
+          description: "User signed up"
+          schema:
+            $ref: "#/definitions/User"
+        400:
+          description: "Some input data is invalid"
+      security:
+      - api_token: []
+
+  /users/login:
+    post:
+      summary: "Logs in a user"
+      parameters:
+      - in: "body"
+        name: "body"
+        description: "request body"
+        required: true
+        schema:
+          $ref: "#/definitions/Login"
+      responses:
+        200:
+          description: "User logged in"
+          schema:
+            $ref: "#/definitions/User"
+        400:
+          description: "Some input data is invalid"
+        401:
+          description: "Wrong email or password"
+      security:
+      - api_token: []
+
+  /users/exists:
+    get:
+      summary: "Checks if a user exists."
+      parameters:
+      - in: "query"
+        name: "email"
+        description: "user e-mail"
+        required: true
+        type: string
+      responses:
+        200:
+          description: "Exists status"
+          schema:
+            $ref: "#/definitions/Exists"
+        400:
+          description: "Some request body data is invalid"
+      security:
+      - api_token: []
+
+
+  /users/forgot_password:
+    put:
+      summary: "Indicates a user has forgotten the password. This action will send an e-mail to continue with the reset process."
+      parameters:
+      - in: "query"
+        name: "email"
+        description: "user e-mail"
+        required: true
+        type: string
+      responses:
+        204:
+          description: "Email sent"
+        400:
+          description: "Some request body data is invalid"
+      security:
+      - api_token: []
+
+  /users/reset_password:
+    post:
+      summary: "using a reset password token, resets the user password to a new one"
+      parameters:
+      - in: "body"
+        name: "body"
+        description: "request body"
+        required: true
+        schema:
+          $ref: "#/definitions/ResetPassword"
+      responses:
+        200:
+          description: "Password changed"
+          schema:
+            $ref: "#/definitions/User"
+        400:
+          description: "Some request body data is invalid"
+      security:
+      - api_token: []
+
+  /users/verify_email:
+    put:
+      summary: "verifies a user"
+      parameters:
+      - in: "query"
+        name: "token"
+        description: "verification token"
+        required: true
+        type: string
+      - in: "query"
+        name: "email"
+        description: "user e-mail"
+        required: true
+        type: string
+      responses:
+        200:
+          description: "User verified"
+          schema:
+            $ref: "#/definitions/User"
+        400:
+          description: "Some input data is invalid"
+      security:
+      - api_token: []
+
+  /users:
+    get:
+      summary: "Gets the current user information"
+      responses:
+        200:
+          description: "Success"
+          schema:
+            $ref: "#/definitions/User"
+      security:
+      - api_token: []
+      - auth_token: []
+
+  /users/password:
+    put:
+      summary: "Updates a user's password'"
+      parameters:
+      - in: "body"
+        name: "body"
+        description: "request body"
+        required: true
+        schema:
+          $ref: "#/definitions/ChangePassword"
+      responses:
+        200:
+          description: "Password changed"
+          schema:
+            $ref: "#/definitions/User"
+        400:
+          description: "Some input data is invalid"
+      security:
+      - api_token: []
+      - auth_token: []
+
+  /users/email:
+    put:
+      summary: "Updates a user's email'"
+      parameters:
+      - in: "body"
+        name: "body"
+        description: "request body"
+        required: true
+        schema:
+          $ref: "#/definitions/ChangeEmail"
+      responses:
+        200:
+          description: "Email changed"
+          schema:
+            $ref: "#/definitions/User"
+        400:
+          description: "Some input data is invalid"
+      security:
+      - api_token: []
+      - auth_token: []
+
+
+securityDefinitions:
+  api_token:
+    type: "apiKey"
+    name: "x-api-token"
+    in: "header"
+    description: "The application API token."
+  auth_token:
+    type: "apiKey"
+    name: "x-authentication-token"
+    in: "header"
+    description: "User's API token. Use login endpoint to get one."
+definitions:
+  User:
+    type: "object"
+    properties:
+      id:
+        type: "string"
+        description: "The user ID"
+      email:
+        type: "string"
+        description: "The user e-mail"
+      authToken:
+        type: "string"
+        description: "The user authentication token"
+      createdAt:
+        type: "string"
+        description: "Date when the user was created"
+      updatedAt:
+        type: "string"
+        description: "Date when the user was updated"
+      verified:
+        type: "boolean"
+        description: "Whether or not the user has validated the e-mail"
+  ResetPassword:
+    type: "object"
+    properties:
+      email:
+        type: "string"
+        description: "The user e-mail"
+      newPassword:
+        type: "string"
+        description: "The desired new password"
+      token:
+        type: "string"
+        description: "The reset password token"
+  Signup:
+    type: "object"
+    properties:
+      email:
+        type: "string"
+        description: "The user e-mail"
+      password:
+        type: "string"
+        description: "The desired new password"
+  Login:
+    type: "object"
+    properties:
+      email:
+        type: "string"
+        description: "The user e-mail"
+      password:
+        type: "string"
+        description: "The user password"
+  Exists:
+    type: "object"
+    properties:
+      exists:
+        type: "boolean"
+        description: "whether the user exists"
+  ChangePassword:
+    type: "object"
+    properties:
+      id:
+        type: "boolean"
+        description: "The user ID"
+      oldPassword:
+        type: "string"
+        description: "The current password"
+      newPassword:
+        type: "string"
+        description: "The new password"
+  ChangeEmail:
+    type: "object"
+    properties:
+      id:
+        type: "boolean"
+        description: "The user ID"
+      email:
+        type: "string"
+        description: "The new email"

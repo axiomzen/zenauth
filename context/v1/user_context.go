@@ -3,7 +3,6 @@ package v1
 import (
 	"bytes"
 	"fmt"
-	"net/http"
 	"regexp"
 	"strings"
 
@@ -166,7 +165,7 @@ func (c *UserContext) VerifyEmail(rw web.ResponseWriter, req *web.Request) {
 			}
 			// render OK, or redirect?
 			//************TODO: decide what you want to do here (redirect or what)
-			c.Render(constants.StatusOK, nil, rw, req)
+			c.Render(constants.StatusOK, &user, rw, req)
 			return
 		}
 		// render error, email doesn't matches
@@ -263,88 +262,6 @@ func (c *UserContext) ForgotPassword(rw web.ResponseWriter, req *web.Request) {
 	}(&msg)
 	// render response
 	c.Render(constants.StatusNoContent, nil, rw, req)
-}
-
-// ValidateResetToken route will validate a reset token
-// this was the decided design from timeline, but feel free
-// to alter
-//
-//   GET /reset_password
-//
-// This is step 2 of 3
-//
-// Returns
-//   301 Moved Permanently
-func (c *UserContext) ValidateResetToken(rw web.ResponseWriter, req *web.Request) {
-
-	queryMap := req.URL.Query()
-	tokenSlice, tokenOk := queryMap["token"]
-	emailSlice, emailOK := queryMap["email"]
-
-	if !tokenOk || !emailOK {
-		// TODO: this url is sent via a web browser
-		// so I imagine they would want a better styled response
-		// instead of an object
-		msg := models.Message{Message: "400 - Bad Request"}
-		c.Render(constants.StatusBadRequest, &msg, rw, req)
-		return
-	}
-
-	// check the time on the token itself
-	// and check that there is an email associated with it
-	// and that it matches the email sent interface{}
-	jwt := helpers.JWTHelper{HashSecretBytes: c.Config.HashSecretBytes, Token: tokenSlice[0]}
-	jwtTokenResult := jwt.Validate(c.Config.JwtClaimUserEmail)
-
-	switch jwtTokenResult.Status {
-	case helpers.JWTokenStatusValid:
-		// verify that the emails are the same
-		if jwtTokenResult.Value != emailSlice[0] {
-			// render error, email doesn't matches
-			msg := models.Message{Message: "400 - Email doesn't match"}
-			c.Render(constants.StatusBadRequest, &msg, rw, req)
-			return
-		}
-
-		// check that the token exists in the DB (to see if it is not already consumed)
-		// get user by email and check the token
-		// could also just return a bool
-		var user models.User
-		user.Email = emailSlice[0]
-		if err := c.DAL.GetUserByEmail(&user); err != nil {
-			dalErr, _ := err.(data.DALError)
-			// no such user/email
-			if dalErr.ErrorCode == data.DALErrorCodeNoneAffected {
-				msg := models.Message{Message: "404 - User doesn't exist"}
-				c.Render(constants.StatusNotFound, &msg, rw, req)
-				return
-			}
-			// db access problem
-			msg := models.Message{Message: "500 - Server Problem"}
-			c.Render(constants.StatusInternalServerError, &msg, rw, req)
-			return
-		}
-
-		// check to see if the token has already been used
-		if user.ResetToken == nil || *user.ResetToken != tokenSlice[0] {
-			msg := models.Message{Message: "400 - Token Consumed"}
-			c.Render(constants.StatusBadRequest, &msg, rw, req)
-			return
-		}
-
-		// need to redirect them to the destination site
-		// ********** TODO! do something useful here
-		url := req.URL
-		url.Path = versionRegexp.ReplaceAllString(url.Path, "")
-		http.Redirect(rw, req.Request, url.String(), http.StatusMovedPermanently)
-	case helpers.JWTokenStatusExpired:
-		// render expired
-		msg := models.Message{Message: "400 - Reset Request Expired"}
-		c.Render(constants.StatusBadRequest, &msg, rw, req)
-	case helpers.JWTokenStatusInvalid, helpers.JWTokenNotAvailableYet:
-		msg := models.Message{Message: "400 - Invalid Token"}
-		c.Render(constants.StatusBadRequest, &msg, rw, req)
-	}
 }
 
 // ResetPassword route
@@ -470,37 +387,27 @@ func (c *UserContext) Exists(rw web.ResponseWriter, req *web.Request) {
 	c.Render(constants.StatusOK, &response, rw, req)
 }
 
-// Get route - accepts (and expects) query params: ?email
+// Get route - Returns the current user information
 //
 //   GET /users
 //
 // Returns
 //   200 OK
 func (c *UserContext) Get(rw web.ResponseWriter, req *web.Request) {
-	queryMap := req.URL.Query()
-	email, ok := queryMap["email"]
 
 	var user models.User
-	var userErr error
-
-	if ok {
-		user.Email = email[0]
-		userErr = c.DAL.GetUserByEmail(&user)
-	} else {
-		user.ID = c.UserID
-		userErr = c.DAL.GetUserByID(&user)
-	}
+	user.ID = c.UserID
 
 	// get user
-	if userErr != nil {
-		dalErr, _ := userErr.(data.DALError)
+	if err := c.DAL.GetUserByID(&user); err != nil {
+		dalErr, _ := err.(data.DALError)
 		// no such user/email
 		if dalErr.ErrorCode == data.DALErrorCodeNoneAffected {
 			c.NotFound(rw, req)
 			return
 		}
 
-		model := models.NewErrorResponse(constants.APIDatabaseGetUser, models.NewAZError(userErr.Error()), "Could not get user")
+		model := models.NewErrorResponse(constants.APIDatabaseGetUser, models.NewAZError(err.Error()), "Could not get user")
 		c.Render(constants.StatusInternalServerError, model, rw, req)
 		return
 	}
