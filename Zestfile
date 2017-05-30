@@ -1,0 +1,36 @@
+DOCKER_FILE=Dockerfile
+BUILD_CONTAINER=golang:1.8.1
+TEST_CONTAINER=
+REPO=axiomzen
+SERVICE_NAME=zenauth
+IMAGE_SERVER=
+VERSION=0.1.0
+MOUNT_DIR=/go/src/github.com/axiomzen
+CACHE_DIR_SRC=
+CACHE_DIR_DST=
+
+PreBuild() {
+    :
+}
+
+PostBuild() {
+    :
+}
+Build() {
+    CGO_ENABLED=0 go build -v
+    :
+}
+Test() {
+    go test -race $(go list ./... | grep -v /vendor/)
+}
+
+Version() {
+    git describe --tag 2> /dev/null
+}
+
+PreBundle() {
+    :
+}
+PostBundle() {
+    :
+}
