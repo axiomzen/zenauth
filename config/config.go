@@ -50,6 +50,7 @@ type ZENAUTHConfig struct {
 	MixpanelAPIToken      string        `default:"token"`
 	EmailEnabled          bool          `default:"false"`
 	MailGunDomain         string        `default:"domain"`
+	MailGunFrom           string        `default:"from@email.com"`
 	MailGunPublicKey      string        `default:"mailgun"`
 	MailGunPrivateKey     string        `default:"mailgun"`
 	NewRelicEnabled       bool          `default:"false"`
@@ -75,4 +76,8 @@ type ZENAUTHConfig struct {
 	//AccessorServiceFQDN string `envconfig:"ACCESSOR_ENV_DOCKERCLOUD_SERVICE_FQDN"`
 	// dependent variable here, ignored, but calculated in computeDependents
 	//AccessorURI         string `ignored:"true"`
+	TemplatesPath    string `default:"email/templates"`
+	AppName          string `default:"ZenAuth"`
+	ResetPasswordURL string `required:"true"`
+	VerifyEmailURL   string `required:"true"`
 }

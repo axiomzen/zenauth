@@ -74,6 +74,9 @@ func (c *ZENAUTHConfig) ComputeDependents() error {
 		if c.MailGunPrivateKey == "mailgun" {
 			return errors.New("if Email is enabled, you need a proper mailgun private key")
 		}
+		if c.MailGunFrom == "from@email.com" {
+			return errors.New("if Email is enabled, you need a proper mailgun from")
+		}
 	}
 
 	// *********calculate your custom dependent variable(s) here***********

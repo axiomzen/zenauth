@@ -3,15 +3,14 @@
 
 package email
 
-import (
 //"github.com/axiomzen/zenauth/models"
-)
 
 // Message is the basic holder for the info
 type Message struct {
 	From               string
 	Subject            string
 	Body               string
+	BodyHTML           string
 	To                 []string
 	ReplyTo            string
 	AttachmentFilename string
@@ -23,11 +22,6 @@ type Message struct {
 // email providers, it would make sense to keep it out of here
 // and keep the logic in the middleware (with helpers)
 type ZENAUTHEmailProvider interface {
-	// SendEmailVerificationEmail sent when you want to verify someones email address (upon signup for example)
-	//SendEmailVerificationEmail(msg *EmailMessage) error
-	// SendForgotPasswordEmail the email sent when the user clicks forgot password
-	//SendForgotPasswordEmail(msg *EmailMessage) error
-
 	// Send sends an email (what more do you want)
 	Send(email *Message) error
 }

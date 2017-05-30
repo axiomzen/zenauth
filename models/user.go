@@ -7,9 +7,10 @@ package models
 // User struct holds our complete user information
 type User struct {
 	UserBase
-	ResetToken *string `json:"-" lorem:"-"`
-	Hash       *string `json:"-" lorem:"-"`
-	AuthToken  string  `json:"authToken,omitempty" lorem:"-" sql:"-"`
+	ResetToken       *string `json:"-" lorem:"-"`
+	Hash             *string `json:"-" lorem:"-"`
+	AuthToken        string  `json:"authToken,omitempty" lorem:"-" sql:"-"`
+	VerifyEmailToken string  `json:"-" lorem:"-" sql:"-"`
 }
 
 // Users is a slice of User pointers

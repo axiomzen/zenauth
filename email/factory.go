@@ -4,9 +4,10 @@
 package email
 
 import (
+	"sync"
+
 	"github.com/axiomzen/zenauth/config"
 	"github.com/mailgun/mailgun-go"
-	"sync"
 )
 
 var instance ZENAUTHEmailProvider
@@ -19,7 +20,9 @@ var initerr error
 func Get(conf *config.ZENAUTHConfig) (ZENAUTHEmailProvider, error) {
 	once.Do(func() {
 		if conf.EmailEnabled {
-			instance = &MailgunImpl{mailgun.NewMailgun(conf.MailGunDomain, conf.MailGunPrivateKey, conf.MailGunPublicKey)}
+			instance = &MailgunImpl{
+				gun: mailgun.NewMailgun(conf.MailGunDomain, conf.MailGunPrivateKey, conf.MailGunPublicKey),
+			}
 		} else {
 			instance = &Noop{}
 		}

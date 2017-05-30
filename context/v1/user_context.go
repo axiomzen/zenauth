@@ -104,15 +104,37 @@ func (c *UserContext) renderUserResponseWithNewToken(user *models.User, status c
 		// TODO: do we even have the route to verify the email for the user?
 		// TODO: can/should this token have an expiry?
 		// put email in it for claims
-		emailer, _ := email.Get(c.Config)
-		msg := email.Message{}
+		emailer, err := email.Get(c.Config)
+		if err != nil {
+			model := models.NewErrorResponse(constants.APIVerifyEmailMessageError, models.NewAZError(err.Error()), "unable to generate verification email")
+			c.Render(constants.StatusInternalServerError, model, w, r)
+			return
+		}
+
+		claims := make(map[string]interface{}, 1)
+		claims[c.Config.JwtClaimUserEmail] = user.Email
+		jwt := helpers.JWTHelper{HashSecretBytes: c.Config.HashSecretBytes}
+		if err := jwt.Generate(claims, c.Config.PasswordResetValidTokenDuration); err != nil {
+			model := models.NewErrorResponse(constants.APIVerifyEmailMessageError, models.NewAZError(err.Error()), "unable to generate verification token")
+			c.Render(constants.StatusInternalServerError, model, w, r)
+			return
+		}
+		user.VerifyEmailToken = jwt.Token
+
+		msg, err := email.GetVerifyEmailMessage(c.Config, user)
+		if err != nil {
+			model := models.NewErrorResponse(constants.APIVerifyEmailMessageError, models.NewAZError(err.Error()), "unable to generate verification email")
+			c.Render(constants.StatusInternalServerError, model, w, r)
+			return
+		}
+
 		// we don't care about email fails do we? perhaps log it
 		go func(m *email.Message) {
 			err := emailer.Send(m)
 			if err != nil {
 				c.Log.WithError(err).Warn("error sending email")
 			}
-		}(&msg)
+		}(msg)
 		// 	go models.CreateUserEmailValidationToken(user.Email)
 	}
 }
@@ -143,6 +165,7 @@ func (c *UserContext) VerifyEmail(rw web.ResponseWriter, req *web.Request) {
 
 	// lower email
 	emailAddr := strings.ToLower(emailSlice[0])
+	fmt.Printf("===> %[2]v: %[1]v\n", tokenSlice[0], `tokenSlice[0]`)
 
 	jwt := helpers.JWTHelper{HashSecretBytes: c.Config.HashSecretBytes, Token: tokenSlice[0]}
 	jwtTokenResult := jwt.Validate(c.Config.JwtClaimUserEmail)
@@ -249,17 +272,25 @@ func (c *UserContext) ForgotPassword(rw web.ResponseWriter, req *web.Request) {
 	//fmt.Printf("reset token after: %s\n", user.ResetToken.String)
 
 	// send the reset password email with the generated token
-	emailer, _ := email.Get(c.Config)
-	//	//go em.SendPasswordResetEmail(emailAddr, jwt.Token)
-	// TODO: generate message
-	msg := email.Message{}
-	// we don't care about email fails do we? perhaps log it
+	emailer, err := email.Get(c.Config)
+	if err != nil {
+		model := models.NewErrorResponse(constants.APIForgotPasswordMessageError, models.NewAZError(err.Error()), "unable to generate reset token email")
+		c.Render(constants.StatusInternalServerError, model, rw, req)
+		return
+	}
+	msg, err := email.GetResetPasswordMessage(c.Config, &user)
+	if err != nil {
+		model := models.NewErrorResponse(constants.APIForgotPasswordMessageError, models.NewAZError(err.Error()), "unable to generate reset token email")
+		c.Render(constants.StatusInternalServerError, model, rw, req)
+		return
+	}
+
 	go func(m *email.Message) {
 		err := emailer.Send(m)
 		if err != nil {
 			c.Log.WithError(err).Warn("error sending email")
 		}
-	}(&msg)
+	}(msg)
 	// render response
 	c.Render(constants.StatusNoContent, nil, rw, req)
 }

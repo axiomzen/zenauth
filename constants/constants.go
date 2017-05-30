@@ -146,6 +146,13 @@ const (
 	APIInvalidAuthToken
 )
 
+const (
+	// APIForgotPasswordMessageError Error generating forget password emails
+	APIForgotPasswordMessageError APIErrorCode = 8000 + iota
+	// APIVerifyEmailMessageError Error generating email verification emails
+	APIVerifyEmailMessageError
+)
+
 // general constants
 const (
 	// EnvironmentStaging the staging environment

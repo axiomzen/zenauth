@@ -260,6 +260,9 @@ func fireUpApp() error {
 	theConf.PostgreSQLUsername = "postgres"
 	theConf.PostgreSQLPassword = ""
 	theConf.PostgreSQLDatabase = "dulpitr9o7a88d"
+	theConf.ResetPasswordURL = "http://www.zenauth.com/reset"
+	theConf.VerifyEmailURL = "http://www.zenauth.com/verify"
+	theConf.TemplatesPath = "../../email/templates"
 	f := false
 	theConf.PostgreSQLSSL = &f
 	//theConf.PostgreSQLPort = default is ok
