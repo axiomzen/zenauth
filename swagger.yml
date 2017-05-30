@@ -216,75 +216,94 @@ definitions:
       id:
         type: "string"
         description: "The user ID"
+        example: "5c8e03d8-516a-47fa-8840-69fb6d62c0b7"
       email:
         type: "string"
         description: "The user e-mail"
+        example: "user@email.com"
       authToken:
         type: "string"
         description: "The user authentication token"
+        example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE1Mjc2OTY3OTcsImlhdCI6MTQ5NjE2MDc5NywianRpIjoiYTkyZWRiMTktNjdlYy00YzZiLWE0YzEtNzU4Mjc4NWVmZjMyIiwidXNlcmlkIjoiNWM4ZTAzZDgtNTE2YS00N2ZhLTg4NDAtNjlmYjZkNjJjMGI3In0.JaaV4u_foQXehyIh0X6wpU6WVFL9jd95gMEjt2mVfhw"
       createdAt:
         type: "string"
         description: "Date when the user was created"
+        example: "2017-05-30T16:07:38.683938Z"
       updatedAt:
         type: "string"
         description: "Date when the user was updated"
+        example: "2017-05-30T16:07:38.683938Z"
       verified:
         type: "boolean"
         description: "Whether or not the user has validated the e-mail"
+        example: false
   ResetPassword:
     type: "object"
     properties:
       email:
         type: "string"
         description: "The user e-mail"
+        example: "user@email.com"
       newPassword:
         type: "string"
         description: "The desired new password"
+        example: "asdasdasd"
       token:
         type: "string"
         description: "The reset password token"
+        example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE1Mjc2OTY3OTcsImlhdCI6MTQ5NjE2MDc5NywianRpIjoiYTkyZWRiMTktNjdlYy00YzZiLWE0YzEtNzU4Mjc4NWVmZjMyIiwidXNlcmlkIjoiNWM4ZTAzZDgtNTE2YS00N2ZhLTg4NDAtNjlmYjZkNjJjMGI3In0.JaaV4u_foQXehyIh0X6wpU6WVFL9jd95gMEjt2mVfhw"
   Signup:
     type: "object"
     properties:
       email:
         type: "string"
         description: "The user e-mail"
+        example: "user@email.com"
       password:
         type: "string"
         description: "The desired new password"
+        example: "asdasdasd"
   Login:
     type: "object"
     properties:
       email:
         type: "string"
         description: "The user e-mail"
+        example: "user@email.com"
       password:
         type: "string"
         description: "The user password"
+        example: "asdasdasd"
   Exists:
     type: "object"
     properties:
       exists:
         type: "boolean"
         description: "whether the user exists"
+        example: "true"
   ChangePassword:
     type: "object"
     properties:
       id:
         type: "boolean"
         description: "The user ID"
+        example: "5c8e03d8-516a-47fa-8840-69fb6d62c0b7"
       oldPassword:
         type: "string"
         description: "The current password"
+        example: "asdasdasd"
       newPassword:
         type: "string"
         description: "The new password"
+        example: "asdasdasd"
   ChangeEmail:
     type: "object"
     properties:
       id:
         type: "boolean"
         description: "The user ID"
+        example: "5c8e03d8-516a-47fa-8840-69fb6d62c0b7"
       email:
         type: "string"
         description: "The new email"
+        example: "user@email.com"
