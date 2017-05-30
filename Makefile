@@ -14,3 +14,7 @@ test:
 start:
 
 run: | install start
+
+build_docs:
+	swagger-codegen generate -l html -i swagger.yml
+	mv index.html docs.html

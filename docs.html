@@ -1,0 +1,731 @@
+<!doctype html>
+<html>
+  <head>
+    <title>ZenAuth</title>
+    <style type="text/css">
+      body {
+	font-family: Trebuchet MS, sans-serif;
+	font-size: 15px;
+	color: #444;
+	margin-right: 24px;
+}
+
+h1	{
+	font-size: 25px;
+}
+h2	{
+	font-size: 20px;
+}
+h3	{
+	font-size: 16px;
+	font-weight: bold;
+}
+hr	{
+	height: 1px;
+	border: 0;
+	color: #ddd;
+	background-color: #ddd;
+}
+
+.app-desc {
+  clear: both;
+  margin-left: 20px;
+}
+.param-name {
+  width: 100%;
+}
+.license-info {
+  margin-left: 20px;
+}
+
+.license-url {
+  margin-left: 20px;
+}
+
+.model {
+  margin: 0 0 0px 20px;
+}
+
+.method {
+  margin-left: 20px;
+}
+
+.method-notes	{
+	margin: 10px 0 20px 0;
+	font-size: 90%;
+	color: #555;
+}
+
+pre {
+  padding: 10px;
+  margin-bottom: 2px;
+}
+
+.http-method {
+ text-transform: uppercase;
+}
+
+pre.get {
+  background-color: #0f6ab4;
+}
+
+pre.post {
+  background-color: #10a54a;
+}
+
+pre.put {
+  background-color: #c5862b;
+}
+
+pre.delete {
+  background-color: #a41e22;
+}
+
+.huge	{
+	color: #fff;
+}
+
+pre.example {
+  background-color: #f3f3f3;
+  padding: 10px;
+  border: 1px solid #ddd;
+}
+
+code {
+  white-space: pre;
+}
+
+.nickname {
+  font-weight: bold;
+}
+
+.method-path {
+  font-size: 1.5em;
+  background-color: #0f6ab4;
+}
+
+.up {
+  float:right;
+}
+
+.parameter {
+  width: 500px;
+}
+
+.param {
+  width: 500px;
+  padding: 10px 0 0 20px;
+  font-weight: bold;
+}
+
+.param-desc {
+  width: 700px;
+  padding: 0 0 0 20px;
+  color: #777;
+}
+
+.param-type {
+  font-style: italic;
+}
+
+.param-enum-header {
+width: 700px;
+padding: 0 0 0 60px;
+color: #777;
+font-weight: bold;
+}
+
+.param-enum {
+width: 700px;
+padding: 0 0 0 80px;
+color: #777;
+font-style: italic;
+}
+
+.field-label {
+  padding: 0;
+  margin: 0;
+  clear: both;
+}
+
+.field-items	{
+	padding: 0 0 15px 0;
+	margin-bottom: 15px;
+}
+
+.return-type {
+  clear: both;
+  padding-bottom: 10px;
+}
+
+.param-header {
+  font-weight: bold;
+}
+
+.method-tags {
+  text-align: right;
+}
+
+.method-tag {
+  background: none repeat scroll 0% 0% #24A600;
+  border-radius: 3px;
+  padding: 2px 10px;
+  margin: 2px;
+  color: #FFF;
+  display: inline-block;
+  text-decoration: none;
+}
+
+    </style>
+  </head>
+  <body>
+  <h1>ZenAuth</h1>
+    <div class="app-desc">This is a generic microservice to handle user authentication through a RESTful API.</div>
+    
+    <div class="app-desc">Contact Info: <a href="dev@axiomzen.co">dev@axiomzen.co</a></div>
+    <div class="app-desc">Version: 1.0.0</div>
+    <div class="app-desc">BasePath:/v1</div>
+    <div class="license-info">All rights reserved</div>
+    <div class="license-url">http://apache.org/licenses/LICENSE-2.0.html</div>
+  <h2>Access</h2>
+    <ol>
+      <li>APIKey KeyParamName:x-api-token KeyInQuery:false KeyInHeader:true</li>
+      <li>APIKey KeyParamName:x-authentication-token KeyInQuery:false KeyInHeader:true</li>
+    </ol>
+
+  <h2><a name="__Methods">Methods</a></h2>
+  [ Jump to <a href="#__Models">Models</a> ]
+
+  <h3>Table of Contents </h3>
+  <div class="method-summary"></div>
+  <h4><a href="#Default">Default</a></h4>
+  <ul>
+  <li><a href="#pingGet"><code><span class="http-method">get</span> /ping</code></a></li>
+  <li><a href="#usersEmailPut"><code><span class="http-method">put</span> /users/email</code></a></li>
+  <li><a href="#usersExistsGet"><code><span class="http-method">get</span> /users/exists</code></a></li>
+  <li><a href="#usersForgotPasswordPut"><code><span class="http-method">put</span> /users/forgot_password</code></a></li>
+  <li><a href="#usersGet"><code><span class="http-method">get</span> /users</code></a></li>
+  <li><a href="#usersLoginPost"><code><span class="http-method">post</span> /users/login</code></a></li>
+  <li><a href="#usersPasswordPut"><code><span class="http-method">put</span> /users/password</code></a></li>
+  <li><a href="#usersResetPasswordPost"><code><span class="http-method">post</span> /users/reset_password</code></a></li>
+  <li><a href="#usersSignupPost"><code><span class="http-method">post</span> /users/signup</code></a></li>
+  <li><a href="#usersVerifyEmailPut"><code><span class="http-method">put</span> /users/verify_email</code></a></li>
+  </ul>
+
+  <h1><a name="Default">Default</a></h1>
+  <div class="method"><a name="pingGet"/>
+    <div class="method-path">
+    <a class="up" href="#__Methods">Up</a>
+    <pre class="get"><code class="huge"><span class="http-method">get</span> /ping</code></pre></div>
+    <div class="method-summary">health check for the API (<span class="nickname">pingGet</span>)</div>
+    <div class="method-notes"></div>
+
+
+
+
+
+
+
+
+    <!--Todo: process Response Object and its headers, schema, examples -->
+
+
+
+    <h3 class="field-label">Responses</h3>
+    <h4 class="field-label">200</h4>
+    API is up and running
+        <a href="#"></a>
+  </div> <!-- method -->
+  <hr/>
+  <div class="method"><a name="usersEmailPut"/>
+    <div class="method-path">
+    <a class="up" href="#__Methods">Up</a>
+    <pre class="put"><code class="huge"><span class="http-method">put</span> /users/email</code></pre></div>
+    <div class="method-summary">Updates a user&#39;s email&#39; (<span class="nickname">usersEmailPut</span>)</div>
+    <div class="method-notes"></div>
+
+
+
+    <h3 class="field-label">Request body</h3>
+    <div class="field-items">
+      <div class="param">body <a href="#ChangeEmail">ChangeEmail</a> (required)</div>
+
+      <div class="param-desc"><span class="param-type">Body Parameter</span> &mdash; request body </div>
+
+    </div>  <!-- field-items -->
+
+
+
+
+    <h3 class="field-label">Return type</h3>
+    <div class="return-type">
+      <a href="#User">User</a>
+      
+    </div>
+
+    <!--Todo: process Response Object and its headers, schema, examples -->
+
+    <h3 class="field-label">Example data</h3>
+    <div class="example-data-content-type">Content-Type: application/json</div>
+    <pre class="example"><code>{
+  "createdAt" : "2017-05-30T16:07:38.683938Z",
+  "authToken" : "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE1Mjc2OTY3OTcsImlhdCI6MTQ5NjE2MDc5NywianRpIjoiYTkyZWRiMTktNjdlYy00YzZiLWE0YzEtNzU4Mjc4NWVmZjMyIiwidXNlcmlkIjoiNWM4ZTAzZDgtNTE2YS00N2ZhLTg4NDAtNjlmYjZkNjJjMGI3In0.JaaV4u_foQXehyIh0X6wpU6WVFL9jd95gMEjt2mVfhw",
+  "verified" : false,
+  "id" : "5c8e03d8-516a-47fa-8840-69fb6d62c0b7",
+  "email" : "user@email.com",
+  "updatedAt" : "2017-05-30T16:07:38.683938Z"
+}</code></pre>
+
+
+    <h3 class="field-label">Responses</h3>
+    <h4 class="field-label">200</h4>
+    Email changed
+        <a href="#User">User</a>
+    <h4 class="field-label">400</h4>
+    Some input data is invalid
+        <a href="#"></a>
+  </div> <!-- method -->
+  <hr/>
+  <div class="method"><a name="usersExistsGet"/>
+    <div class="method-path">
+    <a class="up" href="#__Methods">Up</a>
+    <pre class="get"><code class="huge"><span class="http-method">get</span> /users/exists</code></pre></div>
+    <div class="method-summary">Checks if a user exists. (<span class="nickname">usersExistsGet</span>)</div>
+    <div class="method-notes"></div>
+
+
+
+
+
+    <h3 class="field-label">Query parameters</h3>
+    <div class="field-items">
+      <div class="param">email (required)</div>
+
+      <div class="param-desc"><span class="param-type">Query Parameter</span> &mdash; user e-mail </div>
+    </div>  <!-- field-items -->
+
+
+    <h3 class="field-label">Return type</h3>
+    <div class="return-type">
+      <a href="#Exists">Exists</a>
+      
+    </div>
+
+    <!--Todo: process Response Object and its headers, schema, examples -->
+
+    <h3 class="field-label">Example data</h3>
+    <div class="example-data-content-type">Content-Type: application/json</div>
+    <pre class="example"><code>{
+  "exists" : true
+}</code></pre>
+
+
+    <h3 class="field-label">Responses</h3>
+    <h4 class="field-label">200</h4>
+    Exists status
+        <a href="#Exists">Exists</a>
+    <h4 class="field-label">400</h4>
+    Some request body data is invalid
+        <a href="#"></a>
+  </div> <!-- method -->
+  <hr/>
+  <div class="method"><a name="usersForgotPasswordPut"/>
+    <div class="method-path">
+    <a class="up" href="#__Methods">Up</a>
+    <pre class="put"><code class="huge"><span class="http-method">put</span> /users/forgot_password</code></pre></div>
+    <div class="method-summary">Indicates a user has forgotten the password. This action will send an e-mail to continue with the reset process. (<span class="nickname">usersForgotPasswordPut</span>)</div>
+    <div class="method-notes"></div>
+
+
+
+
+
+    <h3 class="field-label">Query parameters</h3>
+    <div class="field-items">
+      <div class="param">email (required)</div>
+
+      <div class="param-desc"><span class="param-type">Query Parameter</span> &mdash; user e-mail </div>
+    </div>  <!-- field-items -->
+
+
+
+    <!--Todo: process Response Object and its headers, schema, examples -->
+
+
+
+    <h3 class="field-label">Responses</h3>
+    <h4 class="field-label">204</h4>
+    Email sent
+        <a href="#"></a>
+    <h4 class="field-label">400</h4>
+    Some request body data is invalid
+        <a href="#"></a>
+  </div> <!-- method -->
+  <hr/>
+  <div class="method"><a name="usersGet"/>
+    <div class="method-path">
+    <a class="up" href="#__Methods">Up</a>
+    <pre class="get"><code class="huge"><span class="http-method">get</span> /users</code></pre></div>
+    <div class="method-summary">Gets the current user information (<span class="nickname">usersGet</span>)</div>
+    <div class="method-notes"></div>
+
+
+
+
+
+
+
+    <h3 class="field-label">Return type</h3>
+    <div class="return-type">
+      <a href="#User">User</a>
+      
+    </div>
+
+    <!--Todo: process Response Object and its headers, schema, examples -->
+
+    <h3 class="field-label">Example data</h3>
+    <div class="example-data-content-type">Content-Type: application/json</div>
+    <pre class="example"><code>{
+  "createdAt" : "2017-05-30T16:07:38.683938Z",
+  "authToken" : "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE1Mjc2OTY3OTcsImlhdCI6MTQ5NjE2MDc5NywianRpIjoiYTkyZWRiMTktNjdlYy00YzZiLWE0YzEtNzU4Mjc4NWVmZjMyIiwidXNlcmlkIjoiNWM4ZTAzZDgtNTE2YS00N2ZhLTg4NDAtNjlmYjZkNjJjMGI3In0.JaaV4u_foQXehyIh0X6wpU6WVFL9jd95gMEjt2mVfhw",
+  "verified" : false,
+  "id" : "5c8e03d8-516a-47fa-8840-69fb6d62c0b7",
+  "email" : "user@email.com",
+  "updatedAt" : "2017-05-30T16:07:38.683938Z"
+}</code></pre>
+
+
+    <h3 class="field-label">Responses</h3>
+    <h4 class="field-label">200</h4>
+    Success
+        <a href="#User">User</a>
+  </div> <!-- method -->
+  <hr/>
+  <div class="method"><a name="usersLoginPost"/>
+    <div class="method-path">
+    <a class="up" href="#__Methods">Up</a>
+    <pre class="post"><code class="huge"><span class="http-method">post</span> /users/login</code></pre></div>
+    <div class="method-summary">Logs in a user (<span class="nickname">usersLoginPost</span>)</div>
+    <div class="method-notes"></div>
+
+
+
+    <h3 class="field-label">Request body</h3>
+    <div class="field-items">
+      <div class="param">body <a href="#Login">Login</a> (required)</div>
+
+      <div class="param-desc"><span class="param-type">Body Parameter</span> &mdash; request body </div>
+
+    </div>  <!-- field-items -->
+
+
+
+
+    <h3 class="field-label">Return type</h3>
+    <div class="return-type">
+      <a href="#User">User</a>
+      
+    </div>
+
+    <!--Todo: process Response Object and its headers, schema, examples -->
+
+    <h3 class="field-label">Example data</h3>
+    <div class="example-data-content-type">Content-Type: application/json</div>
+    <pre class="example"><code>{
+  "createdAt" : "2017-05-30T16:07:38.683938Z",
+  "authToken" : "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE1Mjc2OTY3OTcsImlhdCI6MTQ5NjE2MDc5NywianRpIjoiYTkyZWRiMTktNjdlYy00YzZiLWE0YzEtNzU4Mjc4NWVmZjMyIiwidXNlcmlkIjoiNWM4ZTAzZDgtNTE2YS00N2ZhLTg4NDAtNjlmYjZkNjJjMGI3In0.JaaV4u_foQXehyIh0X6wpU6WVFL9jd95gMEjt2mVfhw",
+  "verified" : false,
+  "id" : "5c8e03d8-516a-47fa-8840-69fb6d62c0b7",
+  "email" : "user@email.com",
+  "updatedAt" : "2017-05-30T16:07:38.683938Z"
+}</code></pre>
+
+
+    <h3 class="field-label">Responses</h3>
+    <h4 class="field-label">200</h4>
+    User logged in
+        <a href="#User">User</a>
+    <h4 class="field-label">400</h4>
+    Some input data is invalid
+        <a href="#"></a>
+    <h4 class="field-label">401</h4>
+    Wrong email or password
+        <a href="#"></a>
+  </div> <!-- method -->
+  <hr/>
+  <div class="method"><a name="usersPasswordPut"/>
+    <div class="method-path">
+    <a class="up" href="#__Methods">Up</a>
+    <pre class="put"><code class="huge"><span class="http-method">put</span> /users/password</code></pre></div>
+    <div class="method-summary">Updates a user&#39;s password&#39; (<span class="nickname">usersPasswordPut</span>)</div>
+    <div class="method-notes"></div>
+
+
+
+    <h3 class="field-label">Request body</h3>
+    <div class="field-items">
+      <div class="param">body <a href="#ChangePassword">ChangePassword</a> (required)</div>
+
+      <div class="param-desc"><span class="param-type">Body Parameter</span> &mdash; request body </div>
+
+    </div>  <!-- field-items -->
+
+
+
+
+    <h3 class="field-label">Return type</h3>
+    <div class="return-type">
+      <a href="#User">User</a>
+      
+    </div>
+
+    <!--Todo: process Response Object and its headers, schema, examples -->
+
+    <h3 class="field-label">Example data</h3>
+    <div class="example-data-content-type">Content-Type: application/json</div>
+    <pre class="example"><code>{
+  "createdAt" : "2017-05-30T16:07:38.683938Z",
+  "authToken" : "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE1Mjc2OTY3OTcsImlhdCI6MTQ5NjE2MDc5NywianRpIjoiYTkyZWRiMTktNjdlYy00YzZiLWE0YzEtNzU4Mjc4NWVmZjMyIiwidXNlcmlkIjoiNWM4ZTAzZDgtNTE2YS00N2ZhLTg4NDAtNjlmYjZkNjJjMGI3In0.JaaV4u_foQXehyIh0X6wpU6WVFL9jd95gMEjt2mVfhw",
+  "verified" : false,
+  "id" : "5c8e03d8-516a-47fa-8840-69fb6d62c0b7",
+  "email" : "user@email.com",
+  "updatedAt" : "2017-05-30T16:07:38.683938Z"
+}</code></pre>
+
+
+    <h3 class="field-label">Responses</h3>
+    <h4 class="field-label">200</h4>
+    Password changed
+        <a href="#User">User</a>
+    <h4 class="field-label">400</h4>
+    Some input data is invalid
+        <a href="#"></a>
+  </div> <!-- method -->
+  <hr/>
+  <div class="method"><a name="usersResetPasswordPost"/>
+    <div class="method-path">
+    <a class="up" href="#__Methods">Up</a>
+    <pre class="post"><code class="huge"><span class="http-method">post</span> /users/reset_password</code></pre></div>
+    <div class="method-summary">using a reset password token, resets the user password to a new one (<span class="nickname">usersResetPasswordPost</span>)</div>
+    <div class="method-notes"></div>
+
+
+
+    <h3 class="field-label">Request body</h3>
+    <div class="field-items">
+      <div class="param">body <a href="#ResetPassword">ResetPassword</a> (required)</div>
+
+      <div class="param-desc"><span class="param-type">Body Parameter</span> &mdash; request body </div>
+
+    </div>  <!-- field-items -->
+
+
+
+
+    <h3 class="field-label">Return type</h3>
+    <div class="return-type">
+      <a href="#User">User</a>
+      
+    </div>
+
+    <!--Todo: process Response Object and its headers, schema, examples -->
+
+    <h3 class="field-label">Example data</h3>
+    <div class="example-data-content-type">Content-Type: application/json</div>
+    <pre class="example"><code>{
+  "createdAt" : "2017-05-30T16:07:38.683938Z",
+  "authToken" : "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE1Mjc2OTY3OTcsImlhdCI6MTQ5NjE2MDc5NywianRpIjoiYTkyZWRiMTktNjdlYy00YzZiLWE0YzEtNzU4Mjc4NWVmZjMyIiwidXNlcmlkIjoiNWM4ZTAzZDgtNTE2YS00N2ZhLTg4NDAtNjlmYjZkNjJjMGI3In0.JaaV4u_foQXehyIh0X6wpU6WVFL9jd95gMEjt2mVfhw",
+  "verified" : false,
+  "id" : "5c8e03d8-516a-47fa-8840-69fb6d62c0b7",
+  "email" : "user@email.com",
+  "updatedAt" : "2017-05-30T16:07:38.683938Z"
+}</code></pre>
+
+
+    <h3 class="field-label">Responses</h3>
+    <h4 class="field-label">200</h4>
+    Password changed
+        <a href="#User">User</a>
+    <h4 class="field-label">400</h4>
+    Some request body data is invalid
+        <a href="#"></a>
+  </div> <!-- method -->
+  <hr/>
+  <div class="method"><a name="usersSignupPost"/>
+    <div class="method-path">
+    <a class="up" href="#__Methods">Up</a>
+    <pre class="post"><code class="huge"><span class="http-method">post</span> /users/signup</code></pre></div>
+    <div class="method-summary">signs up a new user (<span class="nickname">usersSignupPost</span>)</div>
+    <div class="method-notes"></div>
+
+
+
+    <h3 class="field-label">Request body</h3>
+    <div class="field-items">
+      <div class="param">body <a href="#Signup">Signup</a> (required)</div>
+
+      <div class="param-desc"><span class="param-type">Body Parameter</span> &mdash; request body </div>
+
+    </div>  <!-- field-items -->
+
+
+
+
+    <h3 class="field-label">Return type</h3>
+    <div class="return-type">
+      <a href="#User">User</a>
+      
+    </div>
+
+    <!--Todo: process Response Object and its headers, schema, examples -->
+
+    <h3 class="field-label">Example data</h3>
+    <div class="example-data-content-type">Content-Type: application/json</div>
+    <pre class="example"><code>{
+  "createdAt" : "2017-05-30T16:07:38.683938Z",
+  "authToken" : "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE1Mjc2OTY3OTcsImlhdCI6MTQ5NjE2MDc5NywianRpIjoiYTkyZWRiMTktNjdlYy00YzZiLWE0YzEtNzU4Mjc4NWVmZjMyIiwidXNlcmlkIjoiNWM4ZTAzZDgtNTE2YS00N2ZhLTg4NDAtNjlmYjZkNjJjMGI3In0.JaaV4u_foQXehyIh0X6wpU6WVFL9jd95gMEjt2mVfhw",
+  "verified" : false,
+  "id" : "5c8e03d8-516a-47fa-8840-69fb6d62c0b7",
+  "email" : "user@email.com",
+  "updatedAt" : "2017-05-30T16:07:38.683938Z"
+}</code></pre>
+
+
+    <h3 class="field-label">Responses</h3>
+    <h4 class="field-label">201</h4>
+    User signed up
+        <a href="#User">User</a>
+    <h4 class="field-label">400</h4>
+    Some input data is invalid
+        <a href="#"></a>
+  </div> <!-- method -->
+  <hr/>
+  <div class="method"><a name="usersVerifyEmailPut"/>
+    <div class="method-path">
+    <a class="up" href="#__Methods">Up</a>
+    <pre class="put"><code class="huge"><span class="http-method">put</span> /users/verify_email</code></pre></div>
+    <div class="method-summary">verifies a user (<span class="nickname">usersVerifyEmailPut</span>)</div>
+    <div class="method-notes"></div>
+
+
+
+
+
+    <h3 class="field-label">Query parameters</h3>
+    <div class="field-items">
+      <div class="param">token (required)</div>
+
+      <div class="param-desc"><span class="param-type">Query Parameter</span> &mdash; verification token </div><div class="param">email (required)</div>
+
+      <div class="param-desc"><span class="param-type">Query Parameter</span> &mdash; user e-mail </div>
+    </div>  <!-- field-items -->
+
+
+    <h3 class="field-label">Return type</h3>
+    <div class="return-type">
+      <a href="#User">User</a>
+      
+    </div>
+
+    <!--Todo: process Response Object and its headers, schema, examples -->
+
+    <h3 class="field-label">Example data</h3>
+    <div class="example-data-content-type">Content-Type: application/json</div>
+    <pre class="example"><code>{
+  "createdAt" : "2017-05-30T16:07:38.683938Z",
+  "authToken" : "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE1Mjc2OTY3OTcsImlhdCI6MTQ5NjE2MDc5NywianRpIjoiYTkyZWRiMTktNjdlYy00YzZiLWE0YzEtNzU4Mjc4NWVmZjMyIiwidXNlcmlkIjoiNWM4ZTAzZDgtNTE2YS00N2ZhLTg4NDAtNjlmYjZkNjJjMGI3In0.JaaV4u_foQXehyIh0X6wpU6WVFL9jd95gMEjt2mVfhw",
+  "verified" : false,
+  "id" : "5c8e03d8-516a-47fa-8840-69fb6d62c0b7",
+  "email" : "user@email.com",
+  "updatedAt" : "2017-05-30T16:07:38.683938Z"
+}</code></pre>
+
+
+    <h3 class="field-label">Responses</h3>
+    <h4 class="field-label">200</h4>
+    User verified
+        <a href="#User">User</a>
+    <h4 class="field-label">400</h4>
+    Some input data is invalid
+        <a href="#"></a>
+  </div> <!-- method -->
+  <hr/>
+
+  <div class="up"><a href="#__Models">Up</a></div>
+  <h2><a name="__Models">Models</a></h2>
+  [ Jump to <a href="#__Methods">Methods</a> ]
+
+  <h3>Table of Contents</h3>
+  <ol>
+    <li><a href="#ChangeEmail"><code>ChangeEmail</code></a></li>
+    <li><a href="#ChangePassword"><code>ChangePassword</code></a></li>
+    <li><a href="#Exists"><code>Exists</code></a></li>
+    <li><a href="#Login"><code>Login</code></a></li>
+    <li><a href="#ResetPassword"><code>ResetPassword</code></a></li>
+    <li><a href="#Signup"><code>Signup</code></a></li>
+    <li><a href="#User"><code>User</code></a></li>
+  </ol>
+
+  <div class="model">
+    <h3 class="field-label"><a name="ChangeEmail">ChangeEmail - </a> <a class="up" href="#__Models">Up</a></h3>
+    <div class='model-description'></div>
+    <div class="field-items">
+      <div class="param">id (optional)</div><div class="param-desc"><span class="param-type"><a href="#boolean">Boolean</a></span> The user ID </div>
+<div class="param">email (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span> The new email </div>
+    </div>  <!-- field-items -->
+  </div>
+  <div class="model">
+    <h3 class="field-label"><a name="ChangePassword">ChangePassword - </a> <a class="up" href="#__Models">Up</a></h3>
+    <div class='model-description'></div>
+    <div class="field-items">
+      <div class="param">id (optional)</div><div class="param-desc"><span class="param-type"><a href="#boolean">Boolean</a></span> The user ID </div>
+<div class="param">oldPassword (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span> The current password </div>
+<div class="param">newPassword (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span> The new password </div>
+    </div>  <!-- field-items -->
+  </div>
+  <div class="model">
+    <h3 class="field-label"><a name="Exists">Exists - </a> <a class="up" href="#__Models">Up</a></h3>
+    <div class='model-description'></div>
+    <div class="field-items">
+      <div class="param">exists (optional)</div><div class="param-desc"><span class="param-type"><a href="#boolean">Boolean</a></span> whether the user exists </div>
+    </div>  <!-- field-items -->
+  </div>
+  <div class="model">
+    <h3 class="field-label"><a name="Login">Login - </a> <a class="up" href="#__Models">Up</a></h3>
+    <div class='model-description'></div>
+    <div class="field-items">
+      <div class="param">email (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span> The user e-mail </div>
+<div class="param">password (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span> The user password </div>
+    </div>  <!-- field-items -->
+  </div>
+  <div class="model">
+    <h3 class="field-label"><a name="ResetPassword">ResetPassword - </a> <a class="up" href="#__Models">Up</a></h3>
+    <div class='model-description'></div>
+    <div class="field-items">
+      <div class="param">email (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span> The user e-mail </div>
+<div class="param">newPassword (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span> The desired new password </div>
+<div class="param">token (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span> The reset password token </div>
+    </div>  <!-- field-items -->
+  </div>
+  <div class="model">
+    <h3 class="field-label"><a name="Signup">Signup - </a> <a class="up" href="#__Models">Up</a></h3>
+    <div class='model-description'></div>
+    <div class="field-items">
+      <div class="param">email (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span> The user e-mail </div>
+<div class="param">password (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span> The desired new password </div>
+    </div>  <!-- field-items -->
+  </div>
+  <div class="model">
+    <h3 class="field-label"><a name="User">User - </a> <a class="up" href="#__Models">Up</a></h3>
+    <div class='model-description'></div>
+    <div class="field-items">
+      <div class="param">id (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span> The user ID </div>
+<div class="param">email (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span> The user e-mail </div>
+<div class="param">authToken (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span> The user authentication token </div>
+<div class="param">createdAt (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span> Date when the user was created </div>
+<div class="param">updatedAt (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span> Date when the user was updated </div>
+<div class="param">verified (optional)</div><div class="param-desc"><span class="param-type"><a href="#boolean">Boolean</a></span> Whether or not the user has validated the e-mail </div>
+    </div>  <!-- field-items -->
+  </div>
+  </body>
+</html>
