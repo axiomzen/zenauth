@@ -165,7 +165,6 @@ func (c *UserContext) VerifyEmail(rw web.ResponseWriter, req *web.Request) {
 
 	// lower email
 	emailAddr := strings.ToLower(emailSlice[0])
-	fmt.Printf("===> %[2]v: %[1]v\n", tokenSlice[0], `tokenSlice[0]`)
 
 	jwt := helpers.JWTHelper{HashSecretBytes: c.Config.HashSecretBytes, Token: tokenSlice[0]}
 	jwtTokenResult := jwt.Validate(c.Config.JwtClaimUserEmail)
