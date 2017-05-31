@@ -1,6 +1,6 @@
 package email
 
-import "github.com/prometheus/common/log"
+import log "github.com/Sirupsen/logrus"
 
 // Noop does nothing
 type Noop struct{}
