@@ -17,7 +17,10 @@ var verifyEmailHTMLTmpl *template.Template
 var verifyEmailTextTmpl *template.Template
 
 func init() {
-	conf, _ := config.Get()
+	conf, err := config.Get()
+	if err != nil {
+		panic(err)
+	}
 	templates, err := template.ParseGlob(filepath.Join(conf.TemplatesPath, "*.tmpl"))
 	if err != nil {
 		panic(err)

@@ -1,4 +1,4 @@
 FROM scratch
 CMD ["/zenauth"]
-EXPOSE 8002
+EXPOSE 5000
 ADD zenauth /zenauth
