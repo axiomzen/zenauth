@@ -12,10 +12,14 @@ import (
 	"github.com/axiomzen/zenauth/constants"
 	"github.com/axiomzen/zenauth/data"
 	"github.com/axiomzen/zenauth/helpers"
+	"github.com/axiomzen/zenauth/protobuf"
 	"github.com/axiomzen/zenauth/routes"
 	"github.com/joho/godotenv"
 	"github.com/onsi/gomega"
 	"github.com/twinj/uuid"
+	context "golang.org/x/net/context"
+	google_grpc "google.golang.org/grpc"
+	"google.golang.org/grpc/metadata"
 
 	"github.com/mattes/migrate"
 	_ "github.com/mattes/migrate/database/postgres"
@@ -31,9 +35,12 @@ const (
 )
 
 var (
-	fakeUUID = uuid.NewV4().String()
-	theApp   *exec.Cmd
-	theConf  *config.ZENAUTHConfig
+	fakeUUID       = uuid.NewV4().String()
+	theApp         *exec.Cmd
+	theConf        *config.ZENAUTHConfig
+	grpcConn       *google_grpc.ClientConn
+	grpcAuthClient protobuf.AuthClient
+
 	// Do() does create a new request each time
 	// but we may not want to pollute the settings across requests
 	marshaler marshalerFunc = func(v interface{}, contentType string) ([]byte, error) {
@@ -297,10 +304,18 @@ func fireUpApp() error {
 	fmt.Println("Sleeping 1 second...")
 	time.Sleep(1 * time.Second)
 
+	grpcConn, err = google_grpc.Dial(fmt.Sprintf(":%v", theConf.GRPCPort), google_grpc.WithInsecure())
+	if err != nil {
+		return err
+	}
+	grpcAuthClient = protobuf.NewAuthClient(grpcConn)
+
 	return nil
 }
 
 func killApp() error {
+	fmt.Println("Closing GRPC client connection...")
+	grpcConn.Close()
 
 	fmt.Println("Dropping the database...")
 
@@ -323,4 +338,10 @@ func killApp() error {
 	dropDatabase()
 
 	return err
+}
+
+func getGRPCAuthenticatedContext(token string) context.Context {
+	md := metadata.Pairs(theConf.AuthTokenHeader, token)
+	ctx := context.Background()
+	return metadata.NewContext(ctx, md)
 }

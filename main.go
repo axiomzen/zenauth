@@ -16,12 +16,14 @@ import (
 	"github.com/axiomzen/zenauth/config"
 	"github.com/axiomzen/zenauth/constants"
 	"github.com/axiomzen/zenauth/data"
+	"github.com/axiomzen/zenauth/grpc"
 	"github.com/joho/godotenv"
 	pg "gopkg.in/pg.v4"
 	"gopkg.in/tylerb/graceful.v1"
 )
 
 func main() {
+
 	// set local dev env
 	if strings.EqualFold(os.Getenv("ZENAUTH_ENVIRONMENT"), constants.EnvironmentDevelopment) {
 		if err := godotenv.Load(); err != nil {
@@ -88,6 +90,9 @@ func main() {
 	// make sure to close the database connection pool when we exit
 	defer dataP.Close()
 
+	// Error channel for multiple servers
+	errChn := make(chan error)
+
 	router := InitRouter(conf)
 
 	srv := &graceful.Server{
@@ -104,5 +109,18 @@ func main() {
 	}
 
 	log.Println("Starting Server on Port " + strconv.FormatInt(int64(conf.Port), 10))
-	log.Fatal(srv.ListenAndServe())
+	go func() {
+		errChn <- srv.ListenAndServe()
+	}()
+
+	// Runs the GRPC server
+	grpcServer := grpc.Server{
+		Config: conf,
+		DAL:    dataP,
+	}
+	go func() {
+		errChn <- grpcServer.ListenAndServe()
+	}()
+
+	log.Fatal(<-errChn)
 }
