@@ -18,3 +18,6 @@ run: | install start
 build_docs:
 	swagger-codegen generate -l html -i swagger.yml
 	mv index.html docs.html
+
+build_protobuf:
+	protoc -I protobuf/ protobuf/*.proto --go_out=plugins=grpc:protobuf
