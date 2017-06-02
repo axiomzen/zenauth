@@ -53,41 +53,13 @@ func (c *Comparison) WithFloatEpsilon(fEpsilon float64) *Comparison {
 	return c
 }
 
-// FailHandler is called when there is a comparison fail, so you know what
-// exactly failed
-//type FailHandler func(msg string)
-
 // Time will compare two times
 func (c *Comparison) Time(t1, t2 time.Time, name string) error {
 	return compareTime(t1, t2, name, c.timePrecision)
 }
 
-// time will compare two times to the milisecond?
+// time will compare two times to the nanosecond (given a precision)
 func compareTime(t1, t2 time.Time, name string, timePrec int) error {
-
-	// if t1.Year() != t2.Year() {
-	// 	return fmt.Errorf("%s: Years should match: %d, %d", name, t1.Year(), t2.Year())
-	// }
-
-	// if t1.Month() != t2.Month() {
-	// 	return fmt.Errorf("%s: Month should match: %d, %d", name, t1.Month(), t2.Month())
-	// }
-
-	// if t1.Day() != t2.Day() {
-	// 	return fmt.Errorf("%s: Days should match: %d, %d", name, t1.Day(), t2.Day())
-	// }
-
-	// if t1.Hour() != t2.Hour() {
-	// 	return fmt.Errorf("%s: Hours should match: %d, %d", name, t1.Hour(), t2.Hour())
-	// }
-
-	// if t1.Minute() != t2.Minute() {
-	// 	return fmt.Errorf("%s: Minutes should match: %d, %d", name, t1.Minute(), t2.Minute())
-	// }
-
-	// if t1.Second() != t2.Second() {
-	// 	return fmt.Errorf("%s: Seconds should match: %d, %d", name, t1.Second(), t2.Second())
-	// }
 
 	if t1.Unix() != t2.Unix() {
 		return fmt.Errorf("%s: Seconds from epoch should match: %d, %d", name, t1.Unix(), t2.Unix())
@@ -104,8 +76,6 @@ func compareTime(t1, t2 time.Time, name string, timePrec int) error {
 func (c *Comparison) Float32(f1, f2 float32, name string) error {
 	return compareFloat64(float64(f1), float64(f2), name, c.epsilon)
 }
-
-//func (c *Compare)Float32()
 
 // Float64 will compare two floats to see if they are approximatley equal
 func (c *Comparison) Float64(f1, f2 float64, name string) error {
@@ -144,6 +114,7 @@ func (c *Comparison) IgnoreFields(fields []string) *Comparison {
 // DeepEquals will compare these two things and return an error
 // if they are not equal
 func (c *Comparison) DeepEquals(x, y interface{}, info string) error {
+
 	if x == nil || y == nil {
 		if x != y {
 			return fmt.Errorf("%s: should both be nil or not nil: %t, %t", info, x == nil, y == nil)
@@ -152,9 +123,14 @@ func (c *Comparison) DeepEquals(x, y interface{}, info string) error {
 
 	v1 := getValue(reflect.ValueOf(x))
 	v2 := getValue(reflect.ValueOf(y))
+
+	// check for pointer/not pointer mismatches
+	if (v1.Kind() == reflect.Ptr && v2.Kind() != reflect.Ptr) || (v1.Kind() != reflect.Ptr && v2.Kind() == reflect.Ptr) {
+		return fmt.Errorf("%s: should both be pointers or not pointers: %s, %s", info, v1.Kind(), v2.Kind())
+	}
+
 	// ignoring initial types equal for now, as this makes it more flexible
 	// statement := v1.Type() == v2.Type()
-
 	// if !statement {
 	// 	return false
 	// }
@@ -209,17 +185,6 @@ var hard = func(k reflect.Kind) bool {
 }
 
 func sensibleDeepValueEqual(v1, v2 reflect.Value, visited map[visit]bool, depth int, name string, timePrec int, epsilon float64, ignoredFields ignoreMap) error {
-
-	// if !v1.IsValid() || !v2.IsValid() {
-	// 	if v1.IsValid() != v2.IsValid() {
-	// 		//gomega.Ω(statement).Should(gomega.BeTrue(), "%s: should both be valid or not valid: %t, %t", name, v1.IsValid(), v2.IsValid())
-	// 		return fmt.Errorf("%s: should both be valid or not valid: %t, %t", name, v1.IsValid(), v2.IsValid())
-	// 	} else if !v1.IsValid() && !v2.IsValid() {
-	// 		// they are both not valid, we can't call type
-	// 		fmt.Printf("BOTH NOT VALID: %v, %v\n", v1, v2)
-	// 		return nil
-	// 	}
-	// }
 
 	//fmt.Printf("COMPARING %s, at depth %d: %v, %v\n", name, depth, v1, v2)
 

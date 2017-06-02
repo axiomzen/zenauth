@@ -1,5 +1,5 @@
-SOURCE ?= file go-bindata github
-DATABASE ?= postgres mysql
+SOURCE ?= file go-bindata github aws-s3 google-cloud-storage
+DATABASE ?= postgres mysql redshift
 VERSION ?= $(shell git describe --tags 2>/dev/null | cut -c 2-)
 TEST_FLAGS ?=
 REPO_OWNER ?= $(shell cd .. && basename "$$(pwd)")
@@ -46,9 +46,6 @@ test-with-flags:
 	@echo -n '$(DATABASE)' | tr -s ' ' '\n' | xargs -I{} go test $(TEST_FLAGS) ./database/{}
 	@go test $(TEST_FLAGS) ./database/testing/...
 	@go test $(TEST_FLAGS) ./database/stub/...
-	
-	# deprecated v1compat:
-	@go test ./migrate/...
 
 
 kill-orphaned-docker-containers:
@@ -62,6 +59,8 @@ html-coverage:
 deps:
 	-go get -v -u ./... 
 	-go test -v -i ./...
+	# TODO: why is this not being fetched with the command above?
+	-go get -u github.com/fsouza/fake-gcs-server/fakestorage
 
 
 list-external-deps:
