@@ -170,43 +170,43 @@ func TestFloatPointers(t *testing.T) {
 
 	b1 := 1.0
 	b2 := 1.0
-	if err := c.DeepEquals(&b1, &b2, ""); err != nil {
+	if err := c.DeepEquals(&b1, &b2, "TestFloatPointers"); err != nil {
 		t.Error(err)
 	}
 
 	b1 = 0.0
 	b2 = 0.0
-	if err := c.DeepEquals(&b1, &b2, ""); err != nil {
+	if err := c.DeepEquals(&b1, &b2, "TestFloatPointers"); err != nil {
 		t.Error(err)
 	}
 
 	b1 = 1.0
 	b2 = 0.0
-	if err := c.DeepEquals(&b1, &b2, ""); err == nil {
+	if err := c.DeepEquals(&b1, &b2, "TestFloatPointers"); err == nil {
 		t.Errorf("DeepEquals should have failed for floats b1: %f and b2: %f", b1, b2)
 	}
 
 	b1 = 1.0
 	b2 = 1.0 + c.epsilon
-	if err := c.DeepEquals(&b1, &b2, ""); err != nil {
+	if err := c.DeepEquals(&b1, &b2, "TestFloatPointers"); err != nil {
 		t.Error(err)
 	}
 
 	b1 = 0.0
 	b2 = 0.0 + c.epsilon/(1+c.epsilon)
-	if err := c.DeepEquals(&b1, &b2, ""); err != nil {
+	if err := c.DeepEquals(&b1, &b2, "TestFloatPointers"); err != nil {
 		t.Error(err)
 	}
 
 	b1 = 0.0
 	b2 = 0.0 + 2*c.epsilon
-	if err := c.DeepEquals(&b1, &b2, ""); err == nil {
+	if err := c.DeepEquals(&b1, &b2, "TestFloatPointers"); err == nil {
 		t.Errorf("DeepEquals should have failed for floats b1: %f and b2: %f", b1, b2)
 	}
 
 	b1 = 1.0
 	b2 = 1.0 + 2*c.epsilon
-	if err := c.DeepEquals(&b1, &b2, ""); err == nil {
+	if err := c.DeepEquals(&b1, &b2, "TestFloatPointers"); err == nil {
 		t.Errorf("DeepEquals should have failed for floats b1: %f and b2: %f", b1, b2)
 	}
 }
@@ -226,19 +226,19 @@ func TestTimeEpsilon(t *testing.T) {
 	a1 := time.Now().Nanosecond()
 	b1 := time.Time{}
 	b2 := time.Time{}
-	if err := c.DeepEquals(b1, b2, ""); err != nil {
+	if err := c.DeepEquals(b1, b2, "TestTimeEpsilon"); err != nil {
 		t.Error(err)
 	}
 
 	b1 = time.Time{}.Add(time.Duration(a1))
 	b2 = time.Time{}.Add(time.Duration(a1))
-	if err := c.DeepEquals(b1, b2, ""); err != nil {
+	if err := c.DeepEquals(b1, b2, "TestTimeEpsilon"); err != nil {
 		t.Error(err)
 	}
 
 	b1 = time.Time{}.Add(time.Duration(a1))
 	b2 = time.Time{}.Add(time.Duration(a1 + c.timePrecision))
-	if err := c.DeepEquals(b1, b2, ""); err == nil {
+	if err := c.DeepEquals(b1, b2, "TestTimeEpsilon"); err == nil {
 		t.Errorf("DeepEquals should have failed for times b1: %v and b2: %v", b1, b2)
 	}
 }
@@ -261,8 +261,21 @@ func TestIgnoreRootFields(t *testing.T) {
 	o2 := Outer{InnerStruct: Inner{Name: "inner2"}, Name: "outer2", Other: 2}
 	c := New().IgnoreFields([]string{".InnerStruct", ".Name"})
 	//c := New().IgnoreFields([]string{".InnerStruct"})
-	if err := c.DeepEquals(o1, o2, "whatever"); err != nil {
+	if err := c.DeepEquals(o1, o2, "TestIgnoreRootFields"); err != nil {
 		t.Errorf("DeepEquals should have passed for types %v and %v, err: %s", o1, o2, err.Error())
+	}
+}
+
+func TestPointerToStructToNonPointer(t *testing.T) {
+	o1 := Outer{InnerStruct: Inner{Name: "inner1"}, Name: "outer1", Other: 2}
+	o2 := &Outer{InnerStruct: Inner{Name: "inner2"}, Name: "outer2", Other: 2}
+
+	if err := New().DeepEquals(o1, o2, "TestPointerToStructToNonPointer"); err == nil {
+		t.Error("Expected error, got nil")
+	}
+
+	if err := New().DeepEquals(o2, o1, "TestPointerToStructToNonPointer"); err == nil {
+		t.Error("Expected error, got nil")
 	}
 }
 
@@ -292,21 +305,63 @@ func TestIngoreSubSliceFields(t *testing.T) {
 
 	c := New().IgnoreFields([]string{".InnerFirst.Name", ".InnerFirst.SubSinner.Name", ".InnerFirst.SubSinner.Other"})
 
-	if err := c.DeepEquals(o1, o2, "whatever"); err != nil {
+	if err := c.DeepEquals(o1, o2, "TestIngoreSubSliceFields"); err != nil {
 		t.Errorf("DeepEquals should have passed for types %v and %v, err: %s", o1, o2, err.Error())
 	}
 
 	c2 := New().IgnoreFields([]string{".InnerFirst.Name", ".InnerFirst.SubSinner.Name"})
-	if err := c2.DeepEquals(o1, o2, "whatever"); err == nil {
+	if err := c2.DeepEquals(o1, o2, "TestIngoreSubSliceFields"); err == nil {
 		t.Errorf("DeepEquals should have failed for types %v and %v", o1, o2)
 	}
 
 }
 
-// Ignorify TestString
+// Test embeded pointers to structs
 type Embedded struct {
 	Hi string
 }
+
+type HasPointerToStruct struct {
+	Hello string
+	E     *Embedded
+}
+
+func TestEmbeddedStructPointersFields(t *testing.T) {
+	h1 := HasPointerToStruct{Hello: "hi"}
+	h2 := HasPointerToStruct{Hello: "hi", E: &Embedded{Hi: "hello"}}
+	var h3 *HasPointerToStruct
+
+	if err := New().DeepEquals(h1, h2, "h1h2"); err == nil {
+		t.Errorf("Expected error, got nil")
+	}
+
+	if err := New().DeepEquals(h2, h1, "h2h1"); err == nil {
+		t.Error("Expected error, got nil")
+	}
+
+	if err := New().DeepEquals(&h1, &h2, "h1h2"); err == nil {
+		t.Errorf("Expected error, got nil")
+	}
+
+	if err := New().DeepEquals(&h2, &h1, "h2h1"); err == nil {
+		t.Error("Expected error, got nil")
+	}
+
+	if err := New().DeepEquals(&h2, h3, "h2h1"); err == nil {
+		t.Error("Expected error, got nil")
+	}
+
+	if err := New().DeepEquals(h3, &h2, "h2h1"); err == nil {
+		t.Error("Expected error, got nil")
+	}
+
+	// test ignoring the fields
+	if err := New().IgnoreFields([]string{".E"}).DeepEquals(h2, h1, "h2h1"); err != nil {
+		t.Errorf("Expected error to be nil, got %v", err)
+	}
+}
+
+// Ignorify TestString
 
 type Sub struct {
 	FieldOne string

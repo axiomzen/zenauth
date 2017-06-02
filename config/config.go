@@ -35,6 +35,7 @@ type ZENAUTHConfig struct {
 	DomainHost                         string        `required:"true"`
 	TestDomainHost                     string        `default:"localhost"`
 	Port                               uint16        `default:"5000"`
+	GRPCPort                           uint16        `default:"5001"`
 	MinPasswordLength                  uint16        `default:"8"`
 
 	BcryptCost          uint16 `default:"8"`

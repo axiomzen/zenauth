@@ -1,0 +1,9 @@
+syntax = "proto3";
+package protobuf;
+
+import "google/protobuf/empty.proto";
+import "user.proto";
+
+service Auth {
+  rpc GetUser(google.protobuf.Empty) returns (User) {}
+}
