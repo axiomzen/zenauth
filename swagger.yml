@@ -155,6 +155,24 @@ paths:
       - api_token: []
       - auth_token: []
 
+  /users/{id}:
+    get:
+      summary: "Gets the information of a user"
+      parameters:
+      - in: "path"
+        name: "id"
+        description: "User ID"
+        required: true
+        type: string
+      responses:
+        200:
+          description: "Success"
+          schema:
+            $ref: "#/definitions/UserPublic"
+      security:
+      - api_token: []
+      - auth_token: []
+
   /users/password:
     put:
       summary: "Updates a user's password'"
@@ -221,6 +239,14 @@ definitions:
         type: "string"
         description: "The user e-mail"
         example: "user@email.com"
+      status:
+        type: "string"
+        description: "The user status"
+        example: "created"
+        enum: [
+          "invited",
+          "created"
+        ]
       authToken:
         type: "string"
         description: "The user authentication token"
@@ -237,6 +263,25 @@ definitions:
         type: "boolean"
         description: "Whether or not the user has validated the e-mail"
         example: false
+  UserPublic:
+    type: "object"
+    properties:
+      id:
+        type: "string"
+        description: "The user ID"
+        example: "5c8e03d8-516a-47fa-8840-69fb6d62c0b7"
+      email:
+        type: "string"
+        description: "The user e-mail"
+        example: "user@email.com"
+      status:
+        type: "string"
+        description: "The user status"
+        example: "created"
+        enum: [
+          "invited",
+          "created"
+        ]
   ResetPassword:
     type: "object"
     properties:

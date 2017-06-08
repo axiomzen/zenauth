@@ -85,10 +85,10 @@ func InitRouter(c *config.ZENAUTHConfig) *web.Router {
 				Subrouter(v1.UserContext{}, "").
 				Middleware((*v1.UserContext).AuthRequired)
 			v1APIAuthUserAuthRouter.
-				Get(routes.ResourceRoot, (*v1.UserContext).Get).
+				Get(routes.ResourceRoot, (*v1.UserContext).GetSelf).
 				Put(routes.ResourcePassword, (*v1.UserContext).PasswordPut).
-				Put(routes.ResourceEmail, (*v1.UserContext).EmailPut)
-
+				Put(routes.ResourceEmail, (*v1.UserContext).EmailPut).
+				Get("/:id", (*v1.UserContext).Get)
 		}
 	}
 

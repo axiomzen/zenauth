@@ -9,7 +9,9 @@ It is generated from these files:
 	user.proto
 
 It has these top-level messages:
+	UserID
 	User
+	UserPublic
 */
 package protobuf
 
@@ -34,6 +36,26 @@ var _ = math.Inf
 // proto package needs to be updated.
 const _ = proto.ProtoPackageIsVersion2 // please upgrade the proto package
 
+type UserID struct {
+	Id string `protobuf:"bytes,1,opt,name=id" json:"id,omitempty"`
+}
+
+func (m *UserID) Reset()                    { *m = UserID{} }
+func (m *UserID) String() string            { return proto.CompactTextString(m) }
+func (*UserID) ProtoMessage()               {}
+func (*UserID) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{0} }
+
+func (m *UserID) GetId() string {
+	if m != nil {
+		return m.Id
+	}
+	return ""
+}
+
+func init() {
+	proto.RegisterType((*UserID)(nil), "protobuf.UserID")
+}
+
 // Reference imports to suppress errors if they are not otherwise used.
 var _ context.Context
 var _ grpc.ClientConn
@@ -45,7 +67,8 @@ const _ = grpc.SupportPackageIsVersion4
 // Client API for Auth service
 
 type AuthClient interface {
-	GetUser(ctx context.Context, in *google_protobuf.Empty, opts ...grpc.CallOption) (*User, error)
+	GetCurrentUser(ctx context.Context, in *google_protobuf.Empty, opts ...grpc.CallOption) (*User, error)
+	GetUserByID(ctx context.Context, in *UserID, opts ...grpc.CallOption) (*UserPublic, error)
 }
 
 type authClient struct {
@@ -56,9 +79,18 @@ func NewAuthClient(cc *grpc.ClientConn) AuthClient {
 	return &authClient{cc}
 }
 
-func (c *authClient) GetUser(ctx context.Context, in *google_protobuf.Empty, opts ...grpc.CallOption) (*User, error) {
+func (c *authClient) GetCurrentUser(ctx context.Context, in *google_protobuf.Empty, opts ...grpc.CallOption) (*User, error) {
 	out := new(User)
-	err := grpc.Invoke(ctx, "/protobuf.Auth/GetUser", in, out, c.cc, opts...)
+	err := grpc.Invoke(ctx, "/protobuf.Auth/GetCurrentUser", in, out, c.cc, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *authClient) GetUserByID(ctx context.Context, in *UserID, opts ...grpc.CallOption) (*UserPublic, error) {
+	out := new(UserPublic)
+	err := grpc.Invoke(ctx, "/protobuf.Auth/GetUserByID", in, out, c.cc, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -68,27 +100,46 @@ func (c *authClient) GetUser(ctx context.Context, in *google_protobuf.Empty, opt
 // Server API for Auth service
 
 type AuthServer interface {
-	GetUser(context.Context, *google_protobuf.Empty) (*User, error)
+	GetCurrentUser(context.Context, *google_protobuf.Empty) (*User, error)
+	GetUserByID(context.Context, *UserID) (*UserPublic, error)
 }
 
 func RegisterAuthServer(s *grpc.Server, srv AuthServer) {
 	s.RegisterService(&_Auth_serviceDesc, srv)
 }
 
-func _Auth_GetUser_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+func _Auth_GetCurrentUser_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(google_protobuf.Empty)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(AuthServer).GetUser(ctx, in)
+		return srv.(AuthServer).GetCurrentUser(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/protobuf.Auth/GetUser",
+		FullMethod: "/protobuf.Auth/GetCurrentUser",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(AuthServer).GetUser(ctx, req.(*google_protobuf.Empty))
+		return srv.(AuthServer).GetCurrentUser(ctx, req.(*google_protobuf.Empty))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Auth_GetUserByID_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(UserID)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AuthServer).GetUserByID(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/protobuf.Auth/GetUserByID",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AuthServer).GetUserByID(ctx, req.(*UserID))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -98,8 +149,12 @@ var _Auth_serviceDesc = grpc.ServiceDesc{
 	HandlerType: (*AuthServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
-			MethodName: "GetUser",
-			Handler:    _Auth_GetUser_Handler,
+			MethodName: "GetCurrentUser",
+			Handler:    _Auth_GetCurrentUser_Handler,
+		},
+		{
+			MethodName: "GetUserByID",
+			Handler:    _Auth_GetUserByID_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
@@ -109,13 +164,16 @@ var _Auth_serviceDesc = grpc.ServiceDesc{
 func init() { proto.RegisterFile("auth.proto", fileDescriptor0) }
 
 var fileDescriptor0 = []byte{
-	// 113 bytes of a gzipped FileDescriptorProto
+	// 175 bytes of a gzipped FileDescriptorProto
 	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x09, 0x6e, 0x88, 0x02, 0xff, 0xe2, 0xe2, 0x4a, 0x2c, 0x2d, 0xc9,
 	0xd0, 0x2b, 0x28, 0xca, 0x2f, 0xc9, 0x17, 0xe2, 0x00, 0x53, 0x49, 0xa5, 0x69, 0x52, 0xd2, 0xe9,
 	0xf9, 0xf9, 0xe9, 0x39, 0xa9, 0xfa, 0x30, 0x01, 0xfd, 0xd4, 0xdc, 0x82, 0x92, 0x4a, 0x88, 0x32,
-	0x29, 0xae, 0xd2, 0xe2, 0xd4, 0x22, 0x08, 0xdb, 0xc8, 0x9a, 0x8b, 0xc5, 0xb1, 0xb4, 0x24, 0x43,
-	0xc8, 0x98, 0x8b, 0xdd, 0x3d, 0xb5, 0x24, 0xb4, 0x38, 0xb5, 0x48, 0x48, 0x4c, 0x0f, 0xa2, 0x59,
-	0x0f, 0xa6, 0x59, 0xcf, 0x15, 0xa4, 0x59, 0x8a, 0x0f, 0x21, 0x00, 0x52, 0xa7, 0xc4, 0x90, 0xc4,
-	0x06, 0x16, 0x30, 0x06, 0x04, 0x00, 0x00, 0xff, 0xff, 0x40, 0xc4, 0x7f, 0x3c, 0x84, 0x00, 0x00,
-	0x00,
+	0x29, 0xae, 0xd2, 0xe2, 0xd4, 0x22, 0x08, 0x5b, 0x49, 0x82, 0x8b, 0x2d, 0xb4, 0x38, 0xb5, 0xc8,
+	0xd3, 0x45, 0x88, 0x8f, 0x8b, 0x29, 0x33, 0x45, 0x82, 0x51, 0x81, 0x51, 0x83, 0x33, 0x88, 0x29,
+	0x33, 0xc5, 0xa8, 0x9a, 0x8b, 0xc5, 0xb1, 0xb4, 0x24, 0x43, 0xc8, 0x8a, 0x8b, 0xcf, 0x3d, 0xb5,
+	0xc4, 0xb9, 0xb4, 0xa8, 0x28, 0x35, 0xaf, 0x04, 0xa4, 0x56, 0x48, 0x4c, 0x0f, 0x62, 0xba, 0x1e,
+	0xcc, 0x74, 0x3d, 0x57, 0x90, 0xe9, 0x52, 0x7c, 0x08, 0x01, 0x90, 0x3a, 0x25, 0x06, 0x21, 0x73,
+	0x2e, 0x6e, 0xf7, 0x54, 0xb0, 0x26, 0xa7, 0x4a, 0x4f, 0x17, 0x21, 0x01, 0x54, 0x05, 0x9e, 0x2e,
+	0x52, 0x22, 0xa8, 0x22, 0x01, 0xa5, 0x49, 0x39, 0x99, 0xc9, 0x4a, 0x0c, 0x49, 0x6c, 0x60, 0x61,
+	0x63, 0x40, 0x00, 0x00, 0x00, 0xff, 0xff, 0xaa, 0xfe, 0xe9, 0x4b, 0xde, 0x00, 0x00, 0x00,
 }

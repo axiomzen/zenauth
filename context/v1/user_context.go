@@ -423,7 +423,7 @@ func (c *UserContext) Exists(rw web.ResponseWriter, req *web.Request) {
 //
 // Returns
 //   200 OK
-func (c *UserContext) Get(rw web.ResponseWriter, req *web.Request) {
+func (c *UserContext) GetSelf(rw web.ResponseWriter, req *web.Request) {
 
 	var user models.User
 	user.ID = c.UserID
@@ -444,8 +444,51 @@ func (c *UserContext) Get(rw web.ResponseWriter, req *web.Request) {
 
 	// get token from header
 	user.AuthToken = req.Header.Get(c.Config.AuthTokenHeader)
+
+	view, err := user.Protobuf()
+	if err != nil {
+		model := models.NewErrorResponse(constants.APIDatabaseGetUser, models.NewAZError(err.Error()), "Could not generate view for the user")
+		c.Render(constants.StatusInternalServerError, model, rw, req)
+		return
+	}
+
 	// render response
-	c.Render(constants.StatusOK, user, rw, req)
+	c.Render(constants.StatusOK, view, rw, req)
+}
+
+// Get route - Returns the current user information
+//
+//   GET /users
+//
+// Returns
+//   200 OK
+func (c *UserContext) Get(rw web.ResponseWriter, req *web.Request) {
+
+	var user models.User
+	user.ID = req.PathParams["id"]
+
+	// get user
+	if err := c.DAL.GetUserByID(&user); err != nil {
+		dalErr, _ := err.(data.DALError)
+		// no such user/email
+		if dalErr.ErrorCode == data.DALErrorCodeNoneAffected {
+			c.NotFound(rw, req)
+			return
+		}
+
+		model := models.NewErrorResponse(constants.APIDatabaseGetUser, models.NewAZError(err.Error()), "Could not get user")
+		c.Render(constants.StatusInternalServerError, model, rw, req)
+		return
+	}
+	view, err := user.ProtobufPublic()
+	if err != nil {
+		model := models.NewErrorResponse(constants.APIDatabaseGetUser, models.NewAZError(err.Error()), "Could not generate view for the user")
+		c.Render(constants.StatusInternalServerError, model, rw, req)
+		return
+	}
+
+	// render response
+	c.Render(constants.StatusOK, view, rw, req)
 }
 
 // PasswordPut changes the user password

@@ -21,8 +21,8 @@ type Auth struct {
 	DAL    data.ZENAUTHProvider
 }
 
-// GetUser implements the action to return the user from the session token.
-func (auth *Auth) GetUser(ctx context.Context, _ *pEmpty.Empty) (*protobuf.User, error) {
+// GetCurrentUser implements the action to return the user from the session token.
+func (auth *Auth) GetCurrentUser(ctx context.Context, _ *pEmpty.Empty) (*protobuf.User, error) {
 	userID, err := auth.getUserID(ctx)
 	if err != nil {
 		return nil, err
@@ -36,6 +36,26 @@ func (auth *Auth) GetUser(ctx context.Context, _ *pEmpty.Empty) (*protobuf.User,
 	}
 
 	return user.Protobuf()
+}
+
+// GetUserByID implements the action to return the user from the session token.
+func (auth *Auth) GetUserByID(ctx context.Context, userID *protobuf.UserID) (*protobuf.UserPublic, error) {
+
+	// Get the current user to make sure it's an authenticated request
+	_, err := auth.getUserID(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	var user models.User
+	user.ID = userID.GetId()
+
+	// get user
+	if err := auth.DAL.GetUserByID(&user); err != nil {
+		return nil, err
+	}
+
+	return user.ProtobufPublic()
 }
 
 func (auth *Auth) getUserToken(ctx context.Context) (string, error) {

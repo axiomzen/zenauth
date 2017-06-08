@@ -34,6 +34,14 @@ func (user *User) Protobuf() (*protobuf.User, error) {
 		Verified:  user.Verified,
 		CreatedAt: createdAt,
 		UpdatedAt: updatedAt,
+		Status:    protobuf.UserStatus_created,
+	}, nil
+}
+func (user *User) ProtobufPublic() (*protobuf.UserPublic, error) {
+	return &protobuf.UserPublic{
+		Id:     user.ID,
+		Email:  user.Email,
+		Status: protobuf.UserStatus_created,
 	}, nil
 }
 
