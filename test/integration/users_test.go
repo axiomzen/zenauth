@@ -769,7 +769,7 @@ var _ = ginkgo.Describe("Users", func() {
 				keys[i] = k
 				i++
 			}
-			gomega.Expect(keys).To(gomega.Equal([]string{"id", "email", "status"}))
+			gomega.Expect(keys).To(gomega.ConsistOf([]string{"id", "email", "status"}))
 		})
 	})
 })

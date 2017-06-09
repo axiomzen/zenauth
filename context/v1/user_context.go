@@ -445,20 +445,13 @@ func (c *UserContext) GetSelf(rw web.ResponseWriter, req *web.Request) {
 	// get token from header
 	user.AuthToken = req.Header.Get(c.Config.AuthTokenHeader)
 
-	view, err := user.Protobuf()
-	if err != nil {
-		model := models.NewErrorResponse(constants.APIDatabaseGetUser, models.NewAZError(err.Error()), "Could not generate view for the user")
-		c.Render(constants.StatusInternalServerError, model, rw, req)
-		return
-	}
-
 	// render response
-	c.Render(constants.StatusOK, view, rw, req)
+	c.Render(constants.StatusOK, user, rw, req)
 }
 
-// Get route - Returns the current user information
+// Get route - Returns a user information
 //
-//   GET /users
+//   GET /users/:ID
 //
 // Returns
 //   200 OK

@@ -153,6 +153,11 @@ const (
 	APIVerifyEmailMessageError
 )
 
+const (
+	// APIInvitationsCreationError Error creating invitations
+	APIInvitationsCreationError APIErrorCode = 9000 + iota
+)
+
 // general constants
 const (
 	// EnvironmentStaging the staging environment

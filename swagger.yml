@@ -175,7 +175,7 @@ paths:
 
   /users/password:
     put:
-      summary: "Updates a user's password'"
+      summary: "Updates a user's password"
       parameters:
       - in: "body"
         name: "body"
@@ -196,7 +196,7 @@ paths:
 
   /users/email:
     put:
-      summary: "Updates a user's email'"
+      summary: "Updates a user's email"
       parameters:
       - in: "body"
         name: "body"
@@ -215,6 +215,26 @@ paths:
       - api_token: []
       - auth_token: []
 
+  /users/invite:
+    post:
+      summary: "Invites a list of users by e-mail."
+      parameters:
+      - in: "body"
+        name: "body"
+        description: "request body"
+        required: true
+        schema:
+          $ref: "#/definitions/InvitationRequest"
+      responses:
+        201:
+          description: "Users invited"
+          schema:
+            $ref: "#/definitions/InvitationResponse"
+        400:
+          description: "Some request body data is invalid"
+      security:
+      - api_token: []
+      - auth_token: []
 
 securityDefinitions:
   api_token:
@@ -352,3 +372,23 @@ definitions:
         type: "string"
         description: "The new email"
         example: "user@email.com"
+  InvitationRequest:
+    type: "object"
+    properties:
+      emails:
+        type: "array"
+        description: "The users email"
+        items: {
+          type: "string"
+        }
+        example: ['user1@email.com', 'user@email.com']
+
+  InvitationResponse:
+    type: "object"
+    properties:
+      users:
+        type: "array"
+        description: "The list of users"
+        items: {
+          "$ref": "#/definitions/UserPublic"
+        }
