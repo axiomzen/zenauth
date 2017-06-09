@@ -41,8 +41,14 @@ func (c *UserContext) Create(rw web.ResponseWriter, req *web.Request) {
 	invitationResponse := models.InvitationResponse{
 		Users: make([]*protobuf.UserPublic, len(invitations)),
 	}
+	var err error
 	for idx, invitation := range invitations {
-		invitationResponse.Users[idx] = invitation.UserPublicProtobuf()
+		invitationResponse.Users[idx], err = invitation.UserPublicProtobuf()
+		if err != nil {
+			model := models.NewErrorResponse(constants.APIInvitationsCreationError, models.NewAZError(err.Error()), "unable to get the view of the invitation")
+			c.Render(constants.StatusInternalServerError, model, rw, req)
+			return
+		}
 	}
 
 	rw.Header().Set("Location", "/v1/users")

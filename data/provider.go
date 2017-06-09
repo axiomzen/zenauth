@@ -57,4 +57,6 @@ type ZENAUTHProvider interface {
 
 	// GetOrCreateInvitations creates a list of invitations
 	GetOrCreateInvitations(invitations *[]*models.Invitation) error
+	// GetInvitationByID Gets an invitation by ID
+	GetInvitationByID(invitation *models.Invitation) error
 }

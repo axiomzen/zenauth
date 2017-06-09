@@ -11,15 +11,16 @@ type InvitationResponse struct {
 }
 
 type Invitation struct {
-	ID        string
+	ID        string    `sql:",pk"`
+	TableName TableName `sql:"invitations,alias:invitation"`
 	Email     string
 	CreatedAt null.Time `sql:",null"`
 }
 
-func (invitation *Invitation) UserPublicProtobuf() *protobuf.UserPublic {
+func (invitation *Invitation) UserPublicProtobuf() (*protobuf.UserPublic, error) {
 	return &protobuf.UserPublic{
 		Id:     invitation.ID,
 		Email:  invitation.Email,
 		Status: protobuf.UserStatus_invited,
-	}
+	}, nil
 }

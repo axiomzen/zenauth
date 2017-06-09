@@ -465,6 +465,10 @@ func (c *UserContext) Get(rw web.ResponseWriter, req *web.Request) {
 		dalErr, _ := err.(data.DALError)
 		// no such user/email
 		if dalErr.ErrorCode == data.DALErrorCodeNoneAffected {
+			if c.renderInvitation(rw, req, user.ID) {
+				// If the invitation got rendered, we're done.
+				return
+			}
 			c.NotFound(rw, req)
 			return
 		}
@@ -482,6 +486,23 @@ func (c *UserContext) Get(rw web.ResponseWriter, req *web.Request) {
 
 	// render response
 	c.Render(constants.StatusOK, view, rw, req)
+}
+
+func (c *UserContext) renderInvitation(rw web.ResponseWriter, req *web.Request, invitationID string) bool {
+	invitation := models.Invitation{
+		ID: invitationID,
+	}
+	if err := c.DAL.GetInvitationByID(&invitation); err != nil {
+		return false
+	}
+	view, err := invitation.UserPublicProtobuf()
+	if err != nil {
+		model := models.NewErrorResponse(constants.APIDatabaseGetUser, models.NewAZError(err.Error()), "Could not generate view for the user")
+		c.Render(constants.StatusInternalServerError, model, rw, req)
+		return true
+	}
+	c.Render(constants.StatusOK, view, rw, req)
+	return true
 }
 
 // PasswordPut changes the user password
