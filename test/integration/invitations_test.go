@@ -75,7 +75,36 @@ var _ = ginkgo.Describe("Invitations", func() {
 			gomega.Expect(userPublic.Id).To(gomega.Equal(res.Users[0].Id))
 			gomega.Expect(userPublic.Status).To(gomega.Equal(protobuf.UserStatus_invited))
 		})
-		ginkgo.It("keeps the same ID after the invited user signs up", func() {})
+		ginkgo.FIt("keeps the same ID after the invited user signs up", func() {
+			var email = "my-friend@zenfriends.com"
+			var res models.InvitationResponse
+			req := models.InvitationRequest{
+				Emails: []string{email},
+			}
+
+			statusCode, err := TestRequestV1().
+				Post(routes.ResourceUsers + routes.ResourceInvitations).
+				RequestBody(&req).
+				ResponseBody(&res).
+				Do()
+			gomega.Expect(err).ToNot(gomega.HaveOccurred())
+			gomega.Expect(statusCode).To(gomega.Equal(http.StatusCreated))
+
+			var userResponse models.User
+			var signup models.Signup
+			signup.Email = email
+			signup.Password = "asdasdasd"
+			statusCode, err = TestRequestV1().
+				Post(routes.ResourceUsers + routes.ResourceSignup).
+				RequestBody(&signup).
+				ResponseBody(&userResponse).
+				Do()
+
+			gomega.Expect(err).ToNot(gomega.HaveOccurred())
+			gomega.Expect(statusCode).To(gomega.Equal(http.StatusCreated))
+
+			gomega.Expect(userResponse.ID).To(gomega.Equal(res.Users[0].Id))
+		})
 		ginkgo.It("doesn't invite the same user twice", func() {})
 		ginkgo.It("doesn't invite users that already exist", func() {})
 		ginkgo.It("fails if there's no token", func() {})
