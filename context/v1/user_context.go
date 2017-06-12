@@ -449,7 +449,7 @@ func (c *UserContext) GetSelf(rw web.ResponseWriter, req *web.Request) {
 	c.Render(constants.StatusOK, user, rw, req)
 }
 
-// Get route - Returns a user information
+// Get route - Returns a user information if the user is registered OR invited
 //
 //   GET /users/:ID
 //
@@ -821,7 +821,9 @@ func (c *UserContext) Signup(w web.ResponseWriter, req *web.Request) {
 	}
 
 	// lower case the email
-	signup.Email = strings.ToLower(strings.Trim(signup.Email, " "))
+	signup.Email = helpers.EmailSanitize(signup.Email)
+
+	// Verify that no user exists yet with this email
 
 	// create a user var
 	user := models.User{}
@@ -836,6 +838,8 @@ func (c *UserContext) Signup(w web.ResponseWriter, req *web.Request) {
 	}
 
 	user.Hash = &hash
+
+	// Check whether an invite exists for this user
 
 	userErr := c.DAL.CreateUser(&user)
 

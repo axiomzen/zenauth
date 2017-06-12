@@ -11,7 +11,7 @@ import (
 	"github.com/onsi/gomega"
 )
 
-var _ = ginkgo.Describe("Invitations", func() {
+var _ = ginkgo.FDescribe("Invitations", func() {
 
 	var (
 		user *models.User
@@ -37,7 +37,8 @@ var _ = ginkgo.Describe("Invitations", func() {
 			}
 
 			statusCode, err := TestRequestV1().
-				Post(routes.ResourceUsers + routes.ResourceInvitations).
+				Post(routes.ResourceUsers+routes.ResourceInvitations).
+				Header(theConf.AuthTokenHeader, user.AuthToken).
 				RequestBody(&req).
 				ResponseBody(&res).
 				Do()
@@ -54,7 +55,8 @@ var _ = ginkgo.Describe("Invitations", func() {
 			}
 
 			statusCode, err := TestRequestV1().
-				Post(routes.ResourceUsers + routes.ResourceInvitations).
+				Post(routes.ResourceUsers+routes.ResourceInvitations).
+				Header(theConf.AuthTokenHeader, user.AuthToken).
 				RequestBody(&req).
 				ResponseBody(&res).
 				Do()
@@ -75,7 +77,7 @@ var _ = ginkgo.Describe("Invitations", func() {
 			gomega.Expect(userPublic.Id).To(gomega.Equal(res.Users[0].Id))
 			gomega.Expect(userPublic.Status).To(gomega.Equal(protobuf.UserStatus_invited))
 		})
-		ginkgo.FIt("keeps the same ID after the invited user signs up", func() {
+		ginkgo.It("keeps the same ID after the invited user signs up", func() {
 			var email = "my-friend@zenfriends.com"
 			var res models.InvitationResponse
 			req := models.InvitationRequest{
@@ -83,7 +85,8 @@ var _ = ginkgo.Describe("Invitations", func() {
 			}
 
 			statusCode, err := TestRequestV1().
-				Post(routes.ResourceUsers + routes.ResourceInvitations).
+				Post(routes.ResourceUsers+routes.ResourceInvitations).
+				Header(theConf.AuthTokenHeader, user.AuthToken).
 				RequestBody(&req).
 				ResponseBody(&res).
 				Do()
@@ -95,7 +98,8 @@ var _ = ginkgo.Describe("Invitations", func() {
 			signup.Email = email
 			signup.Password = "asdasdasd"
 			statusCode, err = TestRequestV1().
-				Post(routes.ResourceUsers + routes.ResourceSignup).
+				Post(routes.ResourceUsers+routes.ResourceSignup).
+				Header(theConf.AuthTokenHeader, user.AuthToken).
 				RequestBody(&signup).
 				ResponseBody(&userResponse).
 				Do()
@@ -105,10 +109,90 @@ var _ = ginkgo.Describe("Invitations", func() {
 
 			gomega.Expect(userResponse.ID).To(gomega.Equal(res.Users[0].Id))
 		})
-		ginkgo.It("doesn't invite the same user twice", func() {})
-		ginkgo.It("doesn't invite users that already exist", func() {})
-		ginkgo.It("fails if there's no token", func() {})
-		ginkgo.It("fails if the token is not valid", func() {})
-		ginkgo.It("fails if the email is not valid", func() {})
+		ginkgo.It("doesn't invite the same user twice", func() {
+			var email = "my-friend@zenfriends.com"
+			var res models.InvitationResponse
+			req := models.InvitationRequest{
+				Emails: []string{email},
+			}
+
+			status, err := TestRequestV1().
+				Post(routes.ResourceUsers+routes.ResourceInvitations).
+				Header(theConf.AuthTokenHeader, user.AuthToken).
+				RequestBody(&req).
+				ResponseBody(&res).
+				Do()
+			gomega.Expect(err).ToNot(gomega.HaveOccurred())
+			gomega.Expect(status).To(gomega.Equal(http.StatusCreated))
+
+			// Try inviting the same email again, should fail
+			status, err = TestRequestV1().
+				Post(routes.ResourceUsers + routes.ResourceInvitations).
+				RequestBody(&req).
+				ResponseBody(&res).
+				Do()
+			gomega.Expect(err).ToNot(gomega.HaveOccurred())
+			gomega.Expect(status).To(gomega.Equal(http.StatusBadRequest))
+		})
+		ginkgo.It("doesn't invite users that already exist", func() {
+			var res models.InvitationResponse
+			req := models.InvitationRequest{
+				Emails: []string{user.Email},
+			}
+
+			// Try inviting existing user email, should fail
+			status, err := TestRequestV1().
+				Post(routes.ResourceUsers+routes.ResourceInvitations).
+				Header(theConf.AuthTokenHeader, user.AuthToken).
+				RequestBody(&req).
+				ResponseBody(&res).
+				Do()
+			gomega.Expect(err).ToNot(gomega.HaveOccurred())
+			gomega.Expect(status).To(gomega.Equal(http.StatusBadRequest))
+		})
+		ginkgo.It("fails if there's no token", func() {
+			var res models.InvitationResponse
+			req := models.InvitationRequest{
+				Emails: []string{"my-friend@zenfriends.com"},
+			}
+
+			statusCode, err := TestRequestV1().
+				Post(routes.ResourceUsers + routes.ResourceInvitations).
+				RequestBody(&req).
+				ResponseBody(&res).
+				Do()
+			gomega.Expect(err).ToNot(gomega.HaveOccurred())
+			gomega.Expect(statusCode).To(gomega.Equal(http.StatusForbidden))
+		})
+		ginkgo.It("fails if the token is not valid", func() {
+			var res models.InvitationResponse
+			req := models.InvitationRequest{
+				Emails: []string{"my-friend@zenfriends.com"},
+			}
+
+			statusCode, err := TestRequestV1().
+				Post(routes.ResourceUsers+routes.ResourceInvitations).
+				Header(theConf.AuthTokenHeader, "definitely a valid token").
+				RequestBody(&req).
+				ResponseBody(&res).
+				Do()
+			gomega.Expect(err).ToNot(gomega.HaveOccurred())
+			gomega.Expect(statusCode).To(gomega.Equal(http.StatusForbidden))
+		})
+		ginkgo.It("fails if the email is not valid", func() {
+			var res models.InvitationResponse
+			req := models.InvitationRequest{
+				Emails: []string{"not a valid email at all"},
+			}
+
+			statusCode, err := TestRequestV1().
+				Post(routes.ResourceUsers+routes.ResourceInvitations).
+				Header(theConf.AuthTokenHeader, user.AuthToken).
+				RequestBody(&req).
+				ResponseBody(&res).
+				Do()
+			gomega.Expect(err).ToNot(gomega.HaveOccurred())
+			gomega.Expect(statusCode).To(gomega.Equal(http.StatusBadRequest))
+		})
 	})
 })

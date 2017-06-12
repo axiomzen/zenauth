@@ -1,7 +1,10 @@
 package v1
 
 import (
+	"strings"
+
 	"github.com/axiomzen/zenauth/constants"
+	"github.com/axiomzen/zenauth/helpers"
 	"github.com/axiomzen/zenauth/models"
 	"github.com/axiomzen/zenauth/protobuf"
 	"github.com/gocraft/web"
@@ -12,13 +15,13 @@ type InvitationContext struct {
 	*UserContext
 }
 
-// Create invitation route
+// Create invitation route creates multiple invitations
 //
 //   POST /users/invite
 //
 // Returns
 //   201 Status Created
-func (c *UserContext) Create(rw web.ResponseWriter, req *web.Request) {
+func (c *InvitationContext) Create(rw web.ResponseWriter, req *web.Request) {
 	var invitationRequest models.InvitationRequest
 	// decode request
 	if !c.DecodeHelper(&invitationRequest, "Couldn't decode the request body", rw, req) {
@@ -27,12 +30,19 @@ func (c *UserContext) Create(rw web.ResponseWriter, req *web.Request) {
 
 	invitations := make([]*models.Invitation, len(invitationRequest.Emails))
 	for idx, email := range invitationRequest.Emails {
+		// Verify invite email is valid
+		if strings.Count(email, "@") != 1 {
+			model := models.NewErrorResponse(constants.APIValidationEmailNotValid,
+				models.NewAZError("Invalid email address"), "Could not create invitation")
+			c.Render(constants.StatusBadRequest, model, rw, req)
+			return
+		}
 		invitations[idx] = &models.Invitation{
-			Email: email,
+			Email: helpers.EmailSanitize(email),
 		}
 	}
 
-	if err := c.DAL.GetOrCreateInvitations(&invitations); err != nil {
+	if err := c.DAL.CreateInvitations(&invitations); err != nil {
 		model := models.NewErrorResponse(constants.APIInvitationsCreationError, models.NewAZError(err.Error()), "unable to create the invitations")
 		c.Render(constants.StatusInternalServerError, model, rw, req)
 		return
