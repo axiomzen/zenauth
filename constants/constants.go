@@ -73,6 +73,7 @@ const (
 	APIDatabaseCreate APIErrorCode = 1200 + iota
 	// APIDatabaseCreateUser errors creating users
 	APIDatabaseCreateUser
+	APIDatabaseCreateInvitation
 )
 
 const (

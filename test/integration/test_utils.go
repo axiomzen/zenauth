@@ -12,6 +12,7 @@ import (
 	"github.com/axiomzen/zenauth/constants"
 	"github.com/axiomzen/zenauth/data"
 	"github.com/axiomzen/zenauth/helpers"
+	"github.com/axiomzen/zenauth/models"
 	"github.com/axiomzen/zenauth/protobuf"
 	"github.com/axiomzen/zenauth/routes"
 	"github.com/joho/godotenv"
@@ -344,4 +345,15 @@ func getGRPCAuthenticatedContext(token string) context.Context {
 	md := metadata.Pairs(theConf.AuthTokenHeader, token)
 	ctx := context.Background()
 	return metadata.NewContext(ctx, md)
+}
+
+func createInvitations(token string, req *models.InvitationRequest, res *models.InvitationResponse) int {
+	status, err := TestRequestV1().
+		Post(routes.ResourceUsers+routes.ResourceInvitations).
+		Header(theConf.AuthTokenHeader, token).
+		RequestBody(req).
+		ResponseBody(res).
+		Do()
+	gomega.Expect(err).ToNot(gomega.HaveOccurred())
+	return status
 }

@@ -29,6 +29,7 @@ func (c *InvitationContext) Create(rw web.ResponseWriter, req *web.Request) {
 	}
 
 	invitations := make([]*models.Invitation, len(invitationRequest.Emails))
+	var user models.User
 	for idx, email := range invitationRequest.Emails {
 		// Verify invite email is valid
 		if strings.Count(email, "@") != 1 {
@@ -39,6 +40,20 @@ func (c *InvitationContext) Create(rw web.ResponseWriter, req *web.Request) {
 		}
 		invitations[idx] = &models.Invitation{
 			Email: helpers.EmailSanitize(email),
+		}
+		// Verify we don't already have a user with this email
+		user.Email = invitations[idx].Email
+		if err := c.DAL.GetUserByEmail(&user); err != nil {
+			model := models.NewErrorResponse(constants.APIDatabaseGetUser,
+				models.NewAZError("Error getting user"), "Could not get user")
+			c.Render(constants.StatusInternalServerError, model, rw, req)
+			return
+		}
+		if len(user.ID) > 0 {
+			model := models.NewErrorResponse(constants.APIDatabaseCreateInvitation,
+				models.NewAZError("User with email already exists"), "Could not create invitation")
+			c.Render(constants.StatusBadRequest, model, rw, req)
+			return
 		}
 	}
 

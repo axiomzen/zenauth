@@ -17,3 +17,9 @@ func (dp *dataProvider) GetInvitationByID(invitation *models.Invitation) error {
 func (dp *dataProvider) GetInvitationByEmail(invite *models.Invitation) error {
 	return wrapError(dp.db.Model(invite).Where("email = ?email").Select())
 }
+
+// DeleteInvitationByEmail deletes the invitation with the email
+func (dp *dataProvider) DeleteInvitationByEmail(invite *models.Invitation) error {
+	_, err := dp.db.Model(invite).Where("email = ?email").Delete()
+	return wrapError(err)
+}

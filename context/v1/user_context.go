@@ -823,11 +823,23 @@ func (c *UserContext) Signup(w web.ResponseWriter, req *web.Request) {
 	// lower case the email
 	signup.Email = helpers.EmailSanitize(signup.Email)
 
-	// Verify that no user exists yet with this email
-
 	// create a user var
 	user := models.User{}
 	user.Email = signup.Email
+
+	// Verify that no user with this email exists
+	if err := c.DAL.GetUserByEmail(&user); err != nil {
+		model := models.NewErrorResponse(constants.APIDatabaseGetUser,
+			models.NewAZError("Error getting user"), "Could not get user")
+		c.Render(constants.StatusInternalServerError, model, rw, req)
+		return
+	}
+	if len(user.ID) > 0 {
+		model := models.NewErrorResponse(constants.APIDatabaseCreateInvitation,
+			models.NewAZError("User with email already exists"), "Could not create user")
+		c.Render(constants.StatusBadRequest, model, rw, req)
+		return
+	}
 
 	hash, hashErr := helpers.HashPasswordBcrypt(signup.Password, int(c.Config.BcryptCost))
 
@@ -839,7 +851,13 @@ func (c *UserContext) Signup(w web.ResponseWriter, req *web.Request) {
 
 	user.Hash = &hash
 
-	// Check whether an invite exists for this user
+	// If an invite exists for this email, delete it
+	invite := models.Invitation{
+		Email: signup.Email,
+	}
+	if err := c.DAL.DeleteInvitationByEmail(&invite); err != nil {
+
+	}
 
 	userErr := c.DAL.CreateUser(&user)
 

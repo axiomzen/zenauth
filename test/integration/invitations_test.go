@@ -31,9 +31,10 @@ var _ = ginkgo.FDescribe("Invitations", func() {
 
 	ginkgo.Describe("Invite", func() {
 		ginkgo.It("can invite a new user by e-mail", func() {
+			email := lorem.Email()
 			var res models.InvitationResponse
 			req := models.InvitationRequest{
-				Emails: []string{"my-friend@zenfriends.com"},
+				Emails: []string{email},
 			}
 
 			statusCode, err := TestRequestV1().
@@ -49,9 +50,10 @@ var _ = ginkgo.FDescribe("Invitations", func() {
 			gomega.Expect(res.Users[0].Email).To(gomega.Equal(req.Emails[0]))
 		})
 		ginkgo.It("can fetch an invited user by ID using the users endpoint", func() {
+			email := lorem.Email()
 			var res models.InvitationResponse
 			req := models.InvitationRequest{
-				Emails: []string{"my-friend@zenfriends.com"},
+				Emails: []string{email},
 			}
 
 			statusCode, err := TestRequestV1().
@@ -78,7 +80,7 @@ var _ = ginkgo.FDescribe("Invitations", func() {
 			gomega.Expect(userPublic.Status).To(gomega.Equal(protobuf.UserStatus_invited))
 		})
 		ginkgo.It("keeps the same ID after the invited user signs up", func() {
-			var email = "my-friend@zenfriends.com"
+			email := lorem.Email()
 			var res models.InvitationResponse
 			req := models.InvitationRequest{
 				Emails: []string{email},
@@ -110,7 +112,7 @@ var _ = ginkgo.FDescribe("Invitations", func() {
 			gomega.Expect(userResponse.ID).To(gomega.Equal(res.Users[0].Id))
 		})
 		ginkgo.It("doesn't invite the same user twice", func() {
-			var email = "my-friend@zenfriends.com"
+			var email = lorem.Email()
 			var res models.InvitationResponse
 			req := models.InvitationRequest{
 				Emails: []string{email},
@@ -151,9 +153,10 @@ var _ = ginkgo.FDescribe("Invitations", func() {
 			gomega.Expect(status).To(gomega.Equal(http.StatusBadRequest))
 		})
 		ginkgo.It("fails if there's no token", func() {
+			email := lorem.Email()
 			var res models.InvitationResponse
 			req := models.InvitationRequest{
-				Emails: []string{"my-friend@zenfriends.com"},
+				Emails: []string{email},
 			}
 
 			statusCode, err := TestRequestV1().
@@ -165,9 +168,10 @@ var _ = ginkgo.FDescribe("Invitations", func() {
 			gomega.Expect(statusCode).To(gomega.Equal(http.StatusForbidden))
 		})
 		ginkgo.It("fails if the token is not valid", func() {
+			email := lorem.Email()
 			var res models.InvitationResponse
 			req := models.InvitationRequest{
-				Emails: []string{"my-friend@zenfriends.com"},
+				Emails: []string{email},
 			}
 
 			statusCode, err := TestRequestV1().
@@ -182,7 +186,7 @@ var _ = ginkgo.FDescribe("Invitations", func() {
 		ginkgo.It("fails if the email is not valid", func() {
 			var res models.InvitationResponse
 			req := models.InvitationRequest{
-				Emails: []string{"not a valid email at all"},
+				Emails: []string{"not a valid email at all!!!"},
 			}
 
 			statusCode, err := TestRequestV1().
