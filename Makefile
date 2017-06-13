@@ -1,4 +1,4 @@
-.PHONY: ci install test.unit test.integrate run start build_docs build_protobuf
+.PHONY: ci install test.unit test.integrate build_docs build_protobuf
 ci: install test.unit test.integrate
 install:
 	zest build
