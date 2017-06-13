@@ -127,7 +127,7 @@ func getTempConf() *config.ZENAUTHConfig {
 	// vars with their default values
 	tempConf := &config.ZENAUTHConfig{}
 	// postgres
-	tempConf.PostgreSQLHost = "localhost"
+	tempConf.PostgreSQLHost = os.Getenv("ZENAUTH_POSTGRESQLHOST")
 	tempConf.PostgreSQLUsername = "postgres"
 	tempConf.PostgreSQLPassword = ""
 	tempConf.PostgreSQLDatabase = "template1"
@@ -175,8 +175,8 @@ func setupDatabase() {
 
 	// perform all up migrations
 	m, err := migrate.New(
-		"file://../../data/migrations",
-		"postgres://postgres@localhost:5432/dulpitr9o7a88d?sslmode=disable")
+		"file://./data/migrations",
+		"postgres://postgres@"+theConf.PostgreSQLHost+":5432/dulpitr9o7a88d?sslmode=disable")
 	gomega.Expect(err).NotTo(gomega.HaveOccurred())
 	defer m.Close()
 	err = m.Up()
@@ -190,8 +190,8 @@ func teardownDatabase() {
 	// this is really just a check that the migrations work in both directions
 	// which might be useful for development, or a huge pain, not sure yet.
 	m, err := migrate.New(
-		"file://../../data/migrations",
-		"postgres://postgres@localhost:5432/dulpitr9o7a88d?sslmode=disable")
+		"file://./data/migrations",
+		"postgres://postgres@"+theConf.PostgreSQLHost+":5432/dulpitr9o7a88d?sslmode=disable")
 	gomega.Expect(err).NotTo(gomega.HaveOccurred())
 	defer m.Close()
 	err = m.Down()
@@ -205,6 +205,28 @@ func fireUpApp() error {
 	// (OPTIONAL) set our custom time format to something else for testing
 	// TODO: investigate database precision loss with this (pg!)
 	//null.SetFormat(constants.TimeFormat)
+	theConf = &config.ZENAUTHConfig{}
+	// let the  defaults take care of most of it
+	// the others are hardcoded
+	theConf.APIToken = "123"
+	theConf.HashSecret = "secret"
+	theConf.Transport = "http"
+	theConf.DomainHost = "localhost"
+	theConf.Environment = constants.EnvironmentTest
+	theConf.LogLevel = log.InfoLevel.String()
+
+	theConf.PostgreSQLHost = os.Getenv("ZENAUTH_POSTGRESQLHOST")
+	theConf.PostgreSQLUsername = "postgres"
+	theConf.PostgreSQLPassword = ""
+	theConf.PostgreSQLDatabase = "dulpitr9o7a88d"
+	theConf.ResetPasswordURL = "http://www.zenauth.com/reset"
+	theConf.VerifyEmailURL = "http://www.zenauth.com/verify"
+	theConf.TemplatesPath = "email/templates"
+	f := false
+	theConf.PostgreSQLSSL = &f
+	if len(theConf.PostgreSQLHost) == 0 {
+		theConf.PostgreSQLHost = "localhost"
+	}
 
 	fmt.Println("Setting up database...")
 
@@ -216,7 +238,7 @@ func fireUpApp() error {
 	fmt.Println("Running go install...")
 
 	install := exec.Command("go", "install")
-	install.Dir = "../.."
+	install.Dir = "."
 
 	if out, err := install.CombinedOutput(); err != nil {
 		return err
@@ -244,35 +266,10 @@ func fireUpApp() error {
 	//
 	// so we need to somehow make sure these are all set
 	// we need a lib or function that takes a config var and writes out this array
-	theConf = &config.ZENAUTHConfig{}
-	// let the  defaults take care of most of it
-	// the others are hardcoded
-	theConf.APIToken = "123"
-	theConf.HashSecret = "secret"
-	theConf.Transport = "http"
-	theConf.DomainHost = "localhost"
-	theConf.Environment = constants.EnvironmentTest
-	theConf.LogLevel = log.InfoLevel.String()
 
-	if err := godotenv.Load("../../.env"); err != nil {
+	if err := godotenv.Load(".env"); err != nil {
 		fmt.Println(err.Error())
 	}
-
-	// anything with `envconfig` needs to be set as well
-	//conf.AccessorServiceFQDN = "ignore" // can't be "" as that is zero value for string
-	//conf.AccessorPort = "5000"
-	// database stuff
-	// postgres
-	theConf.PostgreSQLHost = "localhost"
-	theConf.PostgreSQLUsername = "postgres"
-	theConf.PostgreSQLPassword = ""
-	theConf.PostgreSQLDatabase = "dulpitr9o7a88d"
-	theConf.ResetPasswordURL = "http://www.zenauth.com/reset"
-	theConf.VerifyEmailURL = "http://www.zenauth.com/verify"
-	theConf.TemplatesPath = "../../email/templates"
-	f := false
-	theConf.PostgreSQLSSL = &f
-	//theConf.PostgreSQLPort = default is ok
 
 	// compute dependent variables
 	gomega.Expect(theConf.ComputeDependents()).To(gomega.Succeed())
