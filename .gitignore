@@ -6,6 +6,7 @@
 *.o
 *.a
 *.so
+zenauth
 
 # Folders
 _obj

@@ -1,0 +1,15 @@
+
+version: "2"
+services:
+    integrator:
+        image: golang:1.8.1
+        environment:
+          - ZENAUTH_POSTGRESQLHOST=pg
+        volumes:
+          - .:/go/src/github.com/axiomzen/zenauth
+        working_dir: /go/src/github.com/axiomzen/zenauth
+        entrypoint: ["/bin/bash", "-c", "go install && go test -c ./test/integration && ./integration.test"]
+        depends_on:
+          - pg
+    pg:
+        image: postgres:9.6-alpine
