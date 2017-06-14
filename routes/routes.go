@@ -32,4 +32,6 @@ const (
 	ResourceEmail = "/email"
 	// ResourceExists exists resource
 	ResourceExists = "/exists"
+	// ResourceInvitations invitations resource
+	ResourceInvitations = "/invitations"
 )

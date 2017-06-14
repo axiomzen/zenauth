@@ -4,6 +4,8 @@
 package helpers
 
 import (
+	"strings"
+
 	"github.com/axiomzen/null"
 )
 
@@ -25,4 +27,11 @@ func NewStringPointer(str string) *string {
 	//newstr := (str + " ")[:len(str)]
 	newstr := str
 	return &newstr
+}
+
+// EmailSanitize makes sure emails are space trimmed and lower cased
+func EmailSanitize(email string) (safeEmail string) {
+	safeEmail = strings.ToLower(email)
+	safeEmail = strings.Trim(safeEmail, " \t")
+	return
 }

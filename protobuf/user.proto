@@ -2,6 +2,11 @@ syntax = "proto3";
 package protobuf;
 import "google/protobuf/timestamp.proto";
 
+enum UserStatus {
+  invited = 0;
+  created = 1;
+}
+
 message User {
   string id = 1;
   string email = 2;
@@ -9,4 +14,11 @@ message User {
   google.protobuf.Timestamp updatedAt = 4;
   bool verified = 5;
   string authToken = 6;
+  UserStatus status = 7;
+}
+
+message UserPublic {
+  string id = 1;
+  string email = 2;
+  UserStatus status = 3;
 }
