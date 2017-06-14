@@ -32,7 +32,7 @@ func (c *InvitationContext) Create(rw web.ResponseWriter, req *web.Request) {
 	var user models.User
 	for idx, email := range invitationRequest.InviteCodes {
 		// Verify invite email is valid
-		if strings.Count(email, "@") != 1 {
+		if strings.Count(email, "@") == 0 {
 			model := models.NewErrorResponse(constants.APIValidationEmailNotValid,
 				models.NewAZError("Invalid email address"), "Could not create invitation")
 			c.Render(constants.StatusBadRequest, model, rw, req)
