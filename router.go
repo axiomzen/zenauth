@@ -79,6 +79,14 @@ func InitRouter(c *config.ZENAUTHConfig) *web.Router {
 			Get(routes.ResourceExists, (*v1.UserContext).Exists).
 			Put(routes.ResourceForgotPassword, (*v1.UserContext).ForgotPassword)
 
+		v1APIAuthUserRouter.Subrouter(v1.FacebookContext{}, "").
+			// Facebook login
+			Post(routes.ResourceFacebookLogin, (*v1.FacebookContext).Login).
+			// Facebook signup
+			Post(routes.ResourceFacebookSignup, (*v1.FacebookContext).Signup).
+			// Facebook login + signup
+			Post(routes.ResourceFacebook, (*v1.FacebookContext).Facebook)
+
 		{
 			// API auth and user auth
 			v1APIAuthUserAuthRouter := v1APIAuthUserRouter.
@@ -89,6 +97,8 @@ func InitRouter(c *config.ZENAUTHConfig) *web.Router {
 				Put(routes.ResourcePassword, (*v1.UserContext).PasswordPut).
 				Put(routes.ResourceEmail, (*v1.UserContext).EmailPut).
 				Get("/:id", (*v1.UserContext).Get)
+			v1APIAuthUserAuthRouter.Subrouter(v1.FacebookContext{}, "").
+				Post(routes.ResourceFacebookLink, (*v1.FacebookContext).Link)
 			// Invitations
 			v1APIAuthUserAuthRouter.
 				Subrouter(v1.InvitationContext{}, routes.ResourceInvitations).

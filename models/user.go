@@ -16,6 +16,8 @@ type User struct {
 	Hash             *string `json:"-" lorem:"-"`
 	AuthToken        string  `json:"authToken,omitempty" lorem:"-" sql:"-"`
 	VerifyEmailToken string  `json:"-" lorem:"-" sql:"-"`
+
+	FacebookUser
 }
 
 func (user *User) Protobuf() (*protobuf.User, error) {

@@ -22,6 +22,9 @@ var errNoneAffected = errors.New("No rows affected!")
 // errUniqueEmail returned when the email already exists
 var errUniqueEmail = errors.New("Email must be unique")
 
+// errFacebookIDUnique returned when the facebook id already exists
+var errFacebookIDUnique = errors.New("Facebook ID must be unique")
+
 // wrapError wraps our outgoing error
 func wrapError(err error) error {
 	if err != nil {
@@ -32,6 +35,9 @@ func wrapError(err error) error {
 		}
 		if strings.HasPrefix(str, "ERROR #23505") && strings.Contains(str, "users_email_idx") {
 			return DALError{Inner: errUniqueEmail, ErrorCode: DALErrorCodeUniqueEmail}
+		}
+		if strings.HasPrefix(str, "ERROR #23505") && strings.Contains(str, "users_facebook_id_key") {
+			return DALError{Inner: errFacebookIDUnique, ErrorCode: DALErrorCodeFacebookIDUnique}
 		}
 		if strings.HasPrefix(str, "pg: no rows in result set") {
 			return DALError{Inner: errNoneAffected, ErrorCode: DALErrorCodeNoneAffected}
@@ -133,6 +139,14 @@ func (dp *dataProvider) GetUserByEmail(user *models.User) error {
 func (dp *dataProvider) GetUserByID(user *models.User) error {
 	//Where("id = ?id")
 	return wrapError(dp.db.Select(user))
+}
+
+// GetUserByFacebookID retrieves a user from the facebook id
+func (dp *dataProvider) GetUserByFacebookID(user *models.User) error {
+	//return dp.NoArgFunc(drop)
+	//return dp.FuncWithUser(fe, user).Do()
+	// return dp.Arg("user", user).ReturnUserAndError()
+	return wrapError(dp.db.Model(user).Where("facebook_id = ?facebook_id").Select())
 }
 
 // UpdateUser updates a user

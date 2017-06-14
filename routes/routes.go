@@ -34,4 +34,12 @@ const (
 	ResourceExists = "/exists"
 	// ResourceInvitations invitations resource
 	ResourceInvitations = "/invitations"
+	// ResourceFacebook facebook resource
+	ResourceFacebook = "/facebook"
+	// ResourceFacebookLogin fblogin resource
+	ResourceFacebookLogin = "/fblogin"
+	// ResourceFacebookSignup fbsignup resource
+	ResourceFacebookSignup = "/fbsignup"
+	// ResourceFacebookLink fblink resource
+	ResourceFacebookLink = "/fblink"
 )

@@ -1,9 +1,15 @@
 package integration
 
 import (
+	"bytes"
+	"encoding/json"
+	"errors"
 	"fmt"
+	"net/http"
+	"net/http/httputil"
 	"os"
 	"os/exec"
+	"time"
 
 	log "github.com/Sirupsen/logrus"
 	"github.com/axiomzen/envconfig"
@@ -16,19 +22,14 @@ import (
 	"github.com/axiomzen/zenauth/protobuf"
 	"github.com/axiomzen/zenauth/routes"
 	"github.com/joho/godotenv"
+	"github.com/mattes/migrate"
+	_ "github.com/mattes/migrate/database/postgres"
+	_ "github.com/mattes/migrate/source/file"
 	"github.com/onsi/gomega"
 	"github.com/twinj/uuid"
 	context "golang.org/x/net/context"
 	google_grpc "google.golang.org/grpc"
 	"google.golang.org/grpc/metadata"
-
-	"github.com/mattes/migrate"
-	_ "github.com/mattes/migrate/database/postgres"
-	_ "github.com/mattes/migrate/source/file"
-
-	"errors"
-	"net/http"
-	"time"
 )
 
 const (
@@ -41,6 +42,9 @@ var (
 	theConf        *config.ZENAUTHConfig
 	grpcConn       *google_grpc.ClientConn
 	grpcAuthClient protobuf.AuthClient
+
+	FacebookTestId    = ""
+	FacebookTestToken = ""
 
 	// Do() does create a new request each time
 	// but we may not want to pollute the settings across requests
@@ -120,6 +124,65 @@ func TestRequestV1() *yawgh.Request {
 	return testRequest().URLComponent(routes.V1)
 }
 
+type facebookTestUserResponse struct {
+	Data   []facebookSubData `json:"data"`
+	Paging facebookPaging    `json:"paging"`
+}
+
+type facebookSubData struct {
+	ID          string `json:"id"`
+	LoginURL    string `json:"login_url"`
+	AccessToken string `json:"access_token"`
+}
+
+type facebookPaging struct {
+	Cursors facebookCursor `json:"cursors"`
+}
+
+type facebookCursor struct {
+	Before string `json:"before"`
+	After  string `json:"after"`
+}
+
+func getTestFacebookUser(conf *config.ZENAUTHConfig) error {
+	client := http.Client{}
+	req, _ := http.NewRequest("GET", "https://graph.facebook.com/v2.7/"+conf.FacebookAppID+"/accounts/test-users?access_token="+conf.FacebookAppID+"|"+conf.FacebookAppSecret, bytes.NewBuffer([]byte(``)))
+	req.Close = true
+	req.Header.Set("Content-Type", "application/json")
+	resp, err := client.Do(req)
+	defer func(resp *http.Response) {
+		if resp != nil && resp.Body != nil {
+			resp.Body.Close()
+		}
+	}(resp)
+
+	if err != nil {
+		return err
+	}
+
+	if resp.StatusCode == http.StatusOK {
+		var fbResp facebookTestUserResponse
+		decoder := json.NewDecoder(resp.Body)
+		err = decoder.Decode(&fbResp)
+		if err != nil {
+			return err
+		}
+		if len(fbResp.Data) > 0 {
+			FacebookTestId = fbResp.Data[0].ID
+			FacebookTestToken = fbResp.Data[0].AccessToken
+		} else {
+			return errors.New("No data present for facebook call!")
+		}
+	} else {
+		dump, err := httputil.DumpResponse(resp, true)
+		if err != nil {
+			return err
+		}
+		return fmt.Errorf("facebook test-users request failed: %s", string(dump))
+	}
+	return nil
+}
+
 func getTempConf() *config.ZENAUTHConfig {
 	// create a new (temp) conf to call
 	// Our DAL, then we can create and setup the DB
@@ -182,7 +245,6 @@ func setupDatabase() {
 	defer m.Close()
 	err = m.Up()
 	gomega.Expect(err).NotTo(gomega.HaveOccurred())
-
 }
 
 func teardownDatabase() {
@@ -272,8 +334,14 @@ func fireUpApp() error {
 		fmt.Println(err.Error())
 	}
 
+	theConf.FacebookAppID = os.Getenv("ZENAUTH_FACEBOOKAPPID")
+	//fmt.Printf("fb app id: %s, {{ .FacebookAppID }}\n", theConf.FacebookAppID)
+	theConf.FacebookAppSecret = os.Getenv("ZENAUTH_FACEBOOKAPPSECRET")
+
 	// compute dependent variables
 	gomega.Expect(theConf.ComputeDependents()).To(gomega.Succeed())
+
+	gomega.Expect(getTestFacebookUser(theConf)).To(gomega.Succeed())
 
 	// we want export and fill in defaults
 	// populated from Hatch

@@ -127,7 +127,8 @@ const (
 	APILoginSignupUnauthorized
 	// APILoginUserDoesNotExist user does not exist
 	APILoginUserDoesNotExist
-
+	// APIFacebookLoginNotValid facebook login invalid
+	APIFacebookLoginNotValid
 	// APIEmailInUse email is already in use
 	APIEmailInUse
 	// APISocialAccountExists social account already exists
