@@ -423,7 +423,7 @@ func (c *UserContext) Exists(rw web.ResponseWriter, req *web.Request) {
 //
 // Returns
 //   200 OK
-func (c *UserContext) Get(rw web.ResponseWriter, req *web.Request) {
+func (c *UserContext) GetSelf(rw web.ResponseWriter, req *web.Request) {
 
 	var user models.User
 	user.ID = c.UserID
@@ -444,8 +444,65 @@ func (c *UserContext) Get(rw web.ResponseWriter, req *web.Request) {
 
 	// get token from header
 	user.AuthToken = req.Header.Get(c.Config.AuthTokenHeader)
+
 	// render response
 	c.Render(constants.StatusOK, user, rw, req)
+}
+
+// Get route - Returns a user information if the user is registered OR invited
+//
+//   GET /users/:ID
+//
+// Returns
+//   200 OK
+func (c *UserContext) Get(rw web.ResponseWriter, req *web.Request) {
+
+	var user models.User
+	user.ID = req.PathParams["id"]
+
+	// get user
+	if err := c.DAL.GetUserByID(&user); err != nil {
+		dalErr, _ := err.(data.DALError)
+		// no such user/email
+		if dalErr.ErrorCode == data.DALErrorCodeNoneAffected {
+			if c.renderInvitation(rw, req, user.ID) {
+				// If the invitation got rendered, we're done.
+				return
+			}
+			c.NotFound(rw, req)
+			return
+		}
+
+		model := models.NewErrorResponse(constants.APIDatabaseGetUser, models.NewAZError(err.Error()), "Could not get user")
+		c.Render(constants.StatusInternalServerError, model, rw, req)
+		return
+	}
+	view, err := user.ProtobufPublic()
+	if err != nil {
+		model := models.NewErrorResponse(constants.APIDatabaseGetUser, models.NewAZError(err.Error()), "Could not generate view for the user")
+		c.Render(constants.StatusInternalServerError, model, rw, req)
+		return
+	}
+
+	// render response
+	c.Render(constants.StatusOK, view, rw, req)
+}
+
+func (c *UserContext) renderInvitation(rw web.ResponseWriter, req *web.Request, invitationID string) bool {
+	invitation := models.Invitation{
+		ID: invitationID,
+	}
+	if err := c.DAL.GetInvitationByID(&invitation); err != nil {
+		return false
+	}
+	view, err := invitation.UserPublicProtobuf()
+	if err != nil {
+		model := models.NewErrorResponse(constants.APIDatabaseGetUser, models.NewAZError(err.Error()), "Could not generate view for the user")
+		c.Render(constants.StatusInternalServerError, model, rw, req)
+		return true
+	}
+	c.Render(constants.StatusOK, view, rw, req)
+	return true
 }
 
 // PasswordPut changes the user password
@@ -764,11 +821,19 @@ func (c *UserContext) Signup(w web.ResponseWriter, req *web.Request) {
 	}
 
 	// lower case the email
-	signup.Email = strings.ToLower(strings.Trim(signup.Email, " "))
+	signup.Email = helpers.EmailSanitize(signup.Email)
 
 	// create a user var
 	user := models.User{}
 	user.Email = signup.Email
+
+	// Verify that no user with this email exists
+	if err := c.DAL.GetUserByEmail(&user); err == nil {
+		model := models.NewErrorResponse(constants.APIDatabaseCreateInvitation,
+			models.NewAZError("User with email already exists"), "Email already in use/exists")
+		c.Render(constants.StatusForbidden, model, w, req)
+		return
+	}
 
 	hash, hashErr := helpers.HashPasswordBcrypt(signup.Password, int(c.Config.BcryptCost))
 

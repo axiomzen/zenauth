@@ -1,0 +1,3 @@
+DROP INDEX IF EXISTS invitation_code_idx;
+DROP TABLE IF EXISTS invitations CASCADE;
+DROP TYPE IF EXISTS code_type CASCADE;

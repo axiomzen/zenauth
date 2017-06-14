@@ -155,9 +155,27 @@ paths:
       - api_token: []
       - auth_token: []
 
+  /users/{id}:
+    get:
+      summary: "Gets the information of a user"
+      parameters:
+      - in: "path"
+        name: "id"
+        description: "User ID"
+        required: true
+        type: string
+      responses:
+        200:
+          description: "Success"
+          schema:
+            $ref: "#/definitions/UserPublic"
+      security:
+      - api_token: []
+      - auth_token: []
+
   /users/password:
     put:
-      summary: "Updates a user's password'"
+      summary: "Updates a user's password"
       parameters:
       - in: "body"
         name: "body"
@@ -178,7 +196,7 @@ paths:
 
   /users/email:
     put:
-      summary: "Updates a user's email'"
+      summary: "Updates a user's email"
       parameters:
       - in: "body"
         name: "body"
@@ -197,6 +215,26 @@ paths:
       - api_token: []
       - auth_token: []
 
+  /users/invitations/email:
+    post:
+      summary: "Invites a list of users by e-mail."
+      parameters:
+      - in: "body"
+        name: "body"
+        description: "request body"
+        required: true
+        schema:
+          $ref: "#/definitions/InvitationRequest"
+      responses:
+        201:
+          description: "Users invited"
+          schema:
+            $ref: "#/definitions/InvitationResponse"
+        400:
+          description: "Some request body data is invalid"
+      security:
+      - api_token: []
+      - auth_token: []
 
 securityDefinitions:
   api_token:
@@ -221,6 +259,14 @@ definitions:
         type: "string"
         description: "The user e-mail"
         example: "user@email.com"
+      status:
+        type: "string"
+        description: "The user status"
+        example: "created"
+        enum: [
+          "invited",
+          "created"
+        ]
       authToken:
         type: "string"
         description: "The user authentication token"
@@ -237,6 +283,25 @@ definitions:
         type: "boolean"
         description: "Whether or not the user has validated the e-mail"
         example: false
+  UserPublic:
+    type: "object"
+    properties:
+      id:
+        type: "string"
+        description: "The user ID"
+        example: "5c8e03d8-516a-47fa-8840-69fb6d62c0b7"
+      email:
+        type: "string"
+        description: "The user e-mail"
+        example: "user@email.com"
+      status:
+        type: "string"
+        description: "The user status"
+        example: "created"
+        enum: [
+          "invited",
+          "created"
+        ]
   ResetPassword:
     type: "object"
     properties:
@@ -307,3 +372,23 @@ definitions:
         type: "string"
         description: "The new email"
         example: "user@email.com"
+  InvitationRequest:
+    type: "object"
+    properties:
+      inviteCodes:
+        type: "array"
+        description: "The codes to be saved"
+        items: {
+          type: "string"
+        }
+        example: ['user1@email.com', 'user@email.com']
+
+  InvitationResponse:
+    type: "object"
+    properties:
+      users:
+        type: "array"
+        description: "The list of users"
+        items: {
+          "$ref": "#/definitions/UserPublic"
+        }

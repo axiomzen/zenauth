@@ -5,12 +5,12 @@ import (
 	"strings"
 	"time"
 
+	"github.com/axiomzen/compare"
+	"github.com/axiomzen/golorem"
 	"github.com/axiomzen/zenauth/constants"
 	"github.com/axiomzen/zenauth/helpers"
 	"github.com/axiomzen/zenauth/models"
 	"github.com/axiomzen/zenauth/routes"
-	"github.com/axiomzen/compare"
-	"github.com/axiomzen/golorem"
 	"github.com/onsi/ginkgo"
 	"github.com/onsi/gomega"
 
@@ -720,6 +720,56 @@ var _ = ginkgo.Describe("Users", func() {
 				gomega.Expect(user.ID).ToNot(gomega.BeEmpty())
 				gomega.Expect(user.Email).ToNot(gomega.BeEmpty())
 			})
+		})
+	})
+
+	ginkgo.Describe("Fetch public information", func() {
+		var (
+			user1 models.User
+			user2 models.User
+		)
+		ginkgo.BeforeEach(func() {
+			var signup models.Signup
+			gomega.Expect(lorem.Fill(&signup)).To(gomega.Succeed())
+			statusCode, err := TestRequestV1().Post(routes.ResourceUsers + routes.ResourceSignup).RequestBody(&signup).ResponseBody(&user1).Do()
+			gomega.Expect(err).ToNot(gomega.HaveOccurred())
+			gomega.Expect(statusCode).To(gomega.Equal(http.StatusCreated))
+
+			gomega.Expect(lorem.Fill(&signup)).To(gomega.Succeed())
+			statusCode, err = TestRequestV1().Post(routes.ResourceUsers + routes.ResourceSignup).RequestBody(&signup).ResponseBody(&user2).Do()
+			gomega.Expect(err).ToNot(gomega.HaveOccurred())
+			gomega.Expect(statusCode).To(gomega.Equal(http.StatusCreated))
+		})
+
+		ginkgo.AfterEach(func() {
+			// delete user
+			statusCode, err := TestRequestV1().Delete(routes.ResourceTest+routes.ResourceUsers+"/"+user1.ID).Header(theConf.AuthTokenHeader, TesterToken).Do()
+			gomega.Expect(err).ToNot(gomega.HaveOccurred())
+			gomega.Expect(statusCode).To(gomega.Equal(http.StatusNoContent))
+			statusCode, err = TestRequestV1().Delete(routes.ResourceTest+routes.ResourceUsers+"/"+user2.ID).Header(theConf.AuthTokenHeader, TesterToken).Do()
+			gomega.Expect(err).ToNot(gomega.HaveOccurred())
+			gomega.Expect(statusCode).To(gomega.Equal(http.StatusNoContent))
+		})
+
+		ginkgo.It("Can fetch the public data of another user", func() {
+			var publicUser map[string]interface{}
+			statusCode, err := TestRequestV1().
+				Get(routes.ResourceUsers+"/"+user2.ID).
+				Header(theConf.AuthTokenHeader, user1.AuthToken).
+				ResponseBody(&publicUser).
+				Do()
+			gomega.Expect(err).ToNot(gomega.HaveOccurred())
+			gomega.Expect(statusCode).To(gomega.Equal(http.StatusOK))
+
+			gomega.Expect(publicUser["id"]).To(gomega.Equal(user2.ID))
+
+			keys := make([]string, len(publicUser))
+			i := 0
+			for k := range publicUser {
+				keys[i] = k
+				i++
+			}
+			gomega.Expect(keys).To(gomega.ConsistOf([]string{"id", "email", "status"}))
 		})
 	})
 })

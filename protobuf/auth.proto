@@ -4,6 +4,11 @@ package protobuf;
 import "google/protobuf/empty.proto";
 import "user.proto";
 
+message UserID {
+  string id = 1;
+}
+
 service Auth {
-  rpc GetUser(google.protobuf.Empty) returns (User) {}
+  rpc GetCurrentUser(google.protobuf.Empty) returns (User) {}
+  rpc GetUserByID(UserID) returns (UserPublic) {}
 }
