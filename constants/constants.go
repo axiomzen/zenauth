@@ -173,6 +173,8 @@ const (
 	// This loses all nanosecond precision
 	// TimeFormat = "2006-01-02T15:04:05Z0700"
 	TimeFormat = time.RFC3339Nano
+
+	InvitationTypeEmail = "email"
 )
 
 // in case we want to ever support multiple

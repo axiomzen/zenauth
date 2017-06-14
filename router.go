@@ -89,11 +89,11 @@ func InitRouter(c *config.ZENAUTHConfig) *web.Router {
 				Put(routes.ResourcePassword, (*v1.UserContext).PasswordPut).
 				Put(routes.ResourceEmail, (*v1.UserContext).EmailPut).
 				Get("/:id", (*v1.UserContext).Get)
+			// Invitations
+			v1APIAuthUserAuthRouter.
+				Subrouter(v1.InvitationContext{}, routes.ResourceInvitations).
+				Post(routes.ResourceEmail, (*v1.InvitationContext).Create)
 		}
-
-		v1APIAuthUserRouter.
-			Subrouter(v1.InvitationContext{}, routes.ResourceInvitations).
-			Post(routes.ResourceRoot, (*v1.InvitationContext).Create)
 	}
 
 	// Integration test Routes

@@ -1,10 +1,13 @@
 package models
 
-import "github.com/axiomzen/zenauth/protobuf"
-import "github.com/axiomzen/null"
+import (
+	"github.com/axiomzen/null"
+	"github.com/axiomzen/zenauth/constants"
+	"github.com/axiomzen/zenauth/protobuf"
+)
 
 type InvitationRequest struct {
-	Emails []string `json:"emails"`
+	InviteCodes []string `json:"inviteCodes"`
 }
 type InvitationResponse struct {
 	Users []*protobuf.UserPublic `json:"users"`
@@ -13,14 +16,18 @@ type InvitationResponse struct {
 type Invitation struct {
 	ID        string    `sql:",pk"`
 	TableName TableName `sql:"invitations,alias:invitation"`
-	Email     string
+	Type      string
+	Code      string
 	CreatedAt null.Time `sql:",null"`
 }
 
 func (invitation *Invitation) UserPublicProtobuf() (*protobuf.UserPublic, error) {
-	return &protobuf.UserPublic{
+	user := &protobuf.UserPublic{
 		Id:     invitation.ID,
-		Email:  invitation.Email,
 		Status: protobuf.UserStatus_invited,
-	}, nil
+	}
+	if invitation.Type == constants.InvitationTypeEmail {
+		user.Email = invitation.Code
+	}
+	return user, nil
 }

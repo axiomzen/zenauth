@@ -61,4 +61,6 @@ type ZENAUTHProvider interface {
 	GetInvitationByID(invitation *models.Invitation) error
 	// GetInvitationByEmail gets an invite by email
 	GetInvitationByEmail(invite *models.Invitation) error
+	// DeleteInvitationByEmail
+	DeleteInvitationByEmail(invite *models.Invitation) error
 }

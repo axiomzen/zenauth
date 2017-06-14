@@ -7,6 +7,7 @@ import (
 	"errors"
 	"strings"
 
+	"github.com/axiomzen/zenauth/constants"
 	"github.com/axiomzen/zenauth/models"
 
 	"io/ioutil"
@@ -185,7 +186,27 @@ func (dp *dataProvider) ConsumeUserResetToken(user *models.User) error {
 
 // CreateUser creates a user
 func (dp *dataProvider) CreateUser(user *models.User) error {
-	return wrapError(dp.db.Create(user))
+	return wrapError(dp.Tx(func(tx *pg.Tx) error {
+		if user.Email != "" {
+
+			// If an invite exists for this email, delete it
+			invite := models.Invitation{
+				Type: constants.InvitationTypeEmail,
+				Code: user.Email,
+			}
+			// Bug
+			// _, err := tx.Model(&invite).Where("type = ?type").Where("code = ?code").Returning("*").Delete()
+			err := tx.Model(&invite).Where("type = ?type").Where("code = ?code").Select()
+			if err == nil {
+				user.ID = invite.ID
+				_, err = tx.Model(&invite).Where("type = ?type").Where("code = ?code").Delete()
+				if err != nil {
+					return err
+				}
+			}
+		}
+		return tx.Create(user)
+	}))
 }
 
 // DeleteUser deletes a user (by user id)

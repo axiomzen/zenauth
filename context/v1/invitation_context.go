@@ -17,7 +17,7 @@ type InvitationContext struct {
 
 // Create invitation route creates multiple invitations
 //
-//   POST /users/invite
+//   POST /users/invite/email
 //
 // Returns
 //   201 Status Created
@@ -28,9 +28,9 @@ func (c *InvitationContext) Create(rw web.ResponseWriter, req *web.Request) {
 		return
 	}
 
-	invitations := make([]*models.Invitation, len(invitationRequest.Emails))
+	invitations := make([]*models.Invitation, len(invitationRequest.InviteCodes))
 	var user models.User
-	for idx, email := range invitationRequest.Emails {
+	for idx, email := range invitationRequest.InviteCodes {
 		// Verify invite email is valid
 		if strings.Count(email, "@") != 1 {
 			model := models.NewErrorResponse(constants.APIValidationEmailNotValid,
@@ -39,17 +39,14 @@ func (c *InvitationContext) Create(rw web.ResponseWriter, req *web.Request) {
 			return
 		}
 		invitations[idx] = &models.Invitation{
-			Email: helpers.EmailSanitize(email),
+			Type: constants.InvitationTypeEmail,
+			Code: helpers.EmailSanitize(email),
 		}
 		// Verify we don't already have a user with this email
-		user.Email = invitations[idx].Email
-		if err := c.DAL.GetUserByEmail(&user); err != nil {
-			model := models.NewErrorResponse(constants.APIDatabaseGetUser,
-				models.NewAZError("Error getting user"), "Could not get user")
-			c.Render(constants.StatusInternalServerError, model, rw, req)
-			return
-		}
-		if len(user.ID) > 0 {
+		user.Email = invitations[idx].Code
+
+		// TODO: Should we error here? Or continue inviting the rest of the list?
+		if err := c.DAL.GetUserByEmail(&user); err == nil {
 			model := models.NewErrorResponse(constants.APIDatabaseCreateInvitation,
 				models.NewAZError("User with email already exists"), "Could not create invitation")
 			c.Render(constants.StatusBadRequest, model, rw, req)
@@ -59,7 +56,7 @@ func (c *InvitationContext) Create(rw web.ResponseWriter, req *web.Request) {
 
 	if err := c.DAL.CreateInvitations(&invitations); err != nil {
 		model := models.NewErrorResponse(constants.APIInvitationsCreationError, models.NewAZError(err.Error()), "unable to create the invitations")
-		c.Render(constants.StatusInternalServerError, model, rw, req)
+		c.Render(constants.StatusBadRequest, model, rw, req)
 		return
 	}
 

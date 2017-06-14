@@ -1,6 +1,9 @@
 package data
 
-import "github.com/axiomzen/zenauth/models"
+import (
+	"github.com/axiomzen/zenauth/constants"
+	"github.com/axiomzen/zenauth/models"
+)
 
 // GetOrCreateInvitations creates a list of invitations
 func (dp *dataProvider) CreateInvitations(invitations *[]*models.Invitation) error {
@@ -15,11 +18,11 @@ func (dp *dataProvider) GetInvitationByID(invitation *models.Invitation) error {
 
 // GetInvitationByEmail gets an invitation by email
 func (dp *dataProvider) GetInvitationByEmail(invite *models.Invitation) error {
-	return wrapError(dp.db.Model(invite).Where("email = ?email").Select())
+	return wrapError(dp.db.Model(invite).Where("type = ?", constants.InvitationTypeEmail).Where("code = ?code").Select())
 }
 
 // DeleteInvitationByEmail deletes the invitation with the email
 func (dp *dataProvider) DeleteInvitationByEmail(invite *models.Invitation) error {
-	_, err := dp.db.Model(invite).Where("email = ?email").Delete()
+	_, err := dp.db.Model(invite).Where("type = ?", constants.InvitationTypeEmail).Where("code = ?code").Delete()
 	return wrapError(err)
 }
