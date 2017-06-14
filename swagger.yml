@@ -215,7 +215,7 @@ paths:
       - api_token: []
       - auth_token: []
 
-  /users/invite:
+  /users/invitations/email:
     post:
       summary: "Invites a list of users by e-mail."
       parameters:
@@ -375,9 +375,9 @@ definitions:
   InvitationRequest:
     type: "object"
     properties:
-      emails:
+      inviteCodes:
         type: "array"
-        description: "The users email"
+        description: "The codes to be saved"
         items: {
           type: "string"
         }

@@ -205,6 +205,8 @@ font-style: italic;
   <li><a href="#usersExistsGet"><code><span class="http-method">get</span> /users/exists</code></a></li>
   <li><a href="#usersForgotPasswordPut"><code><span class="http-method">put</span> /users/forgot_password</code></a></li>
   <li><a href="#usersGet"><code><span class="http-method">get</span> /users</code></a></li>
+  <li><a href="#usersIdGet"><code><span class="http-method">get</span> /users/{id}</code></a></li>
+  <li><a href="#usersInvitationsEmailPost"><code><span class="http-method">post</span> /users/invitations/email</code></a></li>
   <li><a href="#usersLoginPost"><code><span class="http-method">post</span> /users/login</code></a></li>
   <li><a href="#usersPasswordPut"><code><span class="http-method">put</span> /users/password</code></a></li>
   <li><a href="#usersResetPasswordPost"><code><span class="http-method">post</span> /users/reset_password</code></a></li>
@@ -241,7 +243,7 @@ font-style: italic;
     <div class="method-path">
     <a class="up" href="#__Methods">Up</a>
     <pre class="put"><code class="huge"><span class="http-method">put</span> /users/email</code></pre></div>
-    <div class="method-summary">Updates a user&#39;s email&#39; (<span class="nickname">usersEmailPut</span>)</div>
+    <div class="method-summary">Updates a user&#39;s email (<span class="nickname">usersEmailPut</span>)</div>
     <div class="method-notes"></div>
 
 
@@ -273,6 +275,7 @@ font-style: italic;
   "verified" : false,
   "id" : "5c8e03d8-516a-47fa-8840-69fb6d62c0b7",
   "email" : "user@email.com",
+  "status" : "created",
   "updatedAt" : "2017-05-30T16:07:38.683938Z"
 }</code></pre>
 
@@ -391,6 +394,7 @@ font-style: italic;
   "verified" : false,
   "id" : "5c8e03d8-516a-47fa-8840-69fb6d62c0b7",
   "email" : "user@email.com",
+  "status" : "created",
   "updatedAt" : "2017-05-30T16:07:38.683938Z"
 }</code></pre>
 
@@ -399,6 +403,96 @@ font-style: italic;
     <h4 class="field-label">200</h4>
     Success
         <a href="#User">User</a>
+  </div> <!-- method -->
+  <hr/>
+  <div class="method"><a name="usersIdGet"/>
+    <div class="method-path">
+    <a class="up" href="#__Methods">Up</a>
+    <pre class="get"><code class="huge"><span class="http-method">get</span> /users/{id}</code></pre></div>
+    <div class="method-summary">Gets the information of a user (<span class="nickname">usersIdGet</span>)</div>
+    <div class="method-notes"></div>
+
+    <h3 class="field-label">Path parameters</h3>
+    <div class="field-items">
+      <div class="param">id (required)</div>
+
+      <div class="param-desc"><span class="param-type">Path Parameter</span> &mdash; User ID </div>
+    </div>  <!-- field-items -->
+
+
+
+
+
+
+    <h3 class="field-label">Return type</h3>
+    <div class="return-type">
+      <a href="#UserPublic">UserPublic</a>
+      
+    </div>
+
+    <!--Todo: process Response Object and its headers, schema, examples -->
+
+    <h3 class="field-label">Example data</h3>
+    <div class="example-data-content-type">Content-Type: application/json</div>
+    <pre class="example"><code>{
+  "id" : "5c8e03d8-516a-47fa-8840-69fb6d62c0b7",
+  "email" : "user@email.com",
+  "status" : "created"
+}</code></pre>
+
+
+    <h3 class="field-label">Responses</h3>
+    <h4 class="field-label">200</h4>
+    Success
+        <a href="#UserPublic">UserPublic</a>
+  </div> <!-- method -->
+  <hr/>
+  <div class="method"><a name="usersInvitationsEmailPost"/>
+    <div class="method-path">
+    <a class="up" href="#__Methods">Up</a>
+    <pre class="post"><code class="huge"><span class="http-method">post</span> /users/invitations/email</code></pre></div>
+    <div class="method-summary">Invites a list of users by e-mail. (<span class="nickname">usersInvitationsEmailPost</span>)</div>
+    <div class="method-notes"></div>
+
+
+
+    <h3 class="field-label">Request body</h3>
+    <div class="field-items">
+      <div class="param">body <a href="#InvitationRequest">InvitationRequest</a> (required)</div>
+
+      <div class="param-desc"><span class="param-type">Body Parameter</span> &mdash; request body </div>
+
+    </div>  <!-- field-items -->
+
+
+
+
+    <h3 class="field-label">Return type</h3>
+    <div class="return-type">
+      <a href="#InvitationResponse">InvitationResponse</a>
+      
+    </div>
+
+    <!--Todo: process Response Object and its headers, schema, examples -->
+
+    <h3 class="field-label">Example data</h3>
+    <div class="example-data-content-type">Content-Type: application/json</div>
+    <pre class="example"><code>{
+  "users" : [ {
+    "id" : "5c8e03d8-516a-47fa-8840-69fb6d62c0b7",
+    "email" : "user@email.com",
+    "status" : "created"
+  } ]
+}</code></pre>
+
+
+    <h3 class="field-label">Responses</h3>
+    <h4 class="field-label">201</h4>
+    Users invited
+        <a href="#InvitationResponse">InvitationResponse</a>
+    <h4 class="field-label">400</h4>
+    Some request body data is invalid
+        <a href="#"></a>
   </div> <!-- method -->
   <hr/>
   <div class="method"><a name="usersLoginPost"/>
@@ -437,6 +531,7 @@ font-style: italic;
   "verified" : false,
   "id" : "5c8e03d8-516a-47fa-8840-69fb6d62c0b7",
   "email" : "user@email.com",
+  "status" : "created",
   "updatedAt" : "2017-05-30T16:07:38.683938Z"
 }</code></pre>
 
@@ -457,7 +552,7 @@ font-style: italic;
     <div class="method-path">
     <a class="up" href="#__Methods">Up</a>
     <pre class="put"><code class="huge"><span class="http-method">put</span> /users/password</code></pre></div>
-    <div class="method-summary">Updates a user&#39;s password&#39; (<span class="nickname">usersPasswordPut</span>)</div>
+    <div class="method-summary">Updates a user&#39;s password (<span class="nickname">usersPasswordPut</span>)</div>
     <div class="method-notes"></div>
 
 
@@ -489,6 +584,7 @@ font-style: italic;
   "verified" : false,
   "id" : "5c8e03d8-516a-47fa-8840-69fb6d62c0b7",
   "email" : "user@email.com",
+  "status" : "created",
   "updatedAt" : "2017-05-30T16:07:38.683938Z"
 }</code></pre>
 
@@ -538,6 +634,7 @@ font-style: italic;
   "verified" : false,
   "id" : "5c8e03d8-516a-47fa-8840-69fb6d62c0b7",
   "email" : "user@email.com",
+  "status" : "created",
   "updatedAt" : "2017-05-30T16:07:38.683938Z"
 }</code></pre>
 
@@ -587,6 +684,7 @@ font-style: italic;
   "verified" : false,
   "id" : "5c8e03d8-516a-47fa-8840-69fb6d62c0b7",
   "email" : "user@email.com",
+  "status" : "created",
   "updatedAt" : "2017-05-30T16:07:38.683938Z"
 }</code></pre>
 
@@ -637,6 +735,7 @@ font-style: italic;
   "verified" : false,
   "id" : "5c8e03d8-516a-47fa-8840-69fb6d62c0b7",
   "email" : "user@email.com",
+  "status" : "created",
   "updatedAt" : "2017-05-30T16:07:38.683938Z"
 }</code></pre>
 
@@ -660,10 +759,13 @@ font-style: italic;
     <li><a href="#ChangeEmail"><code>ChangeEmail</code></a></li>
     <li><a href="#ChangePassword"><code>ChangePassword</code></a></li>
     <li><a href="#Exists"><code>Exists</code></a></li>
+    <li><a href="#InvitationRequest"><code>InvitationRequest</code></a></li>
+    <li><a href="#InvitationResponse"><code>InvitationResponse</code></a></li>
     <li><a href="#Login"><code>Login</code></a></li>
     <li><a href="#ResetPassword"><code>ResetPassword</code></a></li>
     <li><a href="#Signup"><code>Signup</code></a></li>
     <li><a href="#User"><code>User</code></a></li>
+    <li><a href="#UserPublic"><code>UserPublic</code></a></li>
   </ol>
 
   <div class="model">
@@ -688,6 +790,20 @@ font-style: italic;
     <div class='model-description'></div>
     <div class="field-items">
       <div class="param">exists (optional)</div><div class="param-desc"><span class="param-type"><a href="#boolean">Boolean</a></span> whether the user exists </div>
+    </div>  <!-- field-items -->
+  </div>
+  <div class="model">
+    <h3 class="field-label"><a name="InvitationRequest">InvitationRequest - </a> <a class="up" href="#__Models">Up</a></h3>
+    <div class='model-description'></div>
+    <div class="field-items">
+      <div class="param">inviteCodes (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">array[String]</a></span> The codes to be saved </div>
+    </div>  <!-- field-items -->
+  </div>
+  <div class="model">
+    <h3 class="field-label"><a name="InvitationResponse">InvitationResponse - </a> <a class="up" href="#__Models">Up</a></h3>
+    <div class='model-description'></div>
+    <div class="field-items">
+      <div class="param">users (optional)</div><div class="param-desc"><span class="param-type"><a href="#UserPublic">array[UserPublic]</a></span> The list of users </div>
     </div>  <!-- field-items -->
   </div>
   <div class="model">
@@ -721,10 +837,24 @@ font-style: italic;
     <div class="field-items">
       <div class="param">id (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span> The user ID </div>
 <div class="param">email (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span> The user e-mail </div>
+<div class="param">status (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span> The user status </div>
+        <div class="param-enum-header">Enum:</div>
+        <div class="param-enum">invited</div><div class="param-enum">created</div>
 <div class="param">authToken (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span> The user authentication token </div>
 <div class="param">createdAt (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span> Date when the user was created </div>
 <div class="param">updatedAt (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span> Date when the user was updated </div>
 <div class="param">verified (optional)</div><div class="param-desc"><span class="param-type"><a href="#boolean">Boolean</a></span> Whether or not the user has validated the e-mail </div>
+    </div>  <!-- field-items -->
+  </div>
+  <div class="model">
+    <h3 class="field-label"><a name="UserPublic">UserPublic - </a> <a class="up" href="#__Models">Up</a></h3>
+    <div class='model-description'></div>
+    <div class="field-items">
+      <div class="param">id (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span> The user ID </div>
+<div class="param">email (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span> The user e-mail </div>
+<div class="param">status (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span> The user status </div>
+        <div class="param-enum-header">Enum:</div>
+        <div class="param-enum">invited</div><div class="param-enum">created</div>
     </div>  <!-- field-items -->
   </div>
   </body>
