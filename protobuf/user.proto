@@ -15,10 +15,12 @@ message User {
   bool verified = 5;
   string authToken = 6;
   UserStatus status = 7;
+  string facebookID = 8;
 }
 
 message UserPublic {
   string id = 1;
   string email = 2;
   UserStatus status = 3;
+  string facebookID = 4;
 }

@@ -35,6 +35,8 @@ type ZENAUTHProvider interface {
 	GetUserByEmail(user *models.User) error
 	// GetUser retrieves a user via id
 	GetUserByID(user *models.User) error
+	// GetUserByFacebookID retrieves a user from the facebook id
+	GetUserByFacebookID(user *models.User) error
 	// GetUserByResetToken returns the user via reset token
 	//GetUserByResetToken(resetToken string, user *models.User) error
 
@@ -55,12 +57,18 @@ type ZENAUTHProvider interface {
 	// DeleteUser deletes a user (by user id)
 	DeleteUser(user *models.User) error
 
-	// GetOrCreateInvitations creates a list of invitations
-	CreateInvitations(invitations *[]*models.Invitation) error
+	// CreateInvitations creates a list of invitations
+	CreateInvitations(invitations *models.Invitations) error
+	// GetInvitation gets an invite by type and invite code
+	GetInvitation(invite *models.Invitation) error
+	// GetAllInvitations gets all invitations
+	GetAllInvitations(invitations *models.Invitations) error
+	// DeleteInvitation deletes an invite by type and invite code
+	DeleteInvitation(invite *models.Invitation) error
 	// GetInvitationByID Gets an invitation by ID
 	GetInvitationByID(invitation *models.Invitation) error
 	// GetInvitationByEmail gets an invite by email
 	GetInvitationByEmail(invite *models.Invitation) error
-	// DeleteInvitationByEmail
+	// DeleteInvitationByEmail deletes an invite by email
 	DeleteInvitationByEmail(invite *models.Invitation) error
 }
