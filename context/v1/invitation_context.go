@@ -15,7 +15,7 @@ type InvitationContext struct {
 	*UserContext
 }
 
-func (c *InvitationContext) createInvitationsResponse(invitations []*models.Invitation, rw web.ResponseWriter, req *web.Request) {
+func (c *InvitationContext) createInvitationsResponse(invitations models.Invitations, rw web.ResponseWriter, req *web.Request) {
 
 	if err := c.DAL.CreateInvitations(&invitations); err != nil {
 		model := models.NewErrorResponse(constants.APIInvitationsCreationError, models.NewAZError(err.Error()), "unable to create the invitations")
@@ -54,7 +54,7 @@ func (c *InvitationContext) CreateEmailInvitations(rw web.ResponseWriter, req *w
 		return
 	}
 
-	invitations := make([]*models.Invitation, len(invitationRequest.InviteCodes))
+	invitations := make(models.Invitations, len(invitationRequest.InviteCodes))
 	var user models.User
 	for idx, email := range invitationRequest.InviteCodes {
 		// Verify invite email is valid
@@ -95,14 +95,14 @@ func (c *InvitationContext) CreateFacebookInvitations(rw web.ResponseWriter, req
 		return
 	}
 
-	invitations := make([]*models.Invitation, len(invitationRequest.InviteCodes))
+	invitations := make(models.Invitations, len(invitationRequest.InviteCodes))
 	var user models.User
 	for idx, facebookID := range invitationRequest.InviteCodes {
 		invitations[idx] = &models.Invitation{
 			Type: constants.InvitationTypeFacebook,
 			Code: facebookID,
 		}
-		// Verify we don't already have a user with this email
+		// Verify we don't already have a user with this facebookID
 		user.FacebookID = invitations[idx].Code
 
 		// TODO: Should we error here? Or continue inviting the rest of the list?

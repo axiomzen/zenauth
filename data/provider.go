@@ -57,12 +57,12 @@ type ZENAUTHProvider interface {
 	// DeleteUser deletes a user (by user id)
 	DeleteUser(user *models.User) error
 
-	// GetOrCreateInvitations creates a list of invitations
-	CreateInvitations(invitations *[]*models.Invitation) error
+	// CreateInvitations creates a list of invitations
+	CreateInvitations(invitations *models.Invitations) error
 	// GetInvitation gets an invite by type and invite code
 	GetInvitation(invite *models.Invitation) error
 	// GetAllInvitations gets all invitations
-	GetAllInvitations() (models.Invitations, error)
+	GetAllInvitations(invitations *models.Invitations) error
 	// DeleteInvitation deletes an invite by type and invite code
 	DeleteInvitation(invite *models.Invitation) error
 	// GetInvitationByID Gets an invitation by ID

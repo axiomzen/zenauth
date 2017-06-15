@@ -184,8 +184,8 @@ func (c *TestContext) UserDelete(rw web.ResponseWriter, req *web.Request) {
 // Returns
 //   204 No Content
 func (c *TestContext) InvitationsDelete(rw web.ResponseWriter, req *web.Request) {
-	invites, err := c.DAL.GetAllInvitations()
-	if err != nil {
+	invites := models.Invitations{}
+	if err := c.DAL.GetAllInvitations(&invites); err != nil {
 		model := models.NewErrorResponse(constants.APIDatabaseDeleteUser, models.NewAZError(err.Error()), "Error deleting invites")
 		c.Render(constants.StatusInternalServerError, model, rw, req)
 		return
