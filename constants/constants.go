@@ -175,7 +175,8 @@ const (
 	// TimeFormat = "2006-01-02T15:04:05Z0700"
 	TimeFormat = time.RFC3339Nano
 
-	InvitationTypeEmail = "email"
+	InvitationTypeEmail    = "email"
+	InvitationTypeFacebook = "facebook"
 )
 
 // in case we want to ever support multiple

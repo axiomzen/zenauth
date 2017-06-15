@@ -102,7 +102,8 @@ func InitRouter(c *config.ZENAUTHConfig) *web.Router {
 			// Invitations
 			v1APIAuthUserAuthRouter.
 				Subrouter(v1.InvitationContext{}, routes.ResourceInvitations).
-				Post(routes.ResourceEmail, (*v1.InvitationContext).Create)
+				Post(routes.ResourceEmail, (*v1.InvitationContext).CreateEmailInvitations).
+				Post(routes.ResourceFacebook, (*v1.InvitationContext).CreateFacebookInvitations)
 		}
 	}
 
@@ -116,6 +117,7 @@ func InitRouter(c *config.ZENAUTHConfig) *web.Router {
 			Get(routes.ResourcePasswordReset, (*v1.TestContext).UserPasswordResetTokenGet).
 			// for now using user id, see if we need to delete via token or email
 			Delete(routes.ResourcePasswordReset+"/:user_id:"+c.UUIDRegex, (*v1.TestContext).UserPasswordResetTokenDelete).
+			Delete(routes.ResourceInvitations, (*v1.TestContext).InvitationsDelete).
 			Delete("/:user_id:"+c.UUIDRegex, (*v1.TestContext).UserDelete)
 	}
 

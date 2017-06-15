@@ -15,13 +15,39 @@ type InvitationContext struct {
 	*UserContext
 }
 
-// Create invitation route creates multiple invitations
+func (c *InvitationContext) createInvitationsResponse(invitations []*models.Invitation, rw web.ResponseWriter, req *web.Request) {
+
+	if err := c.DAL.CreateInvitations(&invitations); err != nil {
+		model := models.NewErrorResponse(constants.APIInvitationsCreationError, models.NewAZError(err.Error()), "unable to create the invitations")
+		c.Render(constants.StatusBadRequest, model, rw, req)
+		return
+	}
+
+	invitationResponse := models.InvitationResponse{
+		Users: make([]*protobuf.UserPublic, len(invitations)),
+	}
+	var err error
+	for idx, invitation := range invitations {
+		invitationResponse.Users[idx], err = invitation.UserPublicProtobuf()
+		if err != nil {
+			model := models.NewErrorResponse(constants.APIInvitationsCreationError, models.NewAZError(err.Error()), "unable to get the view of the invitation")
+			c.Render(constants.StatusInternalServerError, model, rw, req)
+			return
+		}
+	}
+
+	rw.Header().Set("Location", "/v1/users")
+
+	c.Render(constants.StatusCreated, &invitationResponse, rw, req)
+}
+
+// CreateEmailInvitations invitation route creates multiple invitations
 //
-//   POST /users/invite/email
+//   POST /users/invitations/email
 //
 // Returns
 //   201 Status Created
-func (c *InvitationContext) Create(rw web.ResponseWriter, req *web.Request) {
+func (c *InvitationContext) CreateEmailInvitations(rw web.ResponseWriter, req *web.Request) {
 	var invitationRequest models.InvitationRequest
 	// decode request
 	if !c.DecodeHelper(&invitationRequest, "Couldn't decode the request body", rw, req) {
@@ -53,27 +79,40 @@ func (c *InvitationContext) Create(rw web.ResponseWriter, req *web.Request) {
 			return
 		}
 	}
+	c.createInvitationsResponse(invitations, rw, req)
+}
 
-	if err := c.DAL.CreateInvitations(&invitations); err != nil {
-		model := models.NewErrorResponse(constants.APIInvitationsCreationError, models.NewAZError(err.Error()), "unable to create the invitations")
-		c.Render(constants.StatusBadRequest, model, rw, req)
+// CreateFacebookInvitations invitation route creates multiple invitations
+//
+//   POST /users/invitations/facebook
+//
+// Returns
+//   201 Status Created
+func (c *InvitationContext) CreateFacebookInvitations(rw web.ResponseWriter, req *web.Request) {
+	var invitationRequest models.InvitationRequest
+	// decode request
+	if !c.DecodeHelper(&invitationRequest, "Couldn't decode the request body", rw, req) {
 		return
 	}
 
-	invitationResponse := models.InvitationResponse{
-		Users: make([]*protobuf.UserPublic, len(invitations)),
-	}
-	var err error
-	for idx, invitation := range invitations {
-		invitationResponse.Users[idx], err = invitation.UserPublicProtobuf()
-		if err != nil {
-			model := models.NewErrorResponse(constants.APIInvitationsCreationError, models.NewAZError(err.Error()), "unable to get the view of the invitation")
-			c.Render(constants.StatusInternalServerError, model, rw, req)
+	invitations := make([]*models.Invitation, len(invitationRequest.InviteCodes))
+	var user models.User
+	for idx, facebookID := range invitationRequest.InviteCodes {
+		invitations[idx] = &models.Invitation{
+			Type: constants.InvitationTypeFacebook,
+			Code: facebookID,
+		}
+		// Verify we don't already have a user with this email
+		user.FacebookID = invitations[idx].Code
+
+		// TODO: Should we error here? Or continue inviting the rest of the list?
+		if err := c.DAL.GetUserByFacebookID(&user); err == nil {
+			model := models.NewErrorResponse(constants.APIDatabaseCreateInvitation,
+				models.NewAZError("User with facebookID already exists"), "Could not create invitation")
+			c.Render(constants.StatusBadRequest, model, rw, req)
 			return
 		}
 	}
 
-	rw.Header().Set("Location", "/v1/users")
-
-	c.Render(constants.StatusCreated, &invitationResponse, rw, req)
+	c.createInvitationsResponse(invitations, rw, req)
 }

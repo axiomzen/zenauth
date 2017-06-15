@@ -176,3 +176,26 @@ func (c *TestContext) UserDelete(rw web.ResponseWriter, req *web.Request) {
 	}
 	c.Render(constants.StatusNoContent, nil, rw, req)
 }
+
+// InvitationsDelete deletes all invitations
+//
+//   DELETE /test/users/invitations
+//
+// Returns
+//   204 No Content
+func (c *TestContext) InvitationsDelete(rw web.ResponseWriter, req *web.Request) {
+	invites, err := c.DAL.GetAllInvitations()
+	if err != nil {
+		model := models.NewErrorResponse(constants.APIDatabaseDeleteUser, models.NewAZError(err.Error()), "Error deleting invites")
+		c.Render(constants.StatusInternalServerError, model, rw, req)
+		return
+	}
+	for _, invite := range invites {
+		if err := c.DAL.DeleteInvitation(invite); err != nil {
+			model := models.NewErrorResponse(constants.APIDatabaseDeleteUser, models.NewAZError(err.Error()), "Error deleting invites")
+			c.Render(constants.StatusInternalServerError, model, rw, req)
+			return
+		}
+	}
+	c.Render(constants.StatusNoContent, nil, rw, req)
+}
