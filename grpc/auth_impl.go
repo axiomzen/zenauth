@@ -38,7 +38,7 @@ func (auth *Auth) GetCurrentUser(ctx context.Context, _ *pEmpty.Empty) (*protobu
 	return user.Protobuf()
 }
 
-// GetUserByID implements the action to return the user from the session token.
+// GetUserByID implements the action to return the user from the ID.
 func (auth *Auth) GetUserByID(ctx context.Context, userID *protobuf.UserID) (*protobuf.UserPublic, error) {
 
 	// Get the current user to make sure it's an authenticated request

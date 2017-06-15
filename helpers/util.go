@@ -33,6 +33,5 @@ func NewStringPointer(str string) *string {
 func EmailSanitize(email string) (safeEmail string) {
 	safeEmail = strings.ToLower(email)
 	safeEmail = strings.Trim(safeEmail, " \t")
-	safeEmail = strings.Replace(safeEmail, " ", "+", -1)
 	return
 }

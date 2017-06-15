@@ -814,7 +814,7 @@ func (c *UserContext) Signup(w web.ResponseWriter, req *web.Request) {
 
 	// check email
 	// TODO: perhaps refactor
-	if strings.Count(signup.Email, "@") != 1 {
+	if strings.Count(signup.Email, "@") == 0 {
 		model := models.NewErrorResponse(constants.APIValidationEmailNotValid, models.NewAZError("Please enter a valid email address"), "Could not create account")
 		c.Render(constants.StatusBadRequest, model, w, req)
 		return
