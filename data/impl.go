@@ -5,14 +5,13 @@ package data
 
 import (
 	"errors"
+	"fmt"
+	"io/ioutil"
+	"regexp"
 	"strings"
 
 	"github.com/axiomzen/zenauth/constants"
 	"github.com/axiomzen/zenauth/models"
-
-	"io/ioutil"
-	"regexp"
-
 	"gopkg.in/pg.v4"
 )
 
@@ -201,22 +200,23 @@ func (dp *dataProvider) ConsumeUserResetToken(user *models.User) error {
 // CreateUser creates a user
 func (dp *dataProvider) CreateUser(user *models.User) error {
 	return wrapError(dp.Tx(func(tx *pg.Tx) error {
-		if user.Email != "" {
+		// If an invite exists for any code, delete them
+		invitation := models.Invitation{}
+		if user.FacebookID != "" {
+			invitation.Type = constants.InvitationTypeFacebook
+			invitation.Code = user.FacebookID
+		} else if user.Email != "" {
+			invitation.Type = constants.InvitationTypeEmail
+			invitation.Code = user.Email
+		} else {
+			return fmt.Errorf("Cannot create a user without FacebookID or Email")
+		}
 
-			// If an invite exists for this email, delete it
-			invite := models.Invitation{
-				Type: constants.InvitationTypeEmail,
-				Code: user.Email,
-			}
-			// Bug
-			// _, err := tx.Model(&invite).Where("type = ?type").Where("code = ?code").Returning("*").Delete()
-			err := tx.Model(&invite).Where("type = ?type").Where("code = ?code").Select()
-			if err == nil {
-				user.ID = invite.ID
-				_, err = tx.Model(&invite).Where("type = ?type").Where("code = ?code").Delete()
-				if err != nil {
-					return err
-				}
+		if err := tx.Model(&invitation).Where("type = ?type").Where("code = ?code").Select(); err == nil {
+			user.ID = invitation.ID
+			_, err = tx.Model(&invitation).Where("type = ?type").Where("code = ?code").Delete()
+			if err != nil {
+				return err
 			}
 		}
 		return tx.Create(user)

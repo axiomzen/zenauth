@@ -143,6 +143,45 @@ var _ = ginkgo.Describe("Invitations", func() {
 
 			gomega.Expect(userResponse.ID).To(gomega.Equal(res.Users[0].Id))
 		})
+		ginkgo.It("keeps the same ID after the facebook invited user signs up", func() {
+			var res models.InvitationResponse
+			req := models.InvitationRequest{
+				InviteCodes: []string{FacebookTestId},
+			}
+
+			statusCode, err := TestRequestV1().
+				Post(routes.ResourceUsers+routes.ResourceInvitations+routes.ResourceFacebook).
+				Header(theConf.AuthTokenHeader, user.AuthToken).
+				RequestBody(&req).
+				ResponseBody(&res).
+				Do()
+			gomega.Expect(err).ToNot(gomega.HaveOccurred())
+			gomega.Expect(statusCode).To(gomega.Equal(http.StatusCreated))
+
+			var userResponse models.User
+			defer func() {
+				// delete this user
+				statusCode, err := TestRequestV1().Delete(routes.ResourceTest+routes.ResourceUsers+"/"+userResponse.ID).Header(theConf.AuthTokenHeader, TesterToken).Do()
+				gomega.Expect(err).ToNot(gomega.HaveOccurred())
+				gomega.Expect(statusCode).To(gomega.Equal(http.StatusNoContent))
+			}()
+			signup := models.FacebookSignup{
+				FacebookUser: models.FacebookUser{
+					FacebookID:    FacebookTestId,
+					FacebookToken: FacebookTestToken,
+				},
+			}
+			statusCode, err = TestRequestV1().
+				Post(routes.ResourceUsers + routes.ResourceFacebook).
+				RequestBody(&signup).
+				ResponseBody(&userResponse).
+				Do()
+
+			gomega.Expect(err).ToNot(gomega.HaveOccurred())
+			gomega.Expect(statusCode).To(gomega.Equal(http.StatusCreated))
+
+			gomega.Expect(userResponse.ID).To(gomega.Equal(res.Users[0].Id))
+		})
 		ginkgo.It("doesn't invite the same user twice (email)", func() {
 			var email = lorem.Email()
 			var res models.InvitationResponse
@@ -194,7 +233,7 @@ var _ = ginkgo.Describe("Invitations", func() {
 			gomega.Expect(err).ToNot(gomega.HaveOccurred())
 			gomega.Expect(status).To(gomega.Equal(http.StatusBadRequest))
 		})
-		ginkgo.It("doesn't invite users that already exist", func() {
+		ginkgo.It("doesn't invite users that already exist (email)", func() {
 			var res models.InvitationResponse
 			req := models.InvitationRequest{
 				InviteCodes: []string{user.Email},
