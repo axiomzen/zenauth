@@ -21,13 +21,22 @@ type Invitation struct {
 	CreatedAt null.Time `sql:",null"`
 }
 
+type Invitations []*Invitation
+
 func (invitation *Invitation) UserPublicProtobuf() (*protobuf.UserPublic, error) {
 	user := &protobuf.UserPublic{
 		Id:     invitation.ID,
 		Status: protobuf.UserStatus_invited,
 	}
-	if invitation.Type == constants.InvitationTypeEmail {
-		user.Email = invitation.Code
+	switch invitation.Type {
+	case constants.InvitationTypeEmail:
+		{
+			user.Email = invitation.Code
+		}
+	case constants.InvitationTypeFacebook:
+		{
+			user.FacebookID = invitation.Code
+		}
 	}
 	return user, nil
 }

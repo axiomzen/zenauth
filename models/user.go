@@ -30,20 +30,22 @@ func (user *User) Protobuf() (*protobuf.User, error) {
 		return nil, err
 	}
 	return &protobuf.User{
-		Id:        user.ID,
-		AuthToken: user.AuthToken,
-		Email:     user.Email,
-		Verified:  user.Verified,
-		CreatedAt: createdAt,
-		UpdatedAt: updatedAt,
-		Status:    protobuf.UserStatus_created,
+		Id:         user.ID,
+		AuthToken:  user.AuthToken,
+		Email:      user.Email,
+		Verified:   user.Verified,
+		CreatedAt:  createdAt,
+		UpdatedAt:  updatedAt,
+		Status:     protobuf.UserStatus_created,
+		FacebookID: user.FacebookID,
 	}, nil
 }
 func (user *User) ProtobufPublic() (*protobuf.UserPublic, error) {
 	return &protobuf.UserPublic{
-		Id:     user.ID,
-		Email:  user.Email,
-		Status: protobuf.UserStatus_created,
+		Id:         user.ID,
+		Email:      user.Email,
+		Status:     protobuf.UserStatus_created,
+		FacebookID: user.FacebookID,
 	}, nil
 }
 
