@@ -30,13 +30,9 @@ func (invitation *Invitation) UserPublicProtobuf() (*protobuf.UserPublic, error)
 	}
 	switch invitation.Type {
 	case constants.InvitationTypeEmail:
-		{
-			user.Email = invitation.Code
-		}
+		user.Email = invitation.Code
 	case constants.InvitationTypeFacebook:
-		{
-			user.FacebookID = invitation.Code
-		}
+		user.FacebookID = invitation.Code
 	}
 	return user, nil
 }
