@@ -1,6 +1,8 @@
 package models
 
 import (
+	"fmt"
+
 	"github.com/axiomzen/null"
 	"github.com/axiomzen/zenauth/constants"
 	"github.com/axiomzen/zenauth/protobuf"
@@ -35,4 +37,16 @@ func (invitation *Invitation) UserPublicProtobuf() (*protobuf.UserPublic, error)
 		user.FacebookID = invitation.Code
 	}
 	return user, nil
+}
+
+func (invitation *Invitation) UpdateUserWithInvitationInfo(user *User) error {
+	switch invitation.Type {
+	case constants.InvitationTypeEmail:
+		user.Email = invitation.Code
+	case constants.InvitationTypeFacebook:
+		user.FacebookID = invitation.Code
+	default:
+		return fmt.Errorf("Invitation type %s not supported", invitation.Type)
+	}
+	return nil
 }

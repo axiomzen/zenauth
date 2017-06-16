@@ -48,6 +48,32 @@ func (user *User) ProtobufPublic() (*protobuf.UserPublic, error) {
 		FacebookID: user.FacebookID,
 	}, nil
 }
+func (user *User) Merge(mergeWith *User) {
+	// For linking email accounts
+	if user.Email == "" {
+		user.Email = mergeWith.Email
+	}
+	if user.Hash != nil && *user.Hash != "" {
+		user.Hash = mergeWith.Hash
+	}
+	if user.VerifyEmailToken != "" {
+		user.VerifyEmailToken = mergeWith.VerifyEmailToken
+	}
+
+	// For linking facebook accounts
+	if user.FacebookID == "" {
+		user.FacebookID = mergeWith.FacebookID
+	}
+	if user.FacebookUsername == "" {
+		user.FacebookUsername = mergeWith.FacebookUsername
+	}
+	if user.FacebookToken == "" {
+		user.FacebookToken = mergeWith.FacebookToken
+	}
+	if user.FacebookEmail == "" {
+		user.FacebookEmail = mergeWith.FacebookEmail
+	}
+}
 
 // Users is a slice of User pointers
 // currently unused as we don't have any routes to paginate users yet
