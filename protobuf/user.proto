@@ -5,6 +5,7 @@ import "google/protobuf/timestamp.proto";
 enum UserStatus {
   invited = 0;
   created = 1;
+  merged = 2;
 }
 
 message User {

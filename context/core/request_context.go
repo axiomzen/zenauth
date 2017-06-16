@@ -12,13 +12,13 @@ import (
 	"time"
 
 	log "github.com/Sirupsen/logrus"
+	"github.com/axiomzen/gorelic"
 	"github.com/axiomzen/zenauth/config"
 	"github.com/axiomzen/zenauth/constants"
 	"github.com/axiomzen/zenauth/data"
 	"github.com/axiomzen/zenauth/helpers"
 	"github.com/axiomzen/zenauth/helpers/header"
 	"github.com/axiomzen/zenauth/models"
-	"github.com/axiomzen/gorelic"
 	"github.com/gocraft/web"
 	"github.com/newrelic/go-agent"
 	"github.com/rcrowley/go-metrics"
@@ -148,7 +148,7 @@ func (c *RequestContext) NewRelicTransaction(w web.ResponseWriter, r *web.Reques
 // Logging Middleware: logs incoming requests and responses
 func (c *RequestContext) Logging(w web.ResponseWriter, r *web.Request, next web.NextMiddlewareFunc) {
 	// setup the logger
-	c.Log = log.WithField("id", c.requestID.String())
+	c.Log = log.WithField("server", "http").WithField("id", c.requestID.String())
 	// add hostname
 	c.Log = c.Log.WithField("host", r.Host)
 	// Attach this id to the context with the corrosponding ID

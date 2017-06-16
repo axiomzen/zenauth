@@ -422,3 +422,17 @@ func createInvitations(token string, req *models.InvitationRequest, res *models.
 	gomega.Expect(err).ToNot(gomega.HaveOccurred())
 	return status
 }
+
+func clearInvitations() {
+	// Clear invites
+	statusCode, err := TestRequestV1().Delete(routes.ResourceTest+routes.ResourceUsers+routes.ResourceInvitations).Header(theConf.AuthTokenHeader, TesterToken).Do()
+	gomega.Expect(err).ToNot(gomega.HaveOccurred())
+	gomega.Expect(statusCode).To(gomega.Equal(http.StatusNoContent))
+}
+
+func deleteUser(userID string) {
+	// delete this user
+	statusCode, err := TestRequestV1().Delete(routes.ResourceTest+routes.ResourceUsers+"/"+userID).Header(theConf.AuthTokenHeader, TesterToken).Do()
+	gomega.Expect(err).ToNot(gomega.HaveOccurred())
+	gomega.Expect(statusCode).To(gomega.Equal(http.StatusNoContent))
+}

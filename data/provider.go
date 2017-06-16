@@ -37,6 +37,8 @@ type ZENAUTHProvider interface {
 	GetUserByID(user *models.User) error
 	// GetUserByFacebookID retrieves a user from the facebook id
 	GetUserByFacebookID(user *models.User) error
+	// UpdateUserFacebookToken updates the user's facebook token
+	UpdateUserFacebookToken(user *models.User) error
 	// GetUserByResetToken returns the user via reset token
 	//GetUserByResetToken(resetToken string, user *models.User) error
 
@@ -56,6 +58,8 @@ type ZENAUTHProvider interface {
 	CreateUser(user *models.User) error
 	// DeleteUser deletes a user (by user id)
 	DeleteUser(user *models.User) error
+	// MergeUsers merges the users, with the first user taking precedence.
+	MergeUsers(firstUser, secondUser *models.User) error
 
 	// CreateInvitations creates a list of invitations
 	CreateInvitations(invitations *models.Invitations) error

@@ -4,6 +4,7 @@ import (
 	"net/http"
 
 	lorem "github.com/axiomzen/golorem"
+	"github.com/axiomzen/zenauth/constants"
 	"github.com/axiomzen/zenauth/models"
 	"github.com/axiomzen/zenauth/protobuf"
 	"github.com/axiomzen/zenauth/routes"
@@ -27,6 +28,10 @@ var _ = ginkgo.Describe("Auth GRPC", func() {
 			Do()
 		gomega.Expect(err).ToNot(gomega.HaveOccurred())
 		gomega.Expect(statusCode).To(gomega.Equal(http.StatusCreated))
+	})
+
+	ginkgo.AfterEach(func() {
+		deleteUser(user.ID)
 	})
 
 	ginkgo.Context("GetCurrentUser", func() {
@@ -78,5 +83,135 @@ var _ = ginkgo.Describe("Auth GRPC", func() {
 			gomega.Expect(grpcUser).To(gomega.BeNil())
 			gomega.Expect(err).To(gomega.HaveOccurred())
 		})
+	})
+
+	ginkgo.Context("LinkUser", func() {
+
+		ginkgo.It("Returns the user to be merged", func() {
+			// Create the facebook user
+			var userResponse models.User
+			signup := models.FacebookSignup{
+				FacebookUser: models.FacebookUser{
+					FacebookID:    FacebookTestId,
+					FacebookToken: FacebookTestToken,
+				},
+			}
+			statusCode, err := TestRequestV1().
+				Post(routes.ResourceUsers + routes.ResourceFacebook).
+				RequestBody(&signup).
+				ResponseBody(&userResponse).
+				Do()
+
+			gomega.Expect(err).ToNot(gomega.HaveOccurred())
+			gomega.Expect(statusCode).To(gomega.Equal(http.StatusCreated))
+
+			// Make the GRPC call
+			ctx := getGRPCAuthenticatedContext(user.AuthToken)
+			grpcUser, err := grpcAuthClient.LinkUser(ctx, &protobuf.InvitationCode{
+				Type:       constants.InvitationTypeFacebook,
+				InviteCode: userResponse.FacebookID,
+			})
+			gomega.Expect(err).ToNot(gomega.HaveOccurred())
+			gomega.Expect(grpcUser.Id).To(gomega.Equal(userResponse.ID))
+			gomega.Expect(grpcUser.FacebookID).To(gomega.Equal(userResponse.FacebookID))
+			gomega.Expect(grpcUser.Status).To(gomega.Equal(protobuf.UserStatus_merged))
+		})
+		ginkgo.It("Returns the invite to be merged", func() {
+			// Invite Test FB user
+			var res models.InvitationResponse
+			req := models.InvitationRequest{
+				InviteCodes: []string{FacebookTestId},
+			}
+			defer clearInvitations()
+
+			statusCode, err := TestRequestV1().
+				Post(routes.ResourceUsers+routes.ResourceInvitations+routes.ResourceFacebook).
+				Header(theConf.AuthTokenHeader, user.AuthToken).
+				RequestBody(&req).
+				ResponseBody(&res).
+				Do()
+			gomega.Expect(err).ToNot(gomega.HaveOccurred())
+			gomega.Expect(statusCode).To(gomega.Equal(http.StatusCreated))
+
+			gomega.Expect(len(res.Users)).To(gomega.Equal(len(req.InviteCodes)))
+			userResponse := res.Users[0]
+			gomega.Expect(res.Users[0].FacebookID).To(gomega.Equal(req.InviteCodes[0]))
+
+			// Make the GRPC call
+			ctx := getGRPCAuthenticatedContext(user.AuthToken)
+			grpcUser, err := grpcAuthClient.LinkUser(ctx, &protobuf.InvitationCode{
+				Type:       constants.InvitationTypeFacebook,
+				InviteCode: userResponse.FacebookID,
+			})
+			gomega.Expect(err).ToNot(gomega.HaveOccurred())
+			gomega.Expect(grpcUser.Id).To(gomega.Equal(userResponse.Id))
+			gomega.Expect(grpcUser.FacebookID).To(gomega.Equal(userResponse.FacebookID))
+			gomega.Expect(grpcUser.Status).To(gomega.Equal(protobuf.UserStatus_merged))
+		})
+		ginkgo.It("Allows signin of original account with new linked signin method", func() {
+			// Invite Test FB user
+			var res models.InvitationResponse
+			req := models.InvitationRequest{
+				InviteCodes: []string{FacebookTestId},
+			}
+			defer clearInvitations()
+
+			statusCode, err := TestRequestV1().
+				Post(routes.ResourceUsers+routes.ResourceInvitations+routes.ResourceFacebook).
+				Header(theConf.AuthTokenHeader, user.AuthToken).
+				RequestBody(&req).
+				ResponseBody(&res).
+				Do()
+			gomega.Expect(err).ToNot(gomega.HaveOccurred())
+			gomega.Expect(statusCode).To(gomega.Equal(http.StatusCreated))
+
+			userResponse := res.Users[0]
+			// Make the GRPC call
+			ctx := getGRPCAuthenticatedContext(user.AuthToken)
+			_, err = grpcAuthClient.LinkUser(ctx, &protobuf.InvitationCode{
+				Type:       constants.InvitationTypeFacebook,
+				InviteCode: userResponse.FacebookID,
+			})
+			gomega.Expect(err).ToNot(gomega.HaveOccurred())
+
+			facebookLogin := models.FacebookUser{
+				FacebookID:    FacebookTestId,
+				FacebookToken: FacebookTestToken,
+			}
+			var mergedUser models.User
+			statusCode, err = TestRequestV1().Post(routes.ResourceUsers + routes.ResourceFacebook).
+				RequestBody(&facebookLogin).
+				ResponseBody(&mergedUser).Do()
+			gomega.Expect(err).ToNot(gomega.HaveOccurred())
+			gomega.Expect(statusCode).To(gomega.Equal(http.StatusOK))
+
+			// deep compare user to newuser (auth token will be different)
+			gomega.Expect(user.ID).To(gomega.Equal(mergedUser.ID))
+			gomega.Expect(facebookLogin.FacebookID).To(gomega.Equal(mergedUser.FacebookID))
+			gomega.Expect(facebookLogin.FacebookToken).To(gomega.Equal(mergedUser.FacebookToken))
+
+		})
+		ginkgo.It("Returns original user if no invite/user associated with request", func() {
+			fbid := "new_facebook_id"
+			ctx := getGRPCAuthenticatedContext(user.AuthToken)
+			grpcUser, err := grpcAuthClient.LinkUser(ctx, &protobuf.InvitationCode{
+				Type:       constants.InvitationTypeFacebook,
+				InviteCode: fbid,
+			})
+			gomega.Expect(err).ToNot(gomega.HaveOccurred())
+			gomega.Expect(grpcUser.Id).To(gomega.Equal(user.ID))
+			gomega.Expect(grpcUser.FacebookID).To(gomega.Equal(fbid))
+			gomega.Expect(grpcUser.Status).To(gomega.Equal(protobuf.UserStatus_created))
+		})
+		ginkgo.It("Returns error if the invite type is not accepted", func() {
+			ctx := getGRPCAuthenticatedContext(user.AuthToken)
+			grpcUser, err := grpcAuthClient.LinkUser(ctx, &protobuf.InvitationCode{
+				Type:       "INVALID_TYPE",
+				InviteCode: lorem.Word(10, 20),
+			})
+			gomega.Expect(grpcUser).To(gomega.BeNil())
+			gomega.Expect(err).To(gomega.HaveOccurred())
+		})
+
 	})
 })

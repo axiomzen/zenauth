@@ -36,10 +36,8 @@ var _ = ginkgo.Describe("Password Reset Functionality", func() {
 			})
 
 			ginkgo.AfterEach(func() {
-				// delete user
-				statusCode, err := TestRequestV1().Delete(routes.ResourceTest+routes.ResourceUsers+"/"+user.ID).Header(theConf.AuthTokenHeader, TesterToken).Do()
-				gomega.Expect(err).ToNot(gomega.HaveOccurred())
-				gomega.Expect(statusCode).To(gomega.Equal(http.StatusNoContent))
+				deleteUser(user.ID)
+
 			})
 
 			ginkgo.It("should be able to reset password using correct email", func() {

@@ -8,7 +8,13 @@ message UserID {
   string id = 1;
 }
 
+message InvitationCode {
+  string type = 1;
+  string inviteCode = 2;
+}
+
 service Auth {
   rpc GetCurrentUser(google.protobuf.Empty) returns (User) {}
   rpc GetUserByID(UserID) returns (UserPublic) {}
+  rpc LinkUser(InvitationCode) returns (UserPublic) {}
 }

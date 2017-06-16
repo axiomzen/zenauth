@@ -179,6 +179,14 @@ const (
 	InvitationTypeFacebook = "facebook"
 )
 
+var (
+	// InvitationTypes is used to check the types of invitations we handle
+	InvitationTypes = map[string]bool{
+		InvitationTypeEmail:    true,
+		InvitationTypeFacebook: true,
+	}
+)
+
 // in case we want to ever support multiple
 // // DBType is the types of databases we support
 // type DBType int

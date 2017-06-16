@@ -31,15 +31,8 @@ var _ = ginkgo.Describe("Invitations", func() {
 	})
 
 	ginkgo.AfterEach(func() {
-		// delete user
-		statusCode, err := TestRequestV1().Delete(routes.ResourceTest+routes.ResourceUsers+"/"+user.ID).Header(theConf.AuthTokenHeader, TesterToken).Do()
-		gomega.Expect(err).ToNot(gomega.HaveOccurred())
-		gomega.Expect(statusCode).To(gomega.Equal(http.StatusNoContent))
-
-		statusCode, err = TestRequestV1().Delete(routes.ResourceTest+routes.ResourceUsers+routes.ResourceInvitations).Header(theConf.AuthTokenHeader, TesterToken).Do()
-		gomega.Expect(err).ToNot(gomega.HaveOccurred())
-		gomega.Expect(statusCode).To(gomega.Equal(http.StatusNoContent))
-
+		deleteUser(user.ID)
+		clearInvitations()
 	})
 
 	ginkgo.Describe("Invite", func() {
@@ -143,6 +136,41 @@ var _ = ginkgo.Describe("Invitations", func() {
 
 			gomega.Expect(userResponse.ID).To(gomega.Equal(res.Users[0].Id))
 		})
+		ginkgo.It("keeps the same ID after the facebook invited user signs up", func() {
+			var res models.InvitationResponse
+			req := models.InvitationRequest{
+				InviteCodes: []string{FacebookTestId},
+			}
+
+			statusCode, err := TestRequestV1().
+				Post(routes.ResourceUsers+routes.ResourceInvitations+routes.ResourceFacebook).
+				Header(theConf.AuthTokenHeader, user.AuthToken).
+				RequestBody(&req).
+				ResponseBody(&res).
+				Do()
+			gomega.Expect(err).ToNot(gomega.HaveOccurred())
+			gomega.Expect(statusCode).To(gomega.Equal(http.StatusCreated))
+
+			var userResponse models.User
+			signup := models.FacebookSignup{
+				FacebookUser: models.FacebookUser{
+					FacebookID:    FacebookTestId,
+					FacebookToken: FacebookTestToken,
+				},
+			}
+			statusCode, err = TestRequestV1().
+				Post(routes.ResourceUsers + routes.ResourceFacebook).
+				RequestBody(&signup).
+				ResponseBody(&userResponse).
+				Do()
+
+			defer deleteUser(userResponse.ID)
+
+			gomega.Expect(err).ToNot(gomega.HaveOccurred())
+			gomega.Expect(statusCode).To(gomega.Equal(http.StatusCreated))
+
+			gomega.Expect(userResponse.ID).To(gomega.Equal(res.Users[0].Id))
+		})
 		ginkgo.It("doesn't invite the same user twice (email)", func() {
 			var email = lorem.Email()
 			var res models.InvitationResponse
@@ -194,7 +222,7 @@ var _ = ginkgo.Describe("Invitations", func() {
 			gomega.Expect(err).ToNot(gomega.HaveOccurred())
 			gomega.Expect(status).To(gomega.Equal(http.StatusBadRequest))
 		})
-		ginkgo.It("doesn't invite users that already exist", func() {
+		ginkgo.It("doesn't invite users that already exist (email)", func() {
 			var res models.InvitationResponse
 			req := models.InvitationRequest{
 				InviteCodes: []string{user.Email},
@@ -217,16 +245,13 @@ var _ = ginkgo.Describe("Invitations", func() {
 			}
 
 			var user models.User
-			defer func() {
-				// delete this user
-				statusCode, err := TestRequestV1().Delete(routes.ResourceTest+routes.ResourceUsers+"/"+user.ID).Header(theConf.AuthTokenHeader, TesterToken).Do()
-				gomega.Expect(err).ToNot(gomega.HaveOccurred())
-				gomega.Expect(statusCode).To(gomega.Equal(http.StatusNoContent))
-			}()
 
 			// Create facebook user
 			fbLogin := models.FacebookUser{FacebookID: FacebookTestId, FacebookToken: FacebookTestToken}
 			statusCode, err := TestRequestV1().Post(routes.ResourceUsers + routes.ResourceFacebookSignup).RequestBody(&fbLogin).ResponseBody(&user).Do()
+
+			defer deleteUser(user.ID)
+
 			gomega.Expect(statusCode).To(gomega.Equal(http.StatusCreated))
 			gomega.Expect(err).ToNot(gomega.HaveOccurred())
 

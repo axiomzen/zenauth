@@ -38,12 +38,7 @@ var _ = ginkgo.Describe("Social Login/Signup Functionality", func() {
 				}{fbsignup.FacebookID, fbsignup.FacebookToken, fbsignup.Email}).ResponseBody(&user).Do()
 				gomega.Expect(err).ToNot(gomega.HaveOccurred())
 
-				defer func() {
-					// delete this user
-					statusCode, err = TestRequestV1().Delete(routes.ResourceTest+routes.ResourceUsers+"/"+user.ID).Header(theConf.AuthTokenHeader, TesterToken).Do()
-					gomega.Expect(err).ToNot(gomega.HaveOccurred())
-					gomega.Expect(statusCode).To(gomega.Equal(http.StatusNoContent))
-				}()
+				defer deleteUser(user.ID)
 
 				gomega.Expect(statusCode).To(gomega.Equal(http.StatusCreated))
 				gomega.Expect(compare.New().DeepEquals(fbsignup.Email, user.Email, "fbsignup.Email")).To(gomega.Succeed(), "fbsignup.Email")
@@ -65,12 +60,7 @@ var _ = ginkgo.Describe("Social Login/Signup Functionality", func() {
 				statusCode, err := TestRequestV1().Post(routes.ResourceUsers + routes.ResourceFacebookSignup).RequestBody(&fbLogin).ResponseBody(&user).Do()
 				gomega.Expect(err).ToNot(gomega.HaveOccurred())
 
-				defer func() {
-					// delete this user
-					statusCode, err = TestRequestV1().Delete(routes.ResourceTest+routes.ResourceUsers+"/"+user.ID).Header(theConf.AuthTokenHeader, TesterToken).Do()
-					gomega.Expect(err).ToNot(gomega.HaveOccurred())
-					gomega.Expect(statusCode).To(gomega.Equal(http.StatusNoContent))
-				}()
+				defer deleteUser(user.ID)
 
 				gomega.Expect(statusCode).To(gomega.Equal(http.StatusCreated))
 				gomega.Expect(user.ID).ToNot(gomega.BeEmpty(), "user.ID")
@@ -94,12 +84,7 @@ var _ = ginkgo.Describe("Social Login/Signup Functionality", func() {
 				var user models.User
 				statusCode, err := TestRequestV1().Post(routes.ResourceUsers + routes.ResourceFacebookSignup).RequestBody(&fbsignup).ResponseBody(&user).Do()
 				gomega.Expect(err).ToNot(gomega.HaveOccurred())
-				defer func() {
-					// delete this user
-					statusCode, err = TestRequestV1().Delete(routes.ResourceTest+routes.ResourceUsers+"/"+user.ID).Header(theConf.AuthTokenHeader, TesterToken).Do()
-					gomega.Expect(err).ToNot(gomega.HaveOccurred())
-					gomega.Expect(statusCode).To(gomega.Equal(http.StatusNoContent))
-				}()
+				defer deleteUser(user.ID)
 
 				gomega.Expect(statusCode).To(gomega.Equal(http.StatusCreated))
 
@@ -131,12 +116,7 @@ var _ = ginkgo.Describe("Social Login/Signup Functionality", func() {
 				statusCode, err := TestRequestV1().Post(routes.ResourceUsers + routes.ResourceFacebookSignup).RequestBody(&fbsignup).ResponseBody(&user).Do()
 				gomega.Expect(err).ToNot(gomega.HaveOccurred())
 
-				defer func() {
-					// delete this user
-					statusCode, err = TestRequestV1().Delete(routes.ResourceTest+routes.ResourceUsers+"/"+user.ID).Header(theConf.AuthTokenHeader, TesterToken).Do()
-					gomega.Expect(err).ToNot(gomega.HaveOccurred())
-					gomega.Expect(statusCode).To(gomega.Equal(http.StatusNoContent))
-				}()
+				defer deleteUser(user.ID)
 
 				gomega.Expect(statusCode).To(gomega.Equal(http.StatusCreated))
 				gomega.Expect(user.Email).To(gomega.Equal(""))
@@ -193,10 +173,7 @@ var _ = ginkgo.Describe("Social Login/Signup Functionality", func() {
 			})
 
 			ginkgo.AfterEach(func() {
-				// delete this user
-				statusCode, err := TestRequestV1().Delete(routes.ResourceTest+routes.ResourceUsers+"/"+user.ID).Header(theConf.AuthTokenHeader, TesterToken).Do()
-				gomega.Expect(err).ToNot(gomega.HaveOccurred())
-				gomega.Expect(statusCode).To(gomega.Equal(http.StatusNoContent))
+				deleteUser(user.ID)
 			})
 
 			ginkgo.It("Should allow updating email", func() {
@@ -263,10 +240,7 @@ var _ = ginkgo.Describe("Social Login/Signup Functionality", func() {
 			})
 
 			ginkgo.AfterEach(func() {
-				// delete this user
-				statusCode, err := TestRequestV1().Delete(routes.ResourceTest+routes.ResourceUsers+"/"+user.ID).Header(theConf.AuthTokenHeader, TesterToken).Do()
-				gomega.Expect(err).ToNot(gomega.HaveOccurred())
-				gomega.Expect(statusCode).To(gomega.Equal(http.StatusNoContent))
+				deleteUser(user.ID)
 			})
 
 			ginkgo.It("Should still allow updating email", func() {
@@ -336,10 +310,7 @@ var _ = ginkgo.Describe("Social Login/Signup Functionality", func() {
 			})
 
 			ginkgo.AfterEach(func() {
-				// delete this user
-				statusCode, err := TestRequestV1().Delete(routes.ResourceTest+routes.ResourceUsers+"/"+user.ID).Header(theConf.AuthTokenHeader, TesterToken).Do()
-				gomega.Expect(err).ToNot(gomega.HaveOccurred())
-				gomega.Expect(statusCode).To(gomega.Equal(http.StatusNoContent))
+				deleteUser(user.ID)
 			})
 
 			ginkgo.It("Should Allow Facebook link with proper token/id", func() {
@@ -470,10 +441,7 @@ var _ = ginkgo.Describe("Social Login/Signup Functionality", func() {
 			})
 
 			ginkgo.AfterEach(func() {
-				// delete this user
-				statusCode, err := TestRequestV1().Delete(routes.ResourceTest+routes.ResourceUsers+"/"+user.ID).Header(theConf.AuthTokenHeader, TesterToken).Do()
-				gomega.Expect(err).ToNot(gomega.HaveOccurred())
-				gomega.Expect(statusCode).To(gomega.Equal(http.StatusNoContent))
+				deleteUser(user.ID)
 			})
 
 			ginkgo.It("Should allow Facebook login with proper token/id", func() {

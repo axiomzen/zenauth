@@ -5,6 +5,7 @@ import (
 	"log"
 	"net"
 
+	"github.com/Sirupsen/logrus"
 	"github.com/axiomzen/zenauth/config"
 	"github.com/axiomzen/zenauth/data"
 	"github.com/axiomzen/zenauth/protobuf"
@@ -15,6 +16,7 @@ import (
 type Server struct {
 	Config *config.ZENAUTHConfig
 	DAL    data.ZENAUTHProvider
+	Log    *logrus.Entry
 }
 
 func (s *Server) ListenAndServe() error {
@@ -27,6 +29,7 @@ func (s *Server) ListenAndServe() error {
 	protobuf.RegisterAuthServer(grpcServer, &Auth{
 		Config: s.Config,
 		DAL:    s.DAL,
+		Log:    s.Log.WithField("GRPC Service", "Auth"),
 	})
 	log.Printf("Starting GRPC Server on Port %v", s.Config.GRPCPort)
 	return grpcServer.Serve(ln)

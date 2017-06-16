@@ -52,9 +52,10 @@ func ValidateFacebookLogin(id, token, appID, appSecret string) (bool, error) {
 		}
 		// Check ids match
 		data := respJSON["data"].(map[string]interface{})
-
-		if data["user_id"] == nil {
-			return false, errors.New("User ID was nil")
+		if facebookError, ok := data["error"]; ok {
+			return false, fmt.Errorf("Facebook error: %v", facebookError)
+		} else if data["user_id"] == nil {
+			return false, errors.New("Facebook User ID was nil")
 		} else if data["user_id"].(string) != id {
 			return false, fmt.Errorf("User ID %s did not match Facebook token: %s", id, data["user_id"].(string))
 		}
