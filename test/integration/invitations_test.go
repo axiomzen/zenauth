@@ -31,15 +31,8 @@ var _ = ginkgo.Describe("Invitations", func() {
 	})
 
 	ginkgo.AfterEach(func() {
-		// delete user
-		statusCode, err := TestRequestV1().Delete(routes.ResourceTest+routes.ResourceUsers+"/"+user.ID).Header(theConf.AuthTokenHeader, TesterToken).Do()
-		gomega.Expect(err).ToNot(gomega.HaveOccurred())
-		gomega.Expect(statusCode).To(gomega.Equal(http.StatusNoContent))
-
-		statusCode, err = TestRequestV1().Delete(routes.ResourceTest+routes.ResourceUsers+routes.ResourceInvitations).Header(theConf.AuthTokenHeader, TesterToken).Do()
-		gomega.Expect(err).ToNot(gomega.HaveOccurred())
-		gomega.Expect(statusCode).To(gomega.Equal(http.StatusNoContent))
-
+		deleteUser(user.ID)
+		clearInvitations()
 	})
 
 	ginkgo.Describe("Invite", func() {
@@ -159,12 +152,6 @@ var _ = ginkgo.Describe("Invitations", func() {
 			gomega.Expect(statusCode).To(gomega.Equal(http.StatusCreated))
 
 			var userResponse models.User
-			defer func() {
-				// delete this user
-				statusCode, err := TestRequestV1().Delete(routes.ResourceTest+routes.ResourceUsers+"/"+userResponse.ID).Header(theConf.AuthTokenHeader, TesterToken).Do()
-				gomega.Expect(err).ToNot(gomega.HaveOccurred())
-				gomega.Expect(statusCode).To(gomega.Equal(http.StatusNoContent))
-			}()
 			signup := models.FacebookSignup{
 				FacebookUser: models.FacebookUser{
 					FacebookID:    FacebookTestId,
@@ -176,6 +163,8 @@ var _ = ginkgo.Describe("Invitations", func() {
 				RequestBody(&signup).
 				ResponseBody(&userResponse).
 				Do()
+
+			defer deleteUser(userResponse.ID)
 
 			gomega.Expect(err).ToNot(gomega.HaveOccurred())
 			gomega.Expect(statusCode).To(gomega.Equal(http.StatusCreated))
@@ -256,16 +245,13 @@ var _ = ginkgo.Describe("Invitations", func() {
 			}
 
 			var user models.User
-			defer func() {
-				// delete this user
-				statusCode, err := TestRequestV1().Delete(routes.ResourceTest+routes.ResourceUsers+"/"+user.ID).Header(theConf.AuthTokenHeader, TesterToken).Do()
-				gomega.Expect(err).ToNot(gomega.HaveOccurred())
-				gomega.Expect(statusCode).To(gomega.Equal(http.StatusNoContent))
-			}()
 
 			// Create facebook user
 			fbLogin := models.FacebookUser{FacebookID: FacebookTestId, FacebookToken: FacebookTestToken}
 			statusCode, err := TestRequestV1().Post(routes.ResourceUsers + routes.ResourceFacebookSignup).RequestBody(&fbLogin).ResponseBody(&user).Do()
+
+			defer deleteUser(user.ID)
+
 			gomega.Expect(statusCode).To(gomega.Equal(http.StatusCreated))
 			gomega.Expect(err).ToNot(gomega.HaveOccurred())
 

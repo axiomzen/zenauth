@@ -58,12 +58,7 @@ var _ = ginkgo.Describe("Users", func() {
 					ResponseBody(&user).
 					Do()
 
-				defer func() {
-					// remove user
-					statusCode, err := TestRequestV1().Delete(routes.ResourceTest+routes.ResourceUsers+"/"+user.ID).Header(theConf.AuthTokenHeader, TesterToken).Do()
-					gomega.Expect(err).ToNot(gomega.HaveOccurred())
-					gomega.Expect(statusCode).To(gomega.Equal(http.StatusNoContent))
-				}()
+				defer deleteUser(user.ID)
 
 				gomega.Expect(err).ToNot(gomega.HaveOccurred())
 				gomega.Expect(statusCode).To(gomega.Equal(http.StatusCreated))
@@ -103,12 +98,7 @@ var _ = ginkgo.Describe("Users", func() {
 				gomega.Expect(userResponse.AuthToken).ToNot(gomega.BeEmpty())
 				gomega.Expect(userResponse.ID).ToNot(gomega.BeEmpty())
 
-				defer func() {
-					// remove user
-					statusCode, err := TestRequestV1().Delete(routes.ResourceTest+routes.ResourceUsers+"/"+userResponse.ID).Header(theConf.AuthTokenHeader, TesterToken).Do()
-					gomega.Expect(err).ToNot(gomega.HaveOccurred())
-					gomega.Expect(statusCode).To(gomega.Equal(http.StatusNoContent))
-				}()
+				defer deleteUser(userResponse.ID)
 
 				statusCode, err = TestRequestV1().Get(routes.ResourceUsers).Header(theConf.AuthTokenHeader, userResponse.AuthToken).Do()
 				gomega.Expect(err).ToNot(gomega.HaveOccurred())
@@ -182,10 +172,7 @@ var _ = ginkgo.Describe("Users", func() {
 			})
 
 			ginkgo.AfterEach(func() {
-				// delete user
-				statusCode, err := TestRequestV1().Delete(routes.ResourceTest+routes.ResourceUsers+"/"+user.ID).Header(theConf.AuthTokenHeader, TesterToken).Do()
-				gomega.Expect(err).ToNot(gomega.HaveOccurred())
-				gomega.Expect(statusCode).To(gomega.Equal(http.StatusNoContent))
+				deleteUser(user.ID)
 			})
 
 			ginkgo.It("should not be able to sign up with the same email as an existing user", func() {
@@ -542,10 +529,7 @@ var _ = ginkgo.Describe("Users", func() {
 					})
 
 					ginkgo.AfterEach(func() {
-						// delete user
-						statusCode, err := TestRequestV1().Delete(routes.ResourceTest+routes.ResourceUsers+"/"+anotherUser.ID).Header(theConf.AuthTokenHeader, TesterToken).Do()
-						gomega.Expect(err).ToNot(gomega.HaveOccurred())
-						gomega.Expect(statusCode).To(gomega.Equal(http.StatusNoContent))
+						deleteUser(anotherUser.ID)
 					})
 
 					ginkgo.It("should not be able for another another user to update their email to another users email", func() {
@@ -625,10 +609,7 @@ var _ = ginkgo.Describe("Users", func() {
 			})
 
 			ginkgo.AfterEach(func() {
-				// delete user
-				statusCode, err := TestRequestV1().Delete(routes.ResourceTest+routes.ResourceUsers+"/"+user.ID).Header(theConf.AuthTokenHeader, TesterToken).Do()
-				gomega.Expect(err).ToNot(gomega.HaveOccurred())
-				gomega.Expect(statusCode).To(gomega.Equal(http.StatusNoContent))
+				deleteUser(user.ID)
 			})
 
 			ginkgo.It("should return email does exist", func() {
@@ -705,10 +686,7 @@ var _ = ginkgo.Describe("Users", func() {
 			})
 
 			ginkgo.AfterEach(func() {
-				// delete user
-				statusCode, err := TestRequestV1().Delete(routes.ResourceTest+routes.ResourceUsers+"/"+user.ID).Header(theConf.AuthTokenHeader, TesterToken).Do()
-				gomega.Expect(err).ToNot(gomega.HaveOccurred())
-				gomega.Expect(statusCode).To(gomega.Equal(http.StatusNoContent))
+				deleteUser(user.ID)
 			})
 
 			ginkgo.It("should return user's id and", func() {
@@ -742,13 +720,8 @@ var _ = ginkgo.Describe("Users", func() {
 		})
 
 		ginkgo.AfterEach(func() {
-			// delete user
-			statusCode, err := TestRequestV1().Delete(routes.ResourceTest+routes.ResourceUsers+"/"+user1.ID).Header(theConf.AuthTokenHeader, TesterToken).Do()
-			gomega.Expect(err).ToNot(gomega.HaveOccurred())
-			gomega.Expect(statusCode).To(gomega.Equal(http.StatusNoContent))
-			statusCode, err = TestRequestV1().Delete(routes.ResourceTest+routes.ResourceUsers+"/"+user2.ID).Header(theConf.AuthTokenHeader, TesterToken).Do()
-			gomega.Expect(err).ToNot(gomega.HaveOccurred())
-			gomega.Expect(statusCode).To(gomega.Equal(http.StatusNoContent))
+			deleteUser(user1.ID)
+			deleteUser(user2.ID)
 		})
 
 		ginkgo.It("Can fetch the public data of another user", func() {

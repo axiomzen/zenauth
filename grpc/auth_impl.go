@@ -114,20 +114,24 @@ func (auth *Auth) LinkUser(ctx context.Context, invite *protobuf.InvitationCode)
 	}
 	// Merge with calling user
 	(&user).Merge(&linkToUser)
-	if err := auth.DAL.UpdateUser(&user, &user); err != nil {
-		return nil, err
-	}
+
+	var returnUser *protobuf.UserPublic
+	var returnErr error
 	if linkUserErr == nil {
 		// User found, delete and return
 		delUserErr := auth.DAL.DeleteUser(&linkToUser)
 		auth.Log.WithError(delUserErr).Debug("Could not delete user while linking")
-		userPub, err := linkToUser.ProtobufPublic()
-		userPub.Status = protobuf.UserStatus_merged
-		return userPub, err
+		returnUser, returnErr = linkToUser.ProtobufPublic()
+		returnUser.Status = protobuf.UserStatus_merged
+	} else {
+		auth.Log.WithError(linkUserErr).Debug("Could not retrieve social account to link")
+		returnUser, returnErr = user.ProtobufPublic()
 	}
-	auth.Log.WithError(linkUserErr).Debug("Could not retrieve social account to link")
+	if err := auth.DAL.UpdateUser(&user, &user); err != nil {
+		return nil, err
+	}
 
-	return user.ProtobufPublic()
+	return returnUser, returnErr
 }
 
 func (auth *Auth) getUserToken(ctx context.Context) (string, error) {
