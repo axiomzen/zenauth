@@ -117,7 +117,7 @@ func main() {
 	grpcServer := grpc.Server{
 		Config: conf,
 		DAL:    dataP,
-		Log:    log.WithField("server", "GRPC"),
+		Log:    log.WithField("server", "grpc"),
 	}
 	go func() {
 		errChn <- grpcServer.ListenAndServe()
