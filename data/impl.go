@@ -175,6 +175,16 @@ func (dp *dataProvider) UpdateUserVerified(user *models.User) error {
 	return wrapError(err)
 }
 
+func (dp *dataProvider) UpdateUserFacebookToken(user *models.User) error {
+	res, err := dp.db.Model(user).Set("facebook_token = ?facebook_token").Where("facebook_id = ?facebook_id").Returning("*").Update()
+	if err == nil {
+		if res.Affected() != 1 {
+			return DALError{Inner: errNoneAffected, ErrorCode: DALErrorCodeNoneAffected}
+		}
+	}
+	return wrapError(err)
+}
+
 // CreateUserResetToken will update a users password reset token based on email
 func (dp *dataProvider) CreateUserResetToken(user *models.User) error {
 	res, err := dp.db.Model(user).Set("reset_token = ?reset_token").Where("email = ?email").Returning("*").Update()

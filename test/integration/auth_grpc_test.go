@@ -148,6 +148,49 @@ var _ = ginkgo.Describe("Auth GRPC", func() {
 			gomega.Expect(grpcUser.FacebookID).To(gomega.Equal(userResponse.FacebookID))
 			gomega.Expect(grpcUser.Status).To(gomega.Equal(protobuf.UserStatus_merged))
 		})
+		ginkgo.It("Allows signin of original account with new linked signin method", func() {
+			// Invite Test FB user
+			var res models.InvitationResponse
+			req := models.InvitationRequest{
+				InviteCodes: []string{FacebookTestId},
+			}
+			defer clearInvitations()
+
+			statusCode, err := TestRequestV1().
+				Post(routes.ResourceUsers+routes.ResourceInvitations+routes.ResourceFacebook).
+				Header(theConf.AuthTokenHeader, user.AuthToken).
+				RequestBody(&req).
+				ResponseBody(&res).
+				Do()
+			gomega.Expect(err).ToNot(gomega.HaveOccurred())
+			gomega.Expect(statusCode).To(gomega.Equal(http.StatusCreated))
+
+			userResponse := res.Users[0]
+			// Make the GRPC call
+			ctx := getGRPCAuthenticatedContext(user.AuthToken)
+			_, err = grpcAuthClient.LinkUser(ctx, &protobuf.InvitationCode{
+				Type:       constants.InvitationTypeFacebook,
+				InviteCode: userResponse.FacebookID,
+			})
+			gomega.Expect(err).ToNot(gomega.HaveOccurred())
+
+			facebookLogin := models.FacebookUser{
+				FacebookID:    FacebookTestId,
+				FacebookToken: FacebookTestToken,
+			}
+			var mergedUser models.User
+			statusCode, err = TestRequestV1().Post(routes.ResourceUsers + routes.ResourceFacebook).
+				RequestBody(&facebookLogin).
+				ResponseBody(&mergedUser).Do()
+			gomega.Expect(err).ToNot(gomega.HaveOccurred())
+			gomega.Expect(statusCode).To(gomega.Equal(http.StatusOK))
+
+			// deep compare user to newuser (auth token will be different)
+			gomega.Expect(user.ID).To(gomega.Equal(mergedUser.ID))
+			gomega.Expect(facebookLogin.FacebookID).To(gomega.Equal(mergedUser.FacebookID))
+			gomega.Expect(facebookLogin.FacebookToken).To(gomega.Equal(mergedUser.FacebookToken))
+
+		})
 		ginkgo.It("Returns original user if no invite/user associated with request", func() {
 			fbid := "new_facebook_id"
 			ctx := getGRPCAuthenticatedContext(user.AuthToken)

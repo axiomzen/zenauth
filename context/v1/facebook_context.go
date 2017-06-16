@@ -194,7 +194,7 @@ func (c *FacebookContext) Facebook(rw web.ResponseWriter, req *web.Request) {
 	user := models.User{}
 	user.FacebookUser = fbSignup.FacebookUser
 
-	if err := c.DAL.GetUserByFacebookID(&user); err == nil {
+	if err := c.DAL.UpdateUserFacebookToken(&user); err == nil {
 		c.renderUserResponseWithNewToken(&user, constants.StatusOK, false, rw, req)
 		return
 	}
