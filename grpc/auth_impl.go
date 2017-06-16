@@ -103,35 +103,33 @@ func (auth *Auth) LinkUser(ctx context.Context, invite *protobuf.InvitationCode)
 	var linkUserErr error
 	switch invite.GetType() {
 	case constants.InvitationTypeEmail:
+		user.Email = invite.GetInviteCode()
 		linkToUser.Email = invite.GetInviteCode()
 		linkUserErr = auth.DAL.GetUserByEmail(&linkToUser)
 	case constants.InvitationTypeFacebook:
+		user.FacebookID = invite.GetInviteCode()
 		linkToUser.FacebookID = invite.GetInviteCode()
 		linkUserErr = auth.DAL.GetUserByFacebookID(&linkToUser)
 	default:
 		// Should never get here as we check the invite type above,
 		linkUserErr = fmt.Errorf("Invitation type %s not supported", invite.GetType())
 	}
-	// Merge with calling user
-	(&user).Merge(&linkToUser)
 
-	var returnUser *protobuf.UserPublic
-	var returnErr error
 	if linkUserErr == nil {
 		// User found, delete and return
-		delUserErr := auth.DAL.DeleteUser(&linkToUser)
-		auth.Log.WithError(delUserErr).Debug("Could not delete user while linking")
-		returnUser, returnErr = linkToUser.ProtobufPublic()
-		returnUser.Status = protobuf.UserStatus_merged
-	} else {
-		auth.Log.WithError(linkUserErr).Debug("Could not retrieve social account to link")
-		returnUser, returnErr = user.ProtobufPublic()
+		if mergeUserErr := auth.DAL.MergeUsers(&user, &linkToUser); mergeUserErr != nil {
+			return nil, mergeUserErr
+		}
+		mergedUser, returnErr := linkToUser.ProtobufPublic()
+		mergedUser.Status = protobuf.UserStatus_merged
+		return mergedUser, returnErr
 	}
+	auth.Log.WithError(linkUserErr).Debug("Could not retrieve social account to link")
+
 	if err := auth.DAL.UpdateUser(&user, &user); err != nil {
 		return nil, err
 	}
-
-	return returnUser, returnErr
+	return user.ProtobufPublic()
 }
 
 func (auth *Auth) getUserToken(ctx context.Context) (string, error) {

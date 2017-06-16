@@ -238,6 +238,25 @@ func (dp *dataProvider) DeleteUser(user *models.User) error {
 	return wrapError(dp.db.Delete(user))
 }
 
+// MergeUsers merges two users. First user takes precedence,
+// i.e. if one field exists in first user and second user, the value from first user is kept
+func (dp *dataProvider) MergeUsers(firstUser, secondUser *models.User) error {
+	// Merge with calling user
+	firstUser.Merge(secondUser)
+	return wrapError(dp.Tx(func(tx *pg.Tx) error {
+		if err := tx.Delete(secondUser); err != nil {
+			return err
+		}
+		res, err := tx.Model(firstUser).Returning("*").Update()
+		if err == nil {
+			if res.Affected() != 1 {
+				return DALError{Inner: errNoneAffected, ErrorCode: DALErrorCodeNoneAffected}
+			}
+		}
+		return wrapError(err)
+	}))
+}
+
 // ChangeUserPassword allows you to change the password of a user
 func (dp *dataProvider) UpdateUserHash(newHash string, user *models.User) error {
 	// TODO: we need to err if no rows were updated
