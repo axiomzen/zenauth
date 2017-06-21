@@ -28,4 +28,5 @@ script:
 - zest integrate
 after_success:
 - zest build && zest bundle
+- docker images
 - if [ "$TRAVIS_BRANCH" == "master" ] && [ "$TRAVIS_PULL_REQUEST" == "false" ] ; then docker push $DOCKER_IMAGE_NAME; fi
