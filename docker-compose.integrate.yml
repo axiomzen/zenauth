@@ -5,6 +5,8 @@ services:
         image: golang:1.8.1
         environment:
           - ZENAUTH_POSTGRESQLHOST=pg
+          - ZENAUTH_FACEBOOKAPPID=${ZENAUTH_FACEBOOKAPPID}
+          - ZENAUTH_FACEBOOKAPPSECRET=${ZENAUTH_FACEBOOKAPPSECRET}
         volumes:
           - .:/go/src/github.com/axiomzen/zenauth
         working_dir: /go/src/github.com/axiomzen/zenauth

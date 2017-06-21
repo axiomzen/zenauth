@@ -24,7 +24,7 @@ before_install:
 - git clone https://github.com/axiomzen/zest.git
 - export PATH=$PATH:$PWD/zest/
 before_script:
-- docker login -e="$DOCKER_EMAIL" -u="$DOCKER_USER" -p="$DOCKER_PASS"
+- docker login -u="$DOCKER_USER" -p="$DOCKER_PASS"
 script:
 - zest integrate
 after_success:
