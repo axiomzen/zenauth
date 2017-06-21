@@ -1,27 +1,31 @@
 language: go
 go:
-- 1.7
+- 1.8.1
 branches:
   only:
   - master
-  - staging
-
 sudo: required
 dist: trusty
-addons:
-  postgresql: "9.5"
-
+group: edge
+services:
+  - docker
+env:
+  global:
+  - DOCKER_COMPOSE_VERSION=1.12.0
 before_install:
-- go get github.com/onsi/gomega
-- go get github.com/onsi/ginkgo/ginkgo
-install:
-- export PATH=$PATH:$HOME/gopath/bin
-- export GOPATH=$HOME/gopath
-- go install
+# update docker compose
+- sudo rm /usr/local/bin/docker-compose
+- curl -L https://github.com/docker/compose/releases/download/${DOCKER_COMPOSE_VERSION}/docker-compose-`uname -s`-`uname -m` > docker-compose
+- chmod +x docker-compose
+- sudo mv docker-compose /usr/local/bin
+# install zest
+- echo -e "machine github.com\n  login $CI_USER_TOKEN" >> ~/.netrc
+- git clone https://github.com/axiomzen/zest.git
+- export PATH=$PATH:$PWD/zest/
+before_script:
+- docker login -u="$DOCKER_USER" -p="$DOCKER_PASS"
 script:
-- ginkgo -race -cover --randomizeAllSpecs test/integration
-deploy:
-  provider: heroku
-  app:
-    master: zenauth
-    staging: zenauth-staging
+- zest integrate
+after_success:
+- zest build && zest bundle
+- if [ "$TRAVIS_BRANCH" == "master" ] && [ "$TRAVIS_PULL_REQUEST" == "false" ] ; then docker push $DOCKER_IMAGE_NAME; fi
