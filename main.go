@@ -1,8 +1,10 @@
 package main
 
 import (
+	"fmt"
 	"math/rand"
 	"net/http"
+	"net/url"
 	"os"
 	"runtime"
 	"strconv"
@@ -18,6 +20,7 @@ import (
 	"github.com/axiomzen/zenauth/data"
 	"github.com/axiomzen/zenauth/grpc"
 	"github.com/joho/godotenv"
+	"github.com/mattes/migrate"
 	pg "gopkg.in/pg.v4"
 	"gopkg.in/tylerb/graceful.v1"
 )
@@ -37,7 +40,7 @@ func main() {
 
 	nullformat.SetTimeFormat(constants.TimeFormat)
 
-	log.SetFormatter(&log.JSONFormatter{})
+	log.SetFormatter(&log.TextFormatter{})
 
 	// apparently this is the default now (we really should fork this repo)
 	//uuid.SwitchFormat(uuid.CleanHyphen)
@@ -49,9 +52,32 @@ func main() {
 		log.Fatal(err.Error())
 	}
 
-	// set seed
 	switch conf.Environment {
-	case constants.EnvironmentStaging, constants.EnvironmentTest, constants.EnvironmentProduction:
+	case constants.EnvironmentStaging, constants.EnvironmentProduction:
+		pgURL, err := url.Parse(fmt.Sprintf("postgres://%s:%s@%s:%v/%s?sslmode=require", conf.PostgreSQLUsername, conf.PostgreSQLPassword, conf.PostgreSQLHost, conf.PostgreSQLPort, conf.PostgreSQLDatabase))
+		if err != nil {
+			log.Fatal(err.Error())
+		}
+		if !*conf.PostgreSQLSSL {
+			pgURL.RawQuery = "sslmode=disable"
+		}
+
+		// migrate db
+		m, migrateErr := migrate.New("file://data/migrations", pgURL.String())
+		if migrateErr != nil {
+			log.Fatal(migrateErr.Error())
+		} else if upErr := m.Up(); err != nil {
+			log.Fatal(upErr.Error())
+		} else if sErr, dbErr := m.Close(); sErr != nil {
+			log.Fatal(sErr.Error())
+		} else if dbErr != nil {
+			log.Fatal(dbErr.Error())
+		}
+		// Use JSON formatter on prod/staging
+		log.SetFormatter(&log.JSONFormatter{})
+		fallthrough
+	case constants.EnvironmentTest:
+		// set seed
 		rand.Seed(time.Now().UTC().UnixNano())
 	default:
 	}
