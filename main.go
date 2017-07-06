@@ -21,6 +21,8 @@ import (
 	"github.com/axiomzen/zenauth/grpc"
 	"github.com/joho/godotenv"
 	"github.com/mattes/migrate"
+	_ "github.com/mattes/migrate/database/postgres"
+	_ "github.com/mattes/migrate/source/file"
 	pg "gopkg.in/pg.v4"
 	"gopkg.in/tylerb/graceful.v1"
 )
