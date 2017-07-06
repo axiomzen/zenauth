@@ -13,5 +13,8 @@ ADD https://curl.haxx.se/ca/cacert.pem /etc/ssl/certs/ca-certificates.crt
 
 ADD https://s3.amazonaws.com/rds-downloads/rds-combined-ca-bundle.pem /etc/ssl/certs/
 
+# Add migration files
+ADD data/migrations /data/migrations
+
 # Always add the binary last to maximize caching
 ADD zenauth /zenauth
