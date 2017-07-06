@@ -236,6 +236,68 @@ paths:
       - api_token: []
       - auth_token: []
 
+  /users/facebook:
+    post:
+      summary: "signs up or logs in a user"
+      parameters:
+      - in: "body"
+        name: "body"
+        description: "request body"
+        required: true
+        schema:
+          $ref: "#/definitions/Facebook"
+      responses:
+        200:
+          description: "User logged in"
+          schema:
+            $ref: "#/definitions/User"
+        201:
+          description: "User signed up"
+          schema:
+            $ref: "#/definitions/User"
+        400:
+          description: "Some input data is invalid"
+      security:
+      - api_token: []
+  /users/fblogin:
+    post:
+      summary: "logs in a user"
+      parameters:
+      - in: "body"
+        name: "body"
+        description: "request body"
+        required: true
+        schema:
+          $ref: "#/definitions/Facebook"
+      responses:
+        200:
+          description: "User logged in"
+          schema:
+            $ref: "#/definitions/User"
+        400:
+          description: "Some input data is invalid"
+      security:
+      - api_token: []
+  /users/fbsignup:
+    post:
+      summary: "signs up a new user"
+      parameters:
+      - in: "body"
+        name: "body"
+        description: "request body"
+        required: true
+        schema:
+          $ref: "#/definitions/Facebook"
+      responses:
+        201:
+          description: "User signed up"
+          schema:
+            $ref: "#/definitions/User"
+        400:
+          description: "Some input data is invalid"
+      security:
+      - api_token: []
+
 securityDefinitions:
   api_token:
     type: "apiKey"
@@ -392,3 +454,18 @@ definitions:
         items: {
           "$ref": "#/definitions/UserPublic"
         }
+  Facebook:
+    type: "object"
+    properties:
+      facebookId:
+        type: "string"
+        description: "The facebook ID"
+        example: "1111111111"
+      facebookEmail:
+        type: "string"
+        description: "The facebook Email"
+        example: "user@email.com"
+      facebookToken:
+        type: "string"
+        description: "The facebook Token"
+        example: "abcdefghijklmnopqrstoken"

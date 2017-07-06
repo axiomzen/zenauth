@@ -203,6 +203,9 @@ font-style: italic;
   <li><a href="#pingGet"><code><span class="http-method">get</span> /ping</code></a></li>
   <li><a href="#usersEmailPut"><code><span class="http-method">put</span> /users/email</code></a></li>
   <li><a href="#usersExistsGet"><code><span class="http-method">get</span> /users/exists</code></a></li>
+  <li><a href="#usersFacebookPost"><code><span class="http-method">post</span> /users/facebook</code></a></li>
+  <li><a href="#usersFbloginPost"><code><span class="http-method">post</span> /users/fblogin</code></a></li>
+  <li><a href="#usersFbsignupPost"><code><span class="http-method">post</span> /users/fbsignup</code></a></li>
   <li><a href="#usersForgotPasswordPut"><code><span class="http-method">put</span> /users/forgot_password</code></a></li>
   <li><a href="#usersGet"><code><span class="http-method">get</span> /users</code></a></li>
   <li><a href="#usersIdGet"><code><span class="http-method">get</span> /users/{id}</code></a></li>
@@ -329,6 +332,159 @@ font-style: italic;
         <a href="#Exists">Exists</a>
     <h4 class="field-label">400</h4>
     Some request body data is invalid
+        <a href="#"></a>
+  </div> <!-- method -->
+  <hr/>
+  <div class="method"><a name="usersFacebookPost"/>
+    <div class="method-path">
+    <a class="up" href="#__Methods">Up</a>
+    <pre class="post"><code class="huge"><span class="http-method">post</span> /users/facebook</code></pre></div>
+    <div class="method-summary">signs up or logs in a user (<span class="nickname">usersFacebookPost</span>)</div>
+    <div class="method-notes"></div>
+
+
+
+    <h3 class="field-label">Request body</h3>
+    <div class="field-items">
+      <div class="param">body <a href="#Facebook">Facebook</a> (required)</div>
+
+      <div class="param-desc"><span class="param-type">Body Parameter</span> &mdash; request body </div>
+
+    </div>  <!-- field-items -->
+
+
+
+
+    <h3 class="field-label">Return type</h3>
+    <div class="return-type">
+      <a href="#User">User</a>
+      
+    </div>
+
+    <!--Todo: process Response Object and its headers, schema, examples -->
+
+    <h3 class="field-label">Example data</h3>
+    <div class="example-data-content-type">Content-Type: application/json</div>
+    <pre class="example"><code>{
+  "createdAt" : "2017-05-30T16:07:38.683938Z",
+  "authToken" : "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE1Mjc2OTY3OTcsImlhdCI6MTQ5NjE2MDc5NywianRpIjoiYTkyZWRiMTktNjdlYy00YzZiLWE0YzEtNzU4Mjc4NWVmZjMyIiwidXNlcmlkIjoiNWM4ZTAzZDgtNTE2YS00N2ZhLTg4NDAtNjlmYjZkNjJjMGI3In0.JaaV4u_foQXehyIh0X6wpU6WVFL9jd95gMEjt2mVfhw",
+  "verified" : false,
+  "id" : "5c8e03d8-516a-47fa-8840-69fb6d62c0b7",
+  "email" : "user@email.com",
+  "status" : "created",
+  "updatedAt" : "2017-05-30T16:07:38.683938Z"
+}</code></pre>
+
+
+    <h3 class="field-label">Responses</h3>
+    <h4 class="field-label">200</h4>
+    User logged in
+        <a href="#User">User</a>
+    <h4 class="field-label">201</h4>
+    User signed up
+        <a href="#User">User</a>
+    <h4 class="field-label">400</h4>
+    Some input data is invalid
+        <a href="#"></a>
+  </div> <!-- method -->
+  <hr/>
+  <div class="method"><a name="usersFbloginPost"/>
+    <div class="method-path">
+    <a class="up" href="#__Methods">Up</a>
+    <pre class="post"><code class="huge"><span class="http-method">post</span> /users/fblogin</code></pre></div>
+    <div class="method-summary">logs in a user (<span class="nickname">usersFbloginPost</span>)</div>
+    <div class="method-notes"></div>
+
+
+
+    <h3 class="field-label">Request body</h3>
+    <div class="field-items">
+      <div class="param">body <a href="#Facebook">Facebook</a> (required)</div>
+
+      <div class="param-desc"><span class="param-type">Body Parameter</span> &mdash; request body </div>
+
+    </div>  <!-- field-items -->
+
+
+
+
+    <h3 class="field-label">Return type</h3>
+    <div class="return-type">
+      <a href="#User">User</a>
+      
+    </div>
+
+    <!--Todo: process Response Object and its headers, schema, examples -->
+
+    <h3 class="field-label">Example data</h3>
+    <div class="example-data-content-type">Content-Type: application/json</div>
+    <pre class="example"><code>{
+  "createdAt" : "2017-05-30T16:07:38.683938Z",
+  "authToken" : "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE1Mjc2OTY3OTcsImlhdCI6MTQ5NjE2MDc5NywianRpIjoiYTkyZWRiMTktNjdlYy00YzZiLWE0YzEtNzU4Mjc4NWVmZjMyIiwidXNlcmlkIjoiNWM4ZTAzZDgtNTE2YS00N2ZhLTg4NDAtNjlmYjZkNjJjMGI3In0.JaaV4u_foQXehyIh0X6wpU6WVFL9jd95gMEjt2mVfhw",
+  "verified" : false,
+  "id" : "5c8e03d8-516a-47fa-8840-69fb6d62c0b7",
+  "email" : "user@email.com",
+  "status" : "created",
+  "updatedAt" : "2017-05-30T16:07:38.683938Z"
+}</code></pre>
+
+
+    <h3 class="field-label">Responses</h3>
+    <h4 class="field-label">200</h4>
+    User logged in
+        <a href="#User">User</a>
+    <h4 class="field-label">400</h4>
+    Some input data is invalid
+        <a href="#"></a>
+  </div> <!-- method -->
+  <hr/>
+  <div class="method"><a name="usersFbsignupPost"/>
+    <div class="method-path">
+    <a class="up" href="#__Methods">Up</a>
+    <pre class="post"><code class="huge"><span class="http-method">post</span> /users/fbsignup</code></pre></div>
+    <div class="method-summary">signs up a new user (<span class="nickname">usersFbsignupPost</span>)</div>
+    <div class="method-notes"></div>
+
+
+
+    <h3 class="field-label">Request body</h3>
+    <div class="field-items">
+      <div class="param">body <a href="#Facebook">Facebook</a> (required)</div>
+
+      <div class="param-desc"><span class="param-type">Body Parameter</span> &mdash; request body </div>
+
+    </div>  <!-- field-items -->
+
+
+
+
+    <h3 class="field-label">Return type</h3>
+    <div class="return-type">
+      <a href="#User">User</a>
+      
+    </div>
+
+    <!--Todo: process Response Object and its headers, schema, examples -->
+
+    <h3 class="field-label">Example data</h3>
+    <div class="example-data-content-type">Content-Type: application/json</div>
+    <pre class="example"><code>{
+  "createdAt" : "2017-05-30T16:07:38.683938Z",
+  "authToken" : "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE1Mjc2OTY3OTcsImlhdCI6MTQ5NjE2MDc5NywianRpIjoiYTkyZWRiMTktNjdlYy00YzZiLWE0YzEtNzU4Mjc4NWVmZjMyIiwidXNlcmlkIjoiNWM4ZTAzZDgtNTE2YS00N2ZhLTg4NDAtNjlmYjZkNjJjMGI3In0.JaaV4u_foQXehyIh0X6wpU6WVFL9jd95gMEjt2mVfhw",
+  "verified" : false,
+  "id" : "5c8e03d8-516a-47fa-8840-69fb6d62c0b7",
+  "email" : "user@email.com",
+  "status" : "created",
+  "updatedAt" : "2017-05-30T16:07:38.683938Z"
+}</code></pre>
+
+
+    <h3 class="field-label">Responses</h3>
+    <h4 class="field-label">201</h4>
+    User signed up
+        <a href="#User">User</a>
+    <h4 class="field-label">400</h4>
+    Some input data is invalid
         <a href="#"></a>
   </div> <!-- method -->
   <hr/>
@@ -759,6 +915,7 @@ font-style: italic;
     <li><a href="#ChangeEmail"><code>ChangeEmail</code></a></li>
     <li><a href="#ChangePassword"><code>ChangePassword</code></a></li>
     <li><a href="#Exists"><code>Exists</code></a></li>
+    <li><a href="#Facebook"><code>Facebook</code></a></li>
     <li><a href="#InvitationRequest"><code>InvitationRequest</code></a></li>
     <li><a href="#InvitationResponse"><code>InvitationResponse</code></a></li>
     <li><a href="#Login"><code>Login</code></a></li>
@@ -790,6 +947,15 @@ font-style: italic;
     <div class='model-description'></div>
     <div class="field-items">
       <div class="param">exists (optional)</div><div class="param-desc"><span class="param-type"><a href="#boolean">Boolean</a></span> whether the user exists </div>
+    </div>  <!-- field-items -->
+  </div>
+  <div class="model">
+    <h3 class="field-label"><a name="Facebook">Facebook - </a> <a class="up" href="#__Models">Up</a></h3>
+    <div class='model-description'></div>
+    <div class="field-items">
+      <div class="param">facebookId (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span> The facebook ID </div>
+<div class="param">facebookEmail (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span> The facebook Email </div>
+<div class="param">facebookToken (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span> The facebook Token </div>
     </div>  <!-- field-items -->
   </div>
   <div class="model">
