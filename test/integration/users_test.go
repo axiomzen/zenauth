@@ -556,7 +556,7 @@ var _ = ginkgo.Describe("Users", func() {
 				gomega.Expect(err).ToNot(gomega.HaveOccurred())
 				gomega.Expect(statusCode).To(gomega.Equal(http.StatusUnauthorized))
 				//GoError.GoError
-				gomega.Expect(errResp.ErrorMessage).To(gomega.Equal("Invalid email/password combination"))
+				gomega.Expect(errResp.ErrorMessage).To(gomega.Equal("Invalid email/username/password combination"))
 
 			})
 
@@ -568,7 +568,7 @@ var _ = ginkgo.Describe("Users", func() {
 				statusCode, err := TestRequestV1().Post(routes.ResourceUsers + routes.ResourceLogin).RequestBody(&login).ErrorResponseBody(&errResp).Do()
 				gomega.Expect(err).ToNot(gomega.HaveOccurred())
 				gomega.Expect(statusCode).To(gomega.Equal(http.StatusUnauthorized))
-				gomega.Expect(errResp.ErrorMessage).To(gomega.Equal("Invalid email/password combination"))
+				gomega.Expect(errResp.ErrorMessage).To(gomega.Equal("Invalid email/username/password combination"))
 			})
 
 			ginkgo.It("should not be able to log in with blank password", func() {
@@ -579,7 +579,7 @@ var _ = ginkgo.Describe("Users", func() {
 				statusCode, err := TestRequestV1().Post(routes.ResourceUsers + routes.ResourceLogin).RequestBody(&login).ErrorResponseBody(&errResp).Do()
 				gomega.Expect(err).ToNot(gomega.HaveOccurred())
 				gomega.Expect(statusCode).To(gomega.Equal(http.StatusUnauthorized))
-				gomega.Expect(errResp.ErrorMessage).To(gomega.Equal("Invalid email/password combination"))
+				gomega.Expect(errResp.ErrorMessage).To(gomega.Equal("Invalid email/username/password combination"))
 			})
 
 			ginkgo.It("should not be able to log in with no input", func() {
