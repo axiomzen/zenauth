@@ -725,7 +725,13 @@ func (c *UserContext) Login(w web.ResponseWriter, req *web.Request) {
 	user.Email = login.Email
 	//fmt.Println("user email: " +  user.Email.String)
 
-	if err := c.DAL.GetUserByEmail(&user); err != nil {
+	var err error
+	if c.Config.RequireUsername {
+		err = c.DAL.GetUserByEmailOrUserName(&user)
+	} else {
+		err = c.DAL.GetUserByEmail(&user)
+	}
+	if err != nil {
 		dalErr, _ := err.(data.DALError)
 		if dalErr.ErrorCode == data.DALErrorCodeNoneAffected {
 			model := models.NewErrorResponse(constants.APILoginSignupInvalidCombination, models.NewAZError(err.Error()), "Invalid email/password combination")
@@ -820,19 +826,35 @@ func (c *UserContext) Signup(w web.ResponseWriter, req *web.Request) {
 		return
 	}
 
+	if c.Config.RequireUsername && signup.UserName == "" {
+		model := models.NewErrorResponse(constants.APIValidationEmailNotValid, models.NewAZError("Please enter a username"), "Could not create account")
+		c.Render(constants.StatusBadRequest, model, w, req)
+		return
+	}
+
 	// lower case the email
 	signup.Email = helpers.EmailSanitize(signup.Email)
 
 	// create a user var
 	user := models.User{}
 	user.Email = signup.Email
+	user.UserName = signup.UserName
 
 	// Verify that no user with this email exists
-	if err := c.DAL.GetUserByEmail(&user); err == nil {
-		model := models.NewErrorResponse(constants.APIDatabaseCreateInvitation,
-			models.NewAZError("User with email already exists"), "Email already in use/exists")
-		c.Render(constants.StatusForbidden, model, w, req)
-		return
+	if c.Config.RequireUsername {
+		if err := c.DAL.GetUserByEmailOrUserName(&user); err == nil {
+			model := models.NewErrorResponse(constants.APIDatabaseCreateInvitation,
+				models.NewAZError("User with email already exists"), "Email already in use/exists")
+			c.Render(constants.StatusForbidden, model, w, req)
+			return
+		}
+	} else {
+		if err := c.DAL.GetUserByEmail(&user); err == nil {
+			model := models.NewErrorResponse(constants.APIDatabaseCreateInvitation,
+				models.NewAZError("User with email already exists"), "Email already in use/exists")
+			c.Render(constants.StatusForbidden, model, w, req)
+			return
+		}
 	}
 
 	hash, hashErr := helpers.HashPasswordBcrypt(signup.Password, int(c.Config.BcryptCost))
