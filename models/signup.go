@@ -6,4 +6,5 @@ package models
 type Signup struct {
 	Email    string `form:"email"            json:"email" lorem:"email"`
 	Password string `form:"password"         json:"password" lorem:"word,8,32"`
+	UserName string `form:"userName" json:"userName" lorem:"uuid"`
 }

@@ -115,6 +115,7 @@ const (
 	APIValidationPasswordTooShort
 	// APIValidationEmailNotValid email not valid
 	APIValidationEmailNotValid
+	APIValidationUserNameNotValid
 )
 const (
 	// APINetworkError for network errors

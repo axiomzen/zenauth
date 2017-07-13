@@ -724,11 +724,17 @@ func (c *UserContext) Login(w web.ResponseWriter, req *web.Request) {
 	var user models.User
 	user.Email = login.Email
 	//fmt.Println("user email: " +  user.Email.String)
-
-	if err := c.DAL.GetUserByEmail(&user); err != nil {
+	user.UserName = login.UserName
+	var err error
+	if c.Config.RequireUsername {
+		err = c.DAL.GetUserByEmailOrUserName(&user)
+	} else {
+		err = c.DAL.GetUserByEmail(&user)
+	}
+	if err != nil {
 		dalErr, _ := err.(data.DALError)
 		if dalErr.ErrorCode == data.DALErrorCodeNoneAffected {
-			model := models.NewErrorResponse(constants.APILoginSignupInvalidCombination, models.NewAZError(err.Error()), "Invalid email/password combination")
+			model := models.NewErrorResponse(constants.APILoginSignupInvalidCombination, models.NewAZError(err.Error()), "Invalid email/username/password combination")
 			c.Render(constants.StatusUnauthorized, model, w, req)
 			return
 		}
@@ -748,7 +754,7 @@ func (c *UserContext) Login(w web.ResponseWriter, req *web.Request) {
 
 	// check that they have a password - not sure how they wouldn't
 	if helpers.IsZeroString(user.Hash) {
-		model := models.NewErrorResponse(constants.APILoginSignupInvalidCombination, models.NewAZError("No password associated with this email: "+user.Email), "Invalid email/password combination")
+		model := models.NewErrorResponse(constants.APILoginSignupInvalidCombination, models.NewAZError("No password associated with this email: "+user.Email), "Invalid email/username/password combination")
 		c.Render(constants.StatusBadRequest, model, w, req)
 		return
 	}
@@ -763,7 +769,7 @@ func (c *UserContext) Login(w web.ResponseWriter, req *web.Request) {
 		return
 	} else if !passwordOK {
 		// wrong password
-		model := models.NewErrorResponse(constants.APILoginSignupInvalidCombination, models.NewAZError("Username/Password combination incorrect"), "Invalid email/password combination")
+		model := models.NewErrorResponse(constants.APILoginSignupInvalidCombination, models.NewAZError("Username/Password combination incorrect"), "Invalid email/username/password combination")
 		c.Render(constants.StatusUnauthorized, model, w, req)
 		return
 	}
@@ -820,19 +826,35 @@ func (c *UserContext) Signup(w web.ResponseWriter, req *web.Request) {
 		return
 	}
 
+	if c.Config.RequireUsername && signup.UserName == "" {
+		model := models.NewErrorResponse(constants.APIValidationUserNameNotValid, models.NewAZError("Please enter a username"), "Could not create account")
+		c.Render(constants.StatusBadRequest, model, w, req)
+		return
+	}
+
 	// lower case the email
 	signup.Email = helpers.EmailSanitize(signup.Email)
 
 	// create a user var
 	user := models.User{}
 	user.Email = signup.Email
+	user.UserName = signup.UserName
 
 	// Verify that no user with this email exists
-	if err := c.DAL.GetUserByEmail(&user); err == nil {
-		model := models.NewErrorResponse(constants.APIDatabaseCreateInvitation,
-			models.NewAZError("User with email already exists"), "Email already in use/exists")
-		c.Render(constants.StatusForbidden, model, w, req)
-		return
+	if c.Config.RequireUsername {
+		if err := c.DAL.GetUserByEmailOrUserName(&user); err == nil {
+			model := models.NewErrorResponse(constants.APIDatabaseGetUser,
+				models.NewAZError("User with email/username already exists"), "Email or Username already in use/exists")
+			c.Render(constants.StatusForbidden, model, w, req)
+			return
+		}
+	} else {
+		if err := c.DAL.GetUserByEmail(&user); err == nil {
+			model := models.NewErrorResponse(constants.APIDatabaseGetUser,
+				models.NewAZError("User with email already exists"), "Email already in use/exists")
+			c.Render(constants.StatusForbidden, model, w, req)
+			return
+		}
 	}
 
 	hash, hashErr := helpers.HashPasswordBcrypt(signup.Password, int(c.Config.BcryptCost))
