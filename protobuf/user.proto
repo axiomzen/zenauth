@@ -27,3 +27,7 @@ message UserPublic {
   string facebookID = 4;
   string userName = 5;
 }
+
+message UsersPublic {
+  repeated UserPublic users = 1;
+}

@@ -13,6 +13,7 @@ import (
 	"github.com/axiomzen/zenauth/constants"
 	"github.com/axiomzen/zenauth/models"
 	"gopkg.in/pg.v4"
+	"gopkg.in/pg.v4/types"
 )
 
 // errNoneAffected there were no rows affected by the call
@@ -143,6 +144,44 @@ func (dp *dataProvider) GetUserByEmailOrUserName(user *models.User) error {
 func (dp *dataProvider) GetUserByID(user *models.User) error {
 	//Where("id = ?id")
 	return wrapError(dp.db.Select(user))
+}
+
+// GetUsersByIDs retrieves users via ids
+func (dp *dataProvider) GetUsersByIDs(users *models.Users) error {
+	inUsers := *users
+	ids := make([]interface{}, len(*users))
+	var outUsers []*models.User
+
+	for idx, user := range inUsers {
+		ids[idx] = user.ID
+	}
+
+	err := dp.db.Model(&outUsers).
+		Where("id IN (?)", types.In(ids)).
+		Select()
+	if err != nil {
+		return wrapError(err)
+	}
+
+	if len(inUsers) != len(outUsers) {
+		return fmt.Errorf("could not find all users")
+	}
+
+	// Make a map for fast ordering
+	outUserMap := make(map[string]*models.User)
+	for _, user := range outUsers {
+		outUserMap[user.ID] = user
+	}
+
+	// Order outUsers based on input ID ordering
+	for idx, user := range inUsers {
+		outUser, ok := outUserMap[user.ID]
+		if !ok {
+			return fmt.Errorf("could not find all users")
+		}
+		inUsers[idx] = outUser
+	}
+	return nil
 }
 
 // GetUserByFacebookID retrieves a user from the facebook id

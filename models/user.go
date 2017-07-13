@@ -85,3 +85,17 @@ func (user *User) Merge(mergeWith *User) {
 // Users is a slice of User pointers
 // currently unused as we don't have any routes to paginate users yet
 type Users []*User
+
+func (users *Users) ProtobufPublic() (*protobuf.UsersPublic, error) {
+	var protoUsers []*protobuf.UserPublic
+	for _, user := range *users {
+		protoUser, err := user.ProtobufPublic()
+		if err != nil {
+			return nil, err
+		}
+		protoUsers = append(protoUsers, protoUser)
+	}
+	return &protobuf.UsersPublic{
+		Users: protoUsers,
+	}, nil
+}

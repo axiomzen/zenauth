@@ -132,6 +132,30 @@ func (auth *Auth) LinkUser(ctx context.Context, invite *protobuf.InvitationCode)
 	return user.ProtobufPublic()
 }
 
+// GetUserByID implements the action to return the user from the ID.
+func (auth *Auth) GetUsersByIDs(ctx context.Context, userIDs *protobuf.UserIDs) (*protobuf.UsersPublic, error) {
+
+	// Get the current user to make sure it's an authenticated request
+	_, err := auth.getUserID(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	var users models.Users
+	for _, id := range userIDs.GetIds() {
+		users = append(users, &models.User{
+			UserBase: models.UserBase{ID: id},
+		})
+	}
+
+	// get users
+	if err := auth.DAL.GetUsersByIDs(&users); err != nil {
+		return nil, err
+	}
+
+	return users.ProtobufPublic()
+}
+
 func (auth *Auth) getUserToken(ctx context.Context) (string, error) {
 	md, ok := metadata.FromContext(ctx)
 	if !ok {
