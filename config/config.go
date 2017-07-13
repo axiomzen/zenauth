@@ -79,8 +79,9 @@ type ZENAUTHConfig struct {
 	//AccessorServiceFQDN string `envconfig:"ACCESSOR_ENV_DOCKERCLOUD_SERVICE_FQDN"`
 	// dependent variable here, ignored, but calculated in computeDependents
 	//AccessorURI         string `ignored:"true"`
-	TemplatesPath    string `default:"email/templates"`
-	AppName          string `default:"ZenAuth"`
-	ResetPasswordURL string `required:"true"`
-	VerifyEmailURL   string `required:"true"`
+	TemplatesPath            string `default:"email/templates"`
+	AppName                  string `default:"ZenAuth"`
+	ResetPasswordURL         string `required:"true"`
+	VerifyEmailURL           string `required:"true"`
+	ResetPasswordRedirectURL string `required:"false"`
 }
