@@ -724,7 +724,7 @@ func (c *UserContext) Login(w web.ResponseWriter, req *web.Request) {
 	var user models.User
 	user.Email = login.Email
 	//fmt.Println("user email: " +  user.Email.String)
-
+	user.UserName = login.UserName
 	var err error
 	if c.Config.RequireUsername {
 		err = c.DAL.GetUserByEmailOrUserName(&user)
