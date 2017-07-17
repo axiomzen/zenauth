@@ -85,6 +85,53 @@ var _ = ginkgo.Describe("Auth GRPC", func() {
 		})
 	})
 
+	ginkgo.Context("GetUsersByIDs", func() {
+		var (
+			user2, user3 models.User
+		)
+
+		ginkgo.BeforeEach(func() {
+			var signup models.Signup
+			gomega.Expect(lorem.Fill(&signup)).To(gomega.Succeed())
+			statusCode, err := TestRequestV1().
+				Post(routes.ResourceUsers + routes.ResourceSignup).
+				RequestBody(&signup).
+				ResponseBody(&user2).
+				Do()
+			gomega.Expect(err).ToNot(gomega.HaveOccurred())
+			gomega.Expect(statusCode).To(gomega.Equal(http.StatusCreated))
+
+			gomega.Expect(lorem.Fill(&signup)).To(gomega.Succeed())
+			statusCode, err = TestRequestV1().
+				Post(routes.ResourceUsers + routes.ResourceSignup).
+				RequestBody(&signup).
+				ResponseBody(&user3).
+				Do()
+			gomega.Expect(err).ToNot(gomega.HaveOccurred())
+			gomega.Expect(statusCode).To(gomega.Equal(http.StatusCreated))
+		})
+		ginkgo.It("Returns the users", func() {
+			ctx := getGRPCAuthenticatedContext(user.AuthToken)
+			grpcUsers, err := grpcAuthClient.GetUsersByIDs(ctx, &protobuf.UserIDs{
+				Ids: []string{user2.ID, user3.ID},
+			})
+			gomega.Expect(err).ToNot(gomega.HaveOccurred())
+			gomega.Expect(len(grpcUsers.Users)).To(gomega.Equal(2))
+			gomega.Expect(grpcUsers.Users[0].Id).To(gomega.Equal(user2.ID))
+			gomega.Expect(grpcUsers.Users[0].Email).To(gomega.Equal(user2.Email))
+			gomega.Expect(grpcUsers.Users[1].Id).To(gomega.Equal(user3.ID))
+			gomega.Expect(grpcUsers.Users[1].Email).To(gomega.Equal(user3.Email))
+		})
+		ginkgo.It("Returns error if the user is not logged in", func() {
+			ctx := getGRPCAuthenticatedContext("INVALID_TOKEN")
+			grpcUsers, err := grpcAuthClient.GetUsersByIDs(ctx, &protobuf.UserIDs{
+				Ids: []string{user2.ID, user3.ID},
+			})
+			gomega.Expect(grpcUsers).To(gomega.BeNil())
+			gomega.Expect(err).To(gomega.HaveOccurred())
+		})
+	})
+
 	ginkgo.Context("LinkUser", func() {
 
 		ginkgo.It("Returns the user to be merged", func() {

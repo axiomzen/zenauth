@@ -38,6 +38,7 @@ func (user *User) Protobuf() (*protobuf.User, error) {
 		UpdatedAt:  updatedAt,
 		Status:     protobuf.UserStatus_created,
 		FacebookID: user.FacebookID,
+		UserName:   user.UserName,
 	}, nil
 }
 func (user *User) ProtobufPublic() (*protobuf.UserPublic, error) {
@@ -46,6 +47,7 @@ func (user *User) ProtobufPublic() (*protobuf.UserPublic, error) {
 		Email:      user.Email,
 		Status:     protobuf.UserStatus_created,
 		FacebookID: user.FacebookID,
+		UserName:   user.UserName,
 	}, nil
 }
 func (user *User) Merge(mergeWith *User) {
@@ -58,6 +60,10 @@ func (user *User) Merge(mergeWith *User) {
 	}
 	if user.VerifyEmailToken != "" {
 		user.VerifyEmailToken = mergeWith.VerifyEmailToken
+	}
+
+	if user.UserName == "" {
+		user.UserName = mergeWith.UserName
 	}
 
 	// For linking facebook accounts
@@ -73,8 +79,23 @@ func (user *User) Merge(mergeWith *User) {
 	if user.FacebookEmail == "" {
 		user.FacebookEmail = mergeWith.FacebookEmail
 	}
+
 }
 
 // Users is a slice of User pointers
 // currently unused as we don't have any routes to paginate users yet
 type Users []*User
+
+func (users *Users) ProtobufPublic() (*protobuf.UsersPublic, error) {
+	var protoUsers []*protobuf.UserPublic
+	for _, user := range *users {
+		protoUser, err := user.ProtobufPublic()
+		if err != nil {
+			return nil, err
+		}
+		protoUsers = append(protoUsers, protoUser)
+	}
+	return &protobuf.UsersPublic{
+		Users: protoUsers,
+	}, nil
+}

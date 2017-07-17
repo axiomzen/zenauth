@@ -65,6 +65,7 @@ type ZENAUTHConfig struct {
 	RequestIDHeader       string        `default:"X-Request-ID"`
 	FacebookAppID         string        `required:"true"`
 	FacebookAppSecret     string        `required:"true"`
+	RequireUsername       bool          `default:"false"`
 
 	PostgreSQLHost           string        `default:"localhost"`
 	PostgreSQLPort           uint16        `default:"5432"`

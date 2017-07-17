@@ -17,6 +17,7 @@ message User {
   string authToken = 6;
   UserStatus status = 7;
   string facebookID = 8;
+  string userName = 9;
 }
 
 message UserPublic {
@@ -24,4 +25,9 @@ message UserPublic {
   string email = 2;
   UserStatus status = 3;
   string facebookID = 4;
+  string userName = 5;
+}
+
+message UsersPublic {
+  repeated UserPublic users = 1;
 }
