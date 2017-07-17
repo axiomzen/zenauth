@@ -47,7 +47,7 @@ func main() {
 	}
 
 	switch conf.Environment {
-	case constants.EnvironmentStaging, constants.EnvironmentProduction:
+	case constants.EnvironmentStaging, constants.EnvironmentProduction, constants.EnvironmentDevelopment:
 		pgURL, err := url.Parse(fmt.Sprintf("postgres://%s:%s@%s:%v/%s?sslmode=require", conf.PostgreSQLUsername, conf.PostgreSQLPassword, conf.PostgreSQLHost, conf.PostgreSQLPort, conf.PostgreSQLDatabase))
 		if err != nil {
 			log.Fatal(err.Error())

@@ -489,6 +489,11 @@ func (c *UserContext) ResetPassword(rw web.ResponseWriter, req *web.Request) {
 
 			return
 		}
+		if userPasswordReset.Redirect != "" {
+			rw.Header().Add("Location", userPasswordReset.Redirect)
+			c.Render(constants.StatusFound, nil, rw, req)
+			return
+		}
 		c.renderUserResponseWithNewToken(&user, constants.StatusOK, false, rw, req)
 
 		// TODO: localization (we need to get a string via id => it will have appropriate %s etc)
