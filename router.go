@@ -67,7 +67,8 @@ func InitRouter(c *config.ZENAUTHConfig) *web.Router {
 		Post(routes.ResourceResetPassword, (*v1.UserContext).ResetPassword).
 		// verify email (PUT) (sent from web browser)
 		Put(routes.ResourceVerifyEmail, (*v1.UserContext).VerifyEmail).
-		Get(routes.ResourceForgotPassword, (*v1.UserContext).ForgotPassword)
+		Get(routes.ResourceForgotPassword, (*v1.UserContext).ForgotPassword).
+		Get(routes.ResourceMessage, (*v1.UserContext).GeneralMessageHTML)
 
 	{
 		// API auth, but no user auth

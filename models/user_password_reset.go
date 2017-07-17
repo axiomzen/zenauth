@@ -9,5 +9,5 @@ type UserPasswordReset struct {
 	Email       string `json:"email" form:"email" lorem:"email"`
 	NewPassword string `json:"newPassword" form:"newPassword" lorem:"word,8,10"`
 	Token       string `json:"token" form:"token" lorem:"-"`
-	Redirect    string `json:"redirect" form:"redirect" lorem:"url"`
+	Redirect    string `json:"redirect" form:"redirect" lorem:"-"`
 }

@@ -284,6 +284,7 @@ func fireUpApp() error {
 	theConf.PostgreSQLDatabase = "dulpitr9o7a88d"
 	theConf.ResetPasswordURL = "http://www.zenauth.com/reset"
 	theConf.VerifyEmailURL = "http://www.zenauth.com/verify"
+	theConf.ResetPasswordRedirectURL = "http://localhost:5000/v1/users/message"
 	theConf.TemplatesPath = "email/templates"
 	f := false
 	theConf.PostgreSQLSSL = &f

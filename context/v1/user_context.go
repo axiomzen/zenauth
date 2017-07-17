@@ -3,6 +3,7 @@ package v1
 import (
 	"bytes"
 	"fmt"
+	"net/url"
 	"regexp"
 	"strings"
 
@@ -12,7 +13,6 @@ import (
 	"github.com/axiomzen/zenauth/helpers"
 	"github.com/axiomzen/zenauth/models"
 	"github.com/gocraft/web"
-
 	"github.com/twinj/uuid"
 )
 
@@ -319,24 +319,6 @@ func (c *UserContext) ChangePasswordHTML(rw web.ResponseWriter, req *web.Request
 		return
 	}
 
-	req.Header.Set("Content-Type", "text/html")
-	user := models.User{
-		ResetToken: &tokenSlice[0],
-		UserBase: models.UserBase{
-			Email: emailSlice[0],
-		},
-	}
-	html, err := GetChangePasswordHTML(c.Config, &user)
-	if err != nil {
-		if user.ResetToken == nil || *user.ResetToken != tokenSlice[0] {
-			msg := models.Message{Message: "400 - Error"}
-			c.Render(constants.StatusBadRequest, &msg, rw, req)
-			return
-		}
-	}
-	c.Log.Infof(html)
-	c.Render(constants.StatusOK, html, rw, req)
-	return
 	// check the time on the token itself
 	// and check that there is an email associated with it
 	// and that it matches the email sent interface{}
@@ -381,11 +363,10 @@ func (c *UserContext) ChangePasswordHTML(rw web.ResponseWriter, req *web.Request
 		}
 
 		// need to redirect them to the destination site
-		// ********** TODO! do something useful here
 		url := req.URL
 		url.Path = versionRegexp.ReplaceAllString(url.Path, "")
 		req.Header.Set("Content-Type", "text/html")
-		html, err := email.GetChangePasswordHTML(c.Config, &user)
+		html, err := GetChangePasswordHTML(c.Config, &user)
 		if err != nil {
 			if user.ResetToken == nil || *user.ResetToken != tokenSlice[0] {
 				msg := models.Message{Message: "400 - Error"}
@@ -393,7 +374,6 @@ func (c *UserContext) ChangePasswordHTML(rw web.ResponseWriter, req *web.Request
 				return
 			}
 		}
-		c.Log.Infof(html)
 		c.Render(constants.StatusOK, html, rw, req)
 	case helpers.JWTokenStatusExpired:
 		// render expired
@@ -483,8 +463,9 @@ func (c *UserContext) ResetPassword(rw web.ResponseWriter, req *web.Request) {
 			return
 		}
 		if userPasswordReset.Redirect != "" {
-			rw.Header().Add("Location", userPasswordReset.Redirect)
-			c.Render(constants.StatusFound, nil, rw, req)
+			rw.Header().Set("Location", userPasswordReset.Redirect+"?message="+
+				url.QueryEscape("Successfully changed your password."))
+			rw.WriteHeader(constants.StatusSeeOther)
 			return
 		}
 		c.renderUserResponseWithNewToken(&user, constants.StatusOK, false, rw, req)
@@ -1009,4 +990,36 @@ func (c *UserContext) Signup(w web.ResponseWriter, req *web.Request) {
 
 	// render a user response
 	c.renderUserResponseWithNewToken(&user, constants.StatusCreated, true, w, req)
+}
+
+// GeneralMessageHTML route will respond with a general message
+//
+//   GET /message
+//
+// Returns
+//   200 Status OK
+func (c *UserContext) GeneralMessageHTML(rw web.ResponseWriter, req *web.Request) {
+
+	queryMap := req.URL.Query()
+	message, messageOK := queryMap["message"]
+
+	if !messageOK {
+		// TODO: this url is sent via a web browser
+		// so I imagine they would want a better styled response
+		// instead of an object
+		msg := models.Message{Message: "400 - Bad Request"}
+		c.Render(constants.StatusBadRequest, &msg, rw, req)
+		return
+	}
+
+	req.Header.Set("Content-Type", "text/html")
+
+	html, err := GetGeneralMessageHTML(message[0])
+	if err != nil {
+		msg := models.Message{Message: "400 - Error"}
+		c.Render(constants.StatusBadRequest, &msg, rw, req)
+		return
+	}
+	c.Render(constants.StatusOK, html, rw, req)
+	return
 }

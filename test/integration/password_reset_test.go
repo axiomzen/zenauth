@@ -168,6 +168,21 @@ var _ = ginkgo.Describe("Password Reset Functionality", func() {
 
 				})
 
+				ginkgo.It("should be able to reset their token with redirect", func() {
+					var userPasswordReset models.UserPasswordReset
+
+					lorem.Fill(&userPasswordReset)
+					userPasswordReset.Email = user.Email
+					userPasswordReset.Token = trt.Token
+					userPasswordReset.Redirect = theConf.ResetPasswordRedirectURL
+
+					statusCode, err := TestRequestV1().Post(routes.ResourceUsers + routes.ResourceResetPassword).
+						RequestBody(&userPasswordReset).
+						Do()
+					gomega.Expect(err).ToNot(gomega.HaveOccurred())
+					gomega.Expect(statusCode).To(gomega.Equal(http.StatusOK))
+				})
+
 				ginkgo.Context("User has reset their password", func() {
 
 					var (

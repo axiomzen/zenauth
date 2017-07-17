@@ -15,8 +15,6 @@ var resetPasswordHTMLTmpl *template.Template
 var resetPasswordTextTmpl *template.Template
 var verifyEmailHTMLTmpl *template.Template
 var verifyEmailTextTmpl *template.Template
-var changePasswordHTMLTmpl *template.Template
-var generalMessageHTMLTmpl *template.Template
 
 func init() {
 	conf, err := config.Get()
@@ -43,14 +41,6 @@ func init() {
 	verifyEmailTextTmpl = templates.Lookup("verify_email.txt.tmpl")
 	if verifyEmailTextTmpl == nil {
 		panic(fmt.Errorf("Verify email TEXT template not found"))
-	}
-	changePasswordHTMLTmpl = templates.Lookup("change_password.html.tmpl")
-	if changePasswordHTMLTmpl == nil {
-		panic(fmt.Errorf("Change password HTML template not found"))
-	}
-	generalMessageHTMLTmpl = templates.Lookup("general_message.html.tmpl")
-	if generalMessageHTMLTmpl == nil {
-		panic(fmt.Errorf("General message HTML template not found"))
 	}
 }
 

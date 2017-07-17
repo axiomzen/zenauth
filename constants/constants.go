@@ -36,6 +36,8 @@ const (
 	StatusMovedPermanently = http.StatusMovedPermanently
 	// StatusFound for forwarding requests
 	StatusFound = http.StatusFound
+	// StatusSeeOther for forwarding requests
+	StatusSeeOther = http.StatusSeeOther
 	// StatusTemporaryRedirect for posts?
 	StatusTemporaryRedirect = http.StatusTemporaryRedirect
 	// StatusInternalServerError for panics and other non handled errors
