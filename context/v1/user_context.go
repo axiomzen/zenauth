@@ -268,7 +268,7 @@ func (c *UserContext) ForgotPassword(rw web.ResponseWriter, req *web.Request) {
 		return
 	}
 
-	fmt.Printf("reset token after: %s\n", user.ResetToken)
+	// fmt.Printf("reset token after: %s\n", user.ResetToken)
 
 	// send the reset password email with the generated token
 	emailer, err := email.Get(c.Config)
@@ -326,7 +326,7 @@ func (c *UserContext) ChangePasswordHTML(rw web.ResponseWriter, req *web.Request
 			Email: emailSlice[0],
 		},
 	}
-	html, err := email.GetChangePasswordHTML(c.Config, &user)
+	html, err := GetChangePasswordHTML(c.Config, &user)
 	if err != nil {
 		if user.ResetToken == nil || *user.ResetToken != tokenSlice[0] {
 			msg := models.Message{Message: "400 - Error"}
@@ -428,10 +428,9 @@ func (c *UserContext) ResetPassword(rw web.ResponseWriter, req *web.Request) {
 	var userPasswordReset models.UserPasswordReset
 	// decode request
 	if !c.DecodeHelper(&userPasswordReset, "Couldn't decode userPasswordReset", rw, req) {
-		c.Log.Info("1")
 		return
 	}
-	c.Log.Println(userPasswordReset)
+
 	// verify the token
 	jwt := helpers.JWTHelper{HashSecretBytes: c.Config.HashSecretBytes, Token: userPasswordReset.Token}
 	jwtTokenResult := jwt.Validate(c.Config.JwtClaimUserEmail)
@@ -442,7 +441,6 @@ func (c *UserContext) ResetPassword(rw web.ResponseWriter, req *web.Request) {
 		if jwtTokenResult.Value != userPasswordReset.Email {
 			// render error, email doesn't matches
 			msg := models.Message{Message: "400 - Email doesn't match"}
-			c.Log.Infof("2 -- %s -- %s", jwtTokenResult.Value, userPasswordReset.Email)
 			c.Render(constants.StatusBadRequest, &msg, rw, req)
 			return
 		}
@@ -451,7 +449,6 @@ func (c *UserContext) ResetPassword(rw web.ResponseWriter, req *web.Request) {
 			model := models.NewErrorResponse(constants.APIValidationPasswordTooShort,
 				models.NewAZError(fmt.Sprintf("Password needs to be at least %d characters long!", c.Config.MinPasswordLength)), "Could not create account")
 			c.Render(constants.StatusBadRequest, model, rw, req)
-			c.Log.Info("3")
 			return
 		}
 
@@ -464,8 +461,6 @@ func (c *UserContext) ResetPassword(rw web.ResponseWriter, req *web.Request) {
 		if hashErr != nil {
 			model := models.NewErrorResponse(constants.APIParsingPasswordHash, models.NewAZError(hashErr.Error()), "Could not update user")
 			c.Render(constants.StatusInternalServerError, model, rw, req)
-			c.Log.Info("4")
-
 			return
 		}
 
@@ -485,8 +480,6 @@ func (c *UserContext) ResetPassword(rw web.ResponseWriter, req *web.Request) {
 
 			model := models.NewErrorResponse(constants.APIParsingPasswordHash, models.NewAZError(err.Error()), "Could not update user")
 			c.Render(constants.StatusInternalServerError, model, rw, req)
-			c.Log.Info("5")
-
 			return
 		}
 		if userPasswordReset.Redirect != "" {
@@ -503,12 +496,10 @@ func (c *UserContext) ResetPassword(rw web.ResponseWriter, req *web.Request) {
 		// render expired
 		msg := models.Message{Message: "400 - Reset Request Expired"}
 		c.Render(constants.StatusBadRequest, &msg, rw, req)
-		c.Log.Info("6")
 
 	case helpers.JWTokenStatusInvalid, helpers.JWTokenNotAvailableYet:
 		msg := models.Message{Message: "400 - Invalid Token"}
 		c.Render(constants.StatusBadRequest, &msg, rw, req)
-		c.Log.Info("7")
 
 	}
 }
