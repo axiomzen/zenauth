@@ -114,7 +114,7 @@ func (c *FacebookContext) Signup(rw web.ResponseWriter, req *web.Request) {
 	// create a user
 	user := models.User{}
 	user.FacebookUser = fbSignup.FacebookUser
-	user.Email = helpers.EmailSanitize(fbSignup.Email)
+	// user.Email = helpers.EmailSanitize(fbSignup.FacebookEmail)
 
 	// otherwise, we want to create (should populate user with new id)
 	if !c.createFacebookUser(&user, rw, req) {
@@ -200,7 +200,7 @@ func (c *FacebookContext) Facebook(rw web.ResponseWriter, req *web.Request) {
 	}
 
 	// Else signup
-	// user.Email = helpers.EmailSanitize(fbSignup.Email)
+	// user.Email = helpers.EmailSanitize(fbSignup.FacebookEmail)
 
 	// otherwise, we want to create (should populate user with new id)
 	if !c.createFacebookUser(&user, rw, req) {

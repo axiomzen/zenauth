@@ -16,7 +16,7 @@ type UserBase struct {
 
 	CreatedAt null.Time `json:"createdAt,omitempty" sql:",null" lorem:"-"`
 	UpdatedAt null.Time `json:"updatedAt,omitempty" sql:",null" lorem:"-"`
-	Email     string    `json:"email" lorem:"email"`
+	Email     string    `json:"email" sql:",null" lorem:"email"`
 	UserName  string    `json:"userName" sql:",null" lorem:"uuid"`
 	Verified  bool      `json:"verified"`
 }
