@@ -200,7 +200,7 @@ func (c *FacebookContext) Facebook(rw web.ResponseWriter, req *web.Request) {
 	}
 
 	// Else signup
-	user.Email = helpers.EmailSanitize(fbSignup.Email)
+	// user.Email = helpers.EmailSanitize(fbSignup.Email)
 
 	// otherwise, we want to create (should populate user with new id)
 	if !c.createFacebookUser(&user, rw, req) {
