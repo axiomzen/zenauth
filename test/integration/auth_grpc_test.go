@@ -1,6 +1,7 @@
 package integration
 
 import (
+	"context"
 	"net/http"
 
 	lorem "github.com/axiomzen/golorem"
@@ -129,6 +130,81 @@ var _ = ginkgo.Describe("Auth GRPC", func() {
 			})
 			gomega.Expect(grpcUsers).To(gomega.BeNil())
 			gomega.Expect(err).To(gomega.HaveOccurred())
+		})
+	})
+
+	ginkgo.Context("AuthUserByEmail", func() {
+		var (
+			signup    protobuf.UserEmailAuth
+			protoUser *protobuf.User
+			authErr   error
+		)
+		ginkgo.BeforeEach(func() {
+			signup.Email = lorem.Email()
+			signup.UserName = lorem.Word(8, 16)
+			signup.Password = lorem.Word(8, 16)
+		})
+		ginkgo.AfterEach(func() {
+			deleteUser(protoUser.Id)
+		})
+		ginkgo.It("Allows user to signup", func() {
+			ctx := context.Background()
+			protoUser, authErr = grpcAuthClient.AuthUserByEmail(ctx, &signup)
+			gomega.Expect(authErr).ToNot(gomega.HaveOccurred())
+			gomega.Expect(protoUser.Email).To(gomega.Equal(signup.Email))
+			gomega.Expect(protoUser.UserName).To(gomega.Equal(signup.UserName))
+			gomega.Expect(protoUser.AuthToken).ToNot(gomega.BeEmpty())
+
+		})
+		ginkgo.It("Allows user to login", func() {
+			ctx := context.Background()
+			// Signup
+			_, authErr = grpcAuthClient.AuthUserByEmail(ctx, &signup)
+			gomega.Expect(authErr).ToNot(gomega.HaveOccurred())
+
+			// Login
+			protoUser, authErr = grpcAuthClient.AuthUserByEmail(ctx, &signup)
+			gomega.Expect(authErr).ToNot(gomega.HaveOccurred())
+			gomega.Expect(protoUser.Email).To(gomega.Equal(signup.Email))
+			gomega.Expect(protoUser.UserName).To(gomega.Equal(signup.UserName))
+			gomega.Expect(protoUser.AuthToken).ToNot(gomega.BeEmpty())
+		})
+	})
+
+	ginkgo.Context("AuthUserByFacebook", func() {
+		var (
+			facebook  protobuf.UserFacebookAuth
+			protoUser *protobuf.User
+			authErr   error
+		)
+		ginkgo.AfterEach(func() {
+			deleteUser(protoUser.Id)
+		})
+		ginkgo.BeforeEach(func() {
+			facebook.FacebookID = FacebookTestId
+			facebook.FacebookEmail = lorem.Email()
+			facebook.FacebookUsername = lorem.Word(8, 16)
+			facebook.FacebookToken = FacebookTestToken
+		})
+		ginkgo.It("Allows user to signup", func() {
+			ctx := context.Background()
+			protoUser, authErr = grpcAuthClient.AuthUserByFacebook(ctx, &facebook)
+			gomega.Expect(authErr).ToNot(gomega.HaveOccurred())
+			gomega.Expect(protoUser.FacebookID).To(gomega.Equal(facebook.FacebookID))
+			gomega.Expect(protoUser.AuthToken).ToNot(gomega.BeEmpty())
+
+		})
+		ginkgo.It("Allows user to login", func() {
+			ctx := context.Background()
+			// Signup
+			_, authErr := grpcAuthClient.AuthUserByFacebook(ctx, &facebook)
+			gomega.Expect(authErr).ToNot(gomega.HaveOccurred())
+
+			// Login
+			protoUser, authErr = grpcAuthClient.AuthUserByFacebook(ctx, &facebook)
+			gomega.Expect(authErr).ToNot(gomega.HaveOccurred())
+			gomega.Expect(protoUser.FacebookID).To(gomega.Equal(facebook.FacebookID))
+			gomega.Expect(protoUser.AuthToken).ToNot(gomega.BeEmpty())
 		})
 	})
 
