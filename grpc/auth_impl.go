@@ -2,6 +2,7 @@ package grpc
 
 import (
 	"fmt"
+	"strings"
 
 	context "golang.org/x/net/context"
 
@@ -156,6 +157,121 @@ func (auth *Auth) GetUsersByIDs(ctx context.Context, userIDs *protobuf.UserIDs) 
 	return users.ProtobufPublic()
 }
 
+// AuthUserByEmail implements the action to either signup or login
+func (auth *Auth) AuthUserByEmail(ctx context.Context, emailAuth *protobuf.UserEmailAuth) (*protobuf.User, error) {
+
+	user := models.User{
+		UserBase: models.UserBase{
+			Email:    helpers.EmailSanitize(emailAuth.GetEmail()),
+			UserName: emailAuth.GetUserName(),
+		},
+	}
+	var err error
+	if auth.Config.RequireUsername {
+		err = auth.DAL.GetUserByEmailOrUserName(&user)
+	} else {
+		err = auth.DAL.GetUserByEmail(&user)
+	}
+	if err == nil {
+		// Can just login
+		// check that they have a password - not sure how they wouldn't
+		if helpers.IsZeroString(user.Hash) {
+			return nil, fmt.Errorf("Wrong account type (No password saved)")
+		}
+
+		if passwordOK, err := helpers.CheckPasswordBcrypt(*user.Hash, emailAuth.GetPassword()); err != nil {
+			return nil, err
+		} else if !passwordOK {
+			// wrong password
+			return nil, fmt.Errorf("Invalid email/username/password combination")
+		}
+		authToken, tokenErr := auth.NewAuthToken(user.ID)
+		if tokenErr != nil {
+			return nil, tokenErr
+		}
+		user.AuthToken = authToken
+		return user.Protobuf()
+	}
+
+	if dalErr, isDALError := err.(data.DALError); isDALError && dalErr.ErrorCode != data.DALErrorCodeNoneAffected {
+		// Error getting user, not that it doesn't exist
+		return nil, err
+	}
+	// Else, Sign Up
+	// Validate
+	if len(emailAuth.GetPassword()) < int(auth.Config.MinPasswordLength) {
+		// check password long enough
+		return nil, fmt.Errorf("Password too short")
+	} else if strings.Count(user.Email, "@") == 0 {
+		// check email
+		return nil, fmt.Errorf("Invalid Email")
+	} else if auth.Config.RequireUsername && user.UserName == "" {
+		return nil, fmt.Errorf("Please enter a username")
+	}
+
+	hash, hashErr := helpers.HashPasswordBcrypt(emailAuth.GetPassword(), int(auth.Config.BcryptCost))
+
+	if hashErr != nil {
+		return nil, hashErr
+	}
+
+	user.Hash = &hash
+
+	if userErr := auth.DAL.CreateUser(&user); userErr != nil {
+		return nil, userErr
+	}
+	// Generate the auth token
+	authToken, tokenErr := auth.NewAuthToken(user.ID)
+	if tokenErr != nil {
+		return nil, tokenErr
+	}
+	user.AuthToken = authToken
+	return user.Protobuf()
+}
+
+// AuthUserByFacebook implements the action to return the user from the ID.
+func (auth *Auth) AuthUserByFacebook(ctx context.Context, facebookAuth *protobuf.UserFacebookAuth) (*protobuf.User, error) {
+
+	// validate
+	if facebookAuth.GetFacebookID() == "" || facebookAuth.GetFacebookToken() == "" {
+		return nil, fmt.Errorf("Missing a field in request")
+	}
+
+	if valid, err := helpers.ValidateFacebookLogin(facebookAuth.GetFacebookID(), facebookAuth.GetFacebookToken(), auth.Config.FacebookAppID, auth.Config.FacebookAppSecret); err != nil {
+		return nil, err
+	} else if !valid {
+		return nil, fmt.Errorf("Could not validate facebook token")
+	}
+	// create a user
+	user := models.User{
+		FacebookUser: models.FacebookUser{
+			FacebookID:       facebookAuth.GetFacebookID(),
+			FacebookEmail:    facebookAuth.GetFacebookEmail(),
+			FacebookUsername: facebookAuth.GetFacebookUsername(),
+			FacebookToken:    facebookAuth.GetFacebookToken(),
+		},
+	}
+	if err := auth.DAL.UpdateUserFacebookToken(&user); err == nil {
+		authToken, tokenErr := auth.NewAuthToken(user.ID)
+		if tokenErr != nil {
+			return nil, tokenErr
+		}
+		user.AuthToken = authToken
+		return user.Protobuf()
+	}
+
+	// Else signup
+	if err := auth.DAL.CreateUser(&user); err != nil {
+		return nil, err
+	}
+	authToken, tokenErr := auth.NewAuthToken(user.ID)
+	if tokenErr != nil {
+		return nil, tokenErr
+	}
+	user.AuthToken = authToken
+	return user.Protobuf()
+}
+
 func (auth *Auth) getUserToken(ctx context.Context) (string, error) {
 	md, ok := metadata.FromContext(ctx)
 	if !ok {
@@ -187,4 +303,13 @@ func (auth *Auth) getUserID(ctx context.Context) (string, error) {
 		return "", fmt.Errorf("JWT token is not valid")
 	}
 	return "", fmt.Errorf("Unexpected status of the JWT token")
+}
+
+// NewAuthToken creates a new auth token for a given user id
+func (auth *Auth) NewAuthToken(ID string) (string, error) {
+	claims := make(map[string]interface{}, 2)
+	claims[auth.Config.JwtClaimUserID] = ID
+	jwt := helpers.JWTHelper{HashSecretBytes: auth.Config.HashSecretBytes}
+	err := jwt.Generate(claims, auth.Config.JwtUserTokenDuration)
+	return jwt.Token, err
 }

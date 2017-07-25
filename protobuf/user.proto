@@ -31,3 +31,16 @@ message UserPublic {
 message UsersPublic {
   repeated UserPublic users = 1;
 }
+
+message UserEmailAuth {
+  string email = 1;
+  string userName = 2;
+  string password = 3;
+}
+
+message UserFacebookAuth {
+  string facebookID = 1;
+  string facebookEmail = 2;
+  string facebookUsername = 3;
+  string facebookToken = 4;
+}

@@ -22,4 +22,6 @@ service Auth {
   rpc GetUserByID(UserID) returns (UserPublic) {}
   rpc LinkUser(InvitationCode) returns (UserPublic) {}
   rpc GetUsersByIDs(UserIDs) returns (UsersPublic) {}
+  rpc AuthUserByEmail(UserEmailAuth) returns (User) {}
+  rpc AuthUserByFacebook(UserFacebookAuth) returns (User) {}
 }
