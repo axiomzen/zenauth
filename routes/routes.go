@@ -42,4 +42,6 @@ const (
 	ResourceFacebookSignup = "/fbsignup"
 	// ResourceFacebookLink fblink resource
 	ResourceFacebookLink = "/fblink"
+	// ResourceMessage
+	ResourceMessage = "/message"
 )

@@ -3,6 +3,7 @@ package v1
 import (
 	"bytes"
 	"fmt"
+	"net/url"
 	"regexp"
 	"strings"
 
@@ -12,7 +13,6 @@ import (
 	"github.com/axiomzen/zenauth/helpers"
 	"github.com/axiomzen/zenauth/models"
 	"github.com/gocraft/web"
-
 	"github.com/twinj/uuid"
 )
 
@@ -268,7 +268,7 @@ func (c *UserContext) ForgotPassword(rw web.ResponseWriter, req *web.Request) {
 		return
 	}
 
-	//fmt.Printf("reset token after: %s\n", user.ResetToken.String)
+	// fmt.Printf("reset token after: %s\n", user.ResetToken)
 
 	// send the reset password email with the generated token
 	emailer, err := email.Get(c.Config)
@@ -292,6 +292,97 @@ func (c *UserContext) ForgotPassword(rw web.ResponseWriter, req *web.Request) {
 	}(msg)
 	// render response
 	c.Render(constants.StatusNoContent, nil, rw, req)
+}
+
+// ChangePasswordHTML route will validate a reset token
+// this was the decided design from timeline, but feel free
+// to alter
+//
+//   GET /reset_password
+//
+// This is step 2 of 3
+//
+// Returns
+//   301 Moved Permanently
+func (c *UserContext) ChangePasswordHTML(rw web.ResponseWriter, req *web.Request) {
+
+	queryMap := req.URL.Query()
+	tokenSlice, tokenOk := queryMap["token"]
+	emailSlice, emailOK := queryMap["email"]
+
+	if !tokenOk || !emailOK {
+		// TODO: this url is sent via a web browser
+		// so I imagine they would want a better styled response
+		// instead of an object
+		msg := models.Message{Message: "400 - Bad Request"}
+		c.Render(constants.StatusBadRequest, &msg, rw, req)
+		return
+	}
+
+	// check the time on the token itself
+	// and check that there is an email associated with it
+	// and that it matches the email sent interface{}
+	jwt := helpers.JWTHelper{HashSecretBytes: c.Config.HashSecretBytes, Token: tokenSlice[0]}
+	jwtTokenResult := jwt.Validate(c.Config.JwtClaimUserEmail)
+
+	switch jwtTokenResult.Status {
+	case helpers.JWTokenStatusValid:
+		// verify that the emails are the same
+		if jwtTokenResult.Value != emailSlice[0] {
+			// render error, email doesn't matches
+			msg := models.Message{Message: "400 - Email doesn't match"}
+			c.Render(constants.StatusBadRequest, &msg, rw, req)
+			return
+		}
+
+		// check that the token exists in the DB (to see if it is not already consumed)
+		// get user by email and check the token
+		// could also just return a bool
+		var user models.User
+		user.Email = emailSlice[0]
+		if err := c.DAL.GetUserByEmail(&user); err != nil {
+			dalErr, _ := err.(data.DALError)
+			// no such user/email
+			if dalErr.ErrorCode == data.DALErrorCodeNoneAffected {
+				msg := models.Message{Message: "404 - User doesn't exist"}
+				c.Render(constants.StatusNotFound, &msg, rw, req)
+				return
+			}
+			// db access problem
+			c.Log.WithError(err).Error("Could not get user by email")
+			msg := models.Message{Message: "500 - Server Problem"}
+			c.Render(constants.StatusInternalServerError, &msg, rw, req)
+			return
+		}
+
+		// check to see if the token has already been used
+		if user.ResetToken == nil || *user.ResetToken != tokenSlice[0] {
+			msg := models.Message{Message: "400 - Token Consumed"}
+			c.Render(constants.StatusBadRequest, &msg, rw, req)
+			return
+		}
+
+		// need to redirect them to the destination site
+		url := req.URL
+		url.Path = versionRegexp.ReplaceAllString(url.Path, "")
+		req.Header.Set("Content-Type", "text/html")
+		html, err := GetChangePasswordHTML(c.Config, &user)
+		if err != nil {
+			if user.ResetToken == nil || *user.ResetToken != tokenSlice[0] {
+				msg := models.Message{Message: "400 - Error"}
+				c.Render(constants.StatusBadRequest, &msg, rw, req)
+				return
+			}
+		}
+		c.Render(constants.StatusOK, html, rw, req)
+	case helpers.JWTokenStatusExpired:
+		// render expired
+		msg := models.Message{Message: "400 - Reset Request Expired"}
+		c.Render(constants.StatusBadRequest, &msg, rw, req)
+	case helpers.JWTokenStatusInvalid, helpers.JWTokenNotAvailableYet:
+		msg := models.Message{Message: "400 - Invalid Token"}
+		c.Render(constants.StatusBadRequest, &msg, rw, req)
+	}
 }
 
 // ResetPassword route
@@ -371,7 +462,12 @@ func (c *UserContext) ResetPassword(rw web.ResponseWriter, req *web.Request) {
 			c.Render(constants.StatusInternalServerError, model, rw, req)
 			return
 		}
-
+		if userPasswordReset.Redirect != "" {
+			rw.Header().Set("Location", userPasswordReset.Redirect+"?message="+
+				url.QueryEscape("Successfully changed your password."))
+			rw.WriteHeader(constants.StatusSeeOther)
+			return
+		}
 		c.renderUserResponseWithNewToken(&user, constants.StatusOK, false, rw, req)
 
 		// TODO: localization (we need to get a string via id => it will have appropriate %s etc)
@@ -381,9 +477,11 @@ func (c *UserContext) ResetPassword(rw web.ResponseWriter, req *web.Request) {
 		// render expired
 		msg := models.Message{Message: "400 - Reset Request Expired"}
 		c.Render(constants.StatusBadRequest, &msg, rw, req)
+
 	case helpers.JWTokenStatusInvalid, helpers.JWTokenNotAvailableYet:
 		msg := models.Message{Message: "400 - Invalid Token"}
 		c.Render(constants.StatusBadRequest, &msg, rw, req)
+
 	}
 }
 
@@ -892,4 +990,36 @@ func (c *UserContext) Signup(w web.ResponseWriter, req *web.Request) {
 
 	// render a user response
 	c.renderUserResponseWithNewToken(&user, constants.StatusCreated, true, w, req)
+}
+
+// GeneralMessageHTML route will respond with a general message
+//
+//   GET /message
+//
+// Returns
+//   200 Status OK
+func (c *UserContext) GeneralMessageHTML(rw web.ResponseWriter, req *web.Request) {
+
+	queryMap := req.URL.Query()
+	message, messageOK := queryMap["message"]
+
+	if !messageOK {
+		// TODO: this url is sent via a web browser
+		// so I imagine they would want a better styled response
+		// instead of an object
+		msg := models.Message{Message: "400 - Bad Request"}
+		c.Render(constants.StatusBadRequest, &msg, rw, req)
+		return
+	}
+
+	req.Header.Set("Content-Type", "text/html")
+
+	html, err := GetGeneralMessageHTML(message[0])
+	if err != nil {
+		msg := models.Message{Message: "400 - Error"}
+		c.Render(constants.StatusBadRequest, &msg, rw, req)
+		return
+	}
+	c.Render(constants.StatusOK, html, rw, req)
+	return
 }

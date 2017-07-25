@@ -19,7 +19,6 @@ import (
 	"github.com/axiomzen/zenauth/constants"
 	"github.com/axiomzen/zenauth/data"
 	"github.com/axiomzen/zenauth/grpc"
-	"github.com/joho/godotenv"
 	"github.com/mattes/migrate"
 	_ "github.com/mattes/migrate/database/postgres"
 	_ "github.com/mattes/migrate/source/file"
@@ -28,15 +27,8 @@ import (
 )
 
 func main() {
+	log.Infof(os.Getenv("ZENAUTH_ENVIRONMENT"))
 
-	// set local dev env
-	if strings.EqualFold(os.Getenv("ZENAUTH_ENVIRONMENT"), constants.EnvironmentDevelopment) {
-		if err := godotenv.Load(); err != nil {
-			// Do not fail here, incase they've manually loaded env variables
-			// Will fail out at config.Get() if any require env variables not set
-			log.WithError(err).Warn("error loading godotenv")
-		}
-	}
 	// set just in case someone has go 1.4
 	runtime.GOMAXPROCS(runtime.NumCPU())
 
@@ -55,7 +47,7 @@ func main() {
 	}
 
 	switch conf.Environment {
-	case constants.EnvironmentStaging, constants.EnvironmentProduction:
+	case constants.EnvironmentStaging, constants.EnvironmentProduction, constants.EnvironmentDevelopment:
 		pgURL, err := url.Parse(fmt.Sprintf("postgres://%s:%s@%s:%v/%s?sslmode=require", conf.PostgreSQLUsername, conf.PostgreSQLPassword, conf.PostgreSQLHost, conf.PostgreSQLPort, conf.PostgreSQLDatabase))
 		if err != nil {
 			log.Fatal(err.Error())
