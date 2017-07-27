@@ -1,10 +1,8 @@
 package main
 
 import (
-	"fmt"
 	"math/rand"
 	"net/http"
-	"net/url"
 	"os"
 	"runtime"
 	"strconv"
@@ -19,9 +17,6 @@ import (
 	"github.com/axiomzen/zenauth/constants"
 	"github.com/axiomzen/zenauth/data"
 	"github.com/axiomzen/zenauth/grpc"
-	"github.com/mattes/migrate"
-	_ "github.com/mattes/migrate/database/postgres"
-	_ "github.com/mattes/migrate/source/file"
 	pg "gopkg.in/pg.v4"
 	"gopkg.in/tylerb/graceful.v1"
 )
@@ -48,26 +43,7 @@ func main() {
 
 	switch conf.Environment {
 	case constants.EnvironmentStaging, constants.EnvironmentProduction, constants.EnvironmentDevelopment:
-		pgURL, err := url.Parse(fmt.Sprintf("postgres://%s:%s@%s:%v/%s?sslmode=require", conf.PostgreSQLUsername, conf.PostgreSQLPassword, conf.PostgreSQLHost, conf.PostgreSQLPort, conf.PostgreSQLDatabase))
-		if err != nil {
-			log.Fatal(err.Error())
-		}
-		if !*conf.PostgreSQLSSL {
-			pgURL.RawQuery = "sslmode=disable"
-		}
-
-		// migrate db
-		m, migrateErr := migrate.New("file://data/migrations", pgURL.String())
-		if migrateErr != nil {
-			log.Fatal(migrateErr.Error())
-		} else if upErr := m.Up(); err != nil {
-			log.Fatal(upErr.Error())
-		} else if sErr, dbErr := m.Close(); sErr != nil {
-			log.Fatal(sErr.Error())
-		} else if dbErr != nil {
-			log.Fatal(dbErr.Error())
-		}
-		// Use JSON formatter on prod/staging
+		data.Migrate(conf)
 		log.SetFormatter(&log.JSONFormatter{})
 		fallthrough
 	case constants.EnvironmentTest:
