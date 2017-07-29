@@ -9,6 +9,7 @@ import (
 	"github.com/mattes/migrate"
 	"github.com/mattes/migrate/database"
 	"github.com/mattes/migrate/database/postgres"
+	_ "github.com/mattes/migrate/source/file"
 )
 
 func Migrate(conf *config.ZENAUTHConfig) {
