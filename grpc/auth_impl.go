@@ -244,6 +244,9 @@ func (auth *Auth) AuthUserByFacebook(ctx context.Context, facebookAuth *protobuf
 	}
 	// create a user
 	user := models.User{
+		UserBase: models.UserBase{
+			UserName: facebookAuth.GetFacebookUsername(),
+		},
 		FacebookUser: models.FacebookUser{
 			FacebookID:       facebookAuth.GetFacebookID(),
 			FacebookEmail:    facebookAuth.GetFacebookEmail(),
