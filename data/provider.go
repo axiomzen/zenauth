@@ -33,7 +33,9 @@ type ZENAUTHProvider interface {
 
 	// GetUserByEmail retrieves a user via email
 	GetUserByEmail(user *models.User) error
-	// GetUserByEmail retrieves a user via email
+	// GetUserByUserName retrieves a user via username
+	GetUserByUserName(user *models.User) error
+	// GetUserByEmailOrUserName retrieves a user via email or username
 	GetUserByEmailOrUserName(user *models.User) error
 	// GetUser retrieves a user via id
 	GetUserByID(user *models.User) error
