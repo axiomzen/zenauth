@@ -121,7 +121,7 @@ const (
 )
 const (
 	// APINetworkError for network errors
-	APINetworkError = 5000 + iota
+	APINetworkError APIErrorCode = 5000 + iota
 )
 const (
 	// APIUnauthorized api token incorrect
@@ -162,6 +162,95 @@ const (
 	// APIInvitationsCreationError Error creating invitations
 	APIInvitationsCreationError APIErrorCode = 9000 + iota
 )
+
+func (code APIErrorCode) String() string {
+	switch code {
+	case APINotFound:
+		return "Not found"
+	case APIInvalidRequest:
+		return "Invalid request"
+	case APIPanic:
+		fallthrough
+	case APIDatabase:
+		fallthrough
+	case APIDatabaseUnreachable:
+		return "Server Error"
+	case APIDatabaseGet:
+		return "Could not get the requested resource"
+	case APIDatabaseGetUser:
+		return "Could not retrieve the user information"
+	case APIDatabaseCreate:
+		return "Could not create the resource"
+	case APIDatabaseCreateUser:
+		return "Could not create the user"
+	case APIDatabaseCreateInvitation:
+		return "Could not create the invitation"
+	case APIDatabaseUpdate:
+		return "Could not update the update"
+	case APIDatabaseUpdateUser:
+		return "Could not update your user info"
+	case APIDatabaseDelete:
+		return "Could not delete the resource"
+	case APIDatabaseDeleteUser:
+		return "Coul dnot delete the user"
+	case APIParsing:
+		fallthrough
+	case APIParsingUnsupportedContentType:
+		fallthrough
+	case APIParsingQueryParams:
+		fallthrough
+	case APIParsingMarshalling:
+		fallthrough
+	case APIParsingJWT:
+		fallthrough
+	case APIParsingUUIDUser:
+		fallthrough
+	case APIParsingPasswordHash:
+		return "Could not process your request"
+	case APIGeneric:
+		return "Could not process your request"
+	case APIValidation:
+		return ""
+	case APIValidationPasswordTooShort:
+		return "The password you provided was too short"
+	case APIValidationEmailNotValid:
+		return "The email was invalid"
+	case APIValidationUserNameNotValid:
+		return "The username was invalid"
+	case APINetworkError:
+		return ""
+	case APIUnauthorized:
+		return "You are not authorized to view this page"
+	case APILoginSignupUnauthorized:
+		return ""
+	case APILoginUserDoesNotExist:
+		return "User does not exist"
+	case APIFacebookLoginNotValid:
+		return "Could not login via facebook"
+	case APIEmailInUse:
+		return "Email already in use/exists"
+	case APISocialAccountExists:
+		return "Social account already exists"
+	case APILoginSignupInvalidCombination:
+		return "Invalid email/username/password combination"
+	case APILoginNotVerified:
+		return "User must validate their email first"
+	case APIAuthTokenCreation:
+		return "Could not login"
+	case APIExpiredAuthToken:
+		return "Session expired"
+	case APIInvalidAuthToken:
+		return "Session expired"
+	case APIForgotPasswordMessageError:
+		return "Unable to send password reset email"
+	case APIVerifyEmailMessageError:
+		return "Unable to send email verification"
+	case APIInvitationsCreationError:
+		return "Could not create invitations"
+	default:
+		return "Something went wrong!"
+	}
+}
 
 // general constants
 const (

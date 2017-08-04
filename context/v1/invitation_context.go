@@ -18,7 +18,7 @@ type InvitationContext struct {
 func (c *InvitationContext) createInvitationsResponse(invitations models.Invitations, rw web.ResponseWriter, req *web.Request) {
 
 	if err := c.DAL.CreateInvitations(&invitations); err != nil {
-		model := models.NewErrorResponse(constants.APIInvitationsCreationError, models.NewAZError(err.Error()), "unable to create the invitations")
+		model := models.NewErrorResponse(constants.APIInvitationsCreationError, models.NewAZError(err.Error()))
 		c.Render(constants.StatusBadRequest, model, rw, req)
 		return
 	}
@@ -30,7 +30,7 @@ func (c *InvitationContext) createInvitationsResponse(invitations models.Invitat
 	for idx, invitation := range invitations {
 		invitationResponse.Users[idx], err = invitation.UserPublicProtobuf()
 		if err != nil {
-			model := models.NewErrorResponse(constants.APIInvitationsCreationError, models.NewAZError(err.Error()), "unable to get the view of the invitation")
+			model := models.NewErrorResponse(constants.APIInvitationsCreationError, models.NewAZError(err.Error()))
 			c.Render(constants.StatusInternalServerError, model, rw, req)
 			return
 		}
@@ -60,7 +60,7 @@ func (c *InvitationContext) CreateEmailInvitations(rw web.ResponseWriter, req *w
 		// Verify invite email is valid
 		if strings.Count(email, "@") == 0 {
 			model := models.NewErrorResponse(constants.APIValidationEmailNotValid,
-				models.NewAZError("Invalid email address"), "Could not create invitation")
+				models.NewAZError("Invalid email address"))
 			c.Render(constants.StatusBadRequest, model, rw, req)
 			return
 		}
@@ -74,7 +74,7 @@ func (c *InvitationContext) CreateEmailInvitations(rw web.ResponseWriter, req *w
 		// TODO: Should we error here? Or continue inviting the rest of the list?
 		if err := c.DAL.GetUserByEmail(&user); err == nil {
 			model := models.NewErrorResponse(constants.APIDatabaseCreateInvitation,
-				models.NewAZError("User with email already exists"), "Could not create invitation")
+				models.NewAZError("User with email already exists"))
 			c.Render(constants.StatusBadRequest, model, rw, req)
 			return
 		}
@@ -108,7 +108,7 @@ func (c *InvitationContext) CreateFacebookInvitations(rw web.ResponseWriter, req
 		// TODO: Should we error here? Or continue inviting the rest of the list?
 		if err := c.DAL.GetUserByFacebookID(&user); err == nil {
 			model := models.NewErrorResponse(constants.APIDatabaseCreateInvitation,
-				models.NewAZError("User with facebookID already exists"), "Could not create invitation")
+				models.NewAZError("User with facebookID already exists"))
 			c.Render(constants.StatusBadRequest, model, rw, req)
 			return
 		}

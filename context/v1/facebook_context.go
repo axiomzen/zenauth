@@ -18,17 +18,17 @@ type FacebookContext struct {
 func (c *FacebookContext) validateFacebookUser(fbUser *models.FacebookUser, rw web.ResponseWriter, req *web.Request) bool {
 	// TODO Change to check hashed password against db & require username and password fields
 	if fbUser.FacebookID == "" || fbUser.FacebookToken == "" {
-		model := models.NewErrorResponse(constants.APIValidation, models.NewAZError("Missing a field in request"), "Error with request")
+		model := models.NewErrorResponse(constants.APIValidation, models.NewAZError("Missing a field in request"))
 		c.Render(constants.StatusBadRequest, model, rw, req)
 		return false
 	}
 
 	if valid, err := helpers.ValidateFacebookLogin(fbUser.FacebookID, fbUser.FacebookToken, c.Config.FacebookAppID, c.Config.FacebookAppSecret); err != nil {
-		model := models.NewErrorResponse(constants.APIFacebookLoginNotValid, models.NewAZError(err.Error()), "Error with fb login request")
+		model := models.NewErrorResponse(constants.APIFacebookLoginNotValid, models.NewAZError(err.Error()))
 		c.Render(constants.StatusBadRequest, model, rw, req)
 		return false
 	} else if !valid {
-		model := models.NewErrorResponse(constants.APIFacebookLoginNotValid, models.NewAZError(err.Error()), "Could not validate facebook token")
+		model := models.NewErrorResponse(constants.APIFacebookLoginNotValid, models.NewAZError(err.Error()))
 		c.Render(constants.StatusBadRequest, model, rw, req)
 		return false
 	}
@@ -44,15 +44,15 @@ func (c *FacebookContext) createFacebookUser(user *models.User, rw web.ResponseW
 
 		switch dalErr.ErrorCode {
 		case data.DALErrorCodeUniqueEmail:
-			model := models.NewErrorResponse(constants.APIEmailInUse, models.NewAZError(err.Error()), "Email already in use/exists")
+			model := models.NewErrorResponse(constants.APIEmailInUse, models.NewAZError(err.Error()))
 			c.Render(constants.StatusForbidden, model, rw, req)
 			return false
 		case data.DALErrorCodeFacebookIDUnique:
-			model := models.NewErrorResponse(constants.APISocialAccountExists, models.NewAZError(err.Error()), "Social account already exists")
+			model := models.NewErrorResponse(constants.APISocialAccountExists, models.NewAZError(err.Error()))
 			c.Render(constants.StatusForbidden, model, rw, req)
 			return false
 		default:
-			model := models.NewErrorResponse(constants.APIDatabaseCreateUser, models.NewAZError(err.Error()), "Could not create new User")
+			model := models.NewErrorResponse(constants.APIDatabaseCreateUser, models.NewAZError(err.Error()))
 			c.Render(constants.StatusInternalServerError, model, rw, req)
 			return false
 		}
@@ -83,7 +83,7 @@ func (c *FacebookContext) Login(rw web.ResponseWriter, req *web.Request) {
 	user.FacebookUser = fbLogin
 
 	if err := c.DAL.GetUserByFacebookID(&user); err != nil {
-		model := models.NewErrorResponse(constants.APILoginUserDoesNotExist, models.NewAZError(err.Error()), "User does not exist")
+		model := models.NewErrorResponse(constants.APILoginUserDoesNotExist, models.NewAZError(err.Error()))
 		c.Render(constants.StatusForbidden, model, rw, req)
 		return
 	}
@@ -153,7 +153,7 @@ func (c *FacebookContext) Link(rw web.ResponseWriter, req *web.Request) {
 		dalErr, _ := err.(data.DALError)
 
 		if dalErr.ErrorCode == data.DALErrorCodeFacebookIDUnique {
-			model := models.NewErrorResponse(constants.APISocialAccountExists, models.NewAZError(err.Error()), "Social account already exists")
+			model := models.NewErrorResponse(constants.APISocialAccountExists, models.NewAZError(err.Error()))
 			c.Render(constants.StatusForbidden, model, rw, req)
 			return
 		} else if dalErr.ErrorCode == data.DALErrorCodeNoneAffected {
@@ -162,7 +162,7 @@ func (c *FacebookContext) Link(rw web.ResponseWriter, req *web.Request) {
 		}
 
 		// user might not be found
-		model := models.NewErrorResponse(constants.APIDatabaseCreateUser, models.NewAZError(err.Error()), "Could not update User")
+		model := models.NewErrorResponse(constants.APIDatabaseCreateUser, models.NewAZError(err.Error()))
 		c.Render(constants.StatusInternalServerError, model, rw, req)
 		return
 	}

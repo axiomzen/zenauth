@@ -260,13 +260,13 @@ func (c *RequestContext) CompressionHandler(w web.ResponseWriter, r *web.Request
 
 // UnauthorizedHandler generic unauthorized handler
 func (c *RequestContext) UnauthorizedHandler(w web.ResponseWriter, r *web.Request) {
-	var model = models.NewErrorResponse(constants.APIUnauthorized, models.NewAZError("not authorized"), "Not Authorized")
+	var model = models.NewErrorResponse(constants.APIUnauthorized, models.NewAZError("not authorized"))
 	c.Render(constants.StatusUnauthorized, model, w, r)
 }
 
 // ExpiredHandler generic auth token expiry handler
 func (c *RequestContext) ExpiredHandler(w web.ResponseWriter, r *web.Request) {
-	var model = models.NewErrorResponse(constants.APIExpiredAuthToken, models.NewAZError("Expired auth token"), "Auth token expired")
+	var model = models.NewErrorResponse(constants.APIExpiredAuthToken, models.NewAZError("Expired auth token"))
 	c.Render(constants.StatusExpiredToken, model, w, r)
 }
 
@@ -284,7 +284,7 @@ func (c *RequestContext) ExpiredHandler(w web.ResponseWriter, r *web.Request) {
 func (c *RequestContext) PingResponse(rw web.ResponseWriter, req *web.Request) {
 
 	if err := c.DAL.Ping(); err != nil {
-		model := models.NewErrorResponse(constants.APIDatabaseUnreachable, models.NewAZError(err.Error()), "database unreachable!")
+		model := models.NewErrorResponse(constants.APIDatabaseUnreachable, models.NewAZError(err.Error()))
 		c.Render(constants.StatusServiceUnavailable, model, rw, req)
 		return
 	}
@@ -342,7 +342,7 @@ func (c *RequestContext) Render(statusCode constants.HTTPStatusCode, v interface
 func (c *RequestContext) DecodeHelper(v interface{}, message string, w web.ResponseWriter, r *web.Request) bool {
 
 	if err := helpers.Decode(v, r.Header.Get("Content-Type"), r.Body); err != nil {
-		model := models.NewErrorResponse(constants.APIParsing, models.NewAZError(err.Error()), message)
+		model := models.NewErrorResponse(constants.APIParsing, models.NewAZError(err.Error()))
 		// If we can't decode it, then it is probably a bad request (malformed json for example)
 		c.Render(constants.StatusBadRequest, model, w, r)
 		return false
@@ -358,9 +358,9 @@ func (c *RequestContext) Error(rw web.ResponseWriter, r *web.Request, err interf
 	var errorObj *models.ErrorResponse
 
 	if errorValue, ok := err.(error); ok {
-		errorObj = models.NewErrorResponse(constants.APIPanic, models.NewAZError(errorValue.Error()), "API Panic!")
+		errorObj = models.NewErrorResponse(constants.APIPanic, models.NewAZError(errorValue.Error()))
 	} else {
-		errorObj = models.NewErrorResponse(constants.APIPanic, nil, "API Panic!")
+		errorObj = models.NewErrorResponse(constants.APIPanic, nil)
 	}
 
 	// at this point, we no longer have the compression middleware
@@ -390,6 +390,6 @@ func (c *RequestContext) NotFound(rw web.ResponseWriter, req *web.Request) {
 	if newRelicApp != nil {
 		(*newRelicApp).RecordCustomEvent("Not Found", map[string]interface{}{"path": req.RequestURI})
 	}
-	model := models.NewErrorResponse(constants.APINotFound, nil, "not found")
+	model := models.NewErrorResponse(constants.APINotFound, nil)
 	c.Render(constants.StatusNotFound, model, rw, req)
 }

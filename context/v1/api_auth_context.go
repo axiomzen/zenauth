@@ -23,7 +23,7 @@ func (c *APIAuthContext) APIAuthRequired(w web.ResponseWriter, r *web.Request, n
 		//optional: store string c.Token = apiToken
 		next(w, r)
 	} else {
-		var model = models.NewErrorResponse(constants.APIUnauthorized, models.NewAZError("not authorized"), "Not Authorized")
+		var model = models.NewErrorResponse(constants.APIUnauthorized, models.NewAZError("not authorized"))
 		c.Render(constants.StatusUnauthorized, model, w, r)
 	}
 }
