@@ -36,7 +36,17 @@ var _ = ginkgo.Describe("Users", func() {
 		})
 
 		ginkgo.Context("User not signed up yet", func() {
-
+			ginkgo.It("should say username doesn't exists", func() {
+				var exists models.Exists
+				statusCode, err := TestRequestV1().
+					Get(routes.ResourceUsers+routes.ResourceExists).
+					URLParam("userName", lorem.Word(5, 10)).
+					ResponseBody(&exists).
+					Do()
+				gomega.Expect(err).ToNot(gomega.HaveOccurred())
+				gomega.Expect(statusCode).To(gomega.Equal(http.StatusOK))
+				gomega.Expect(exists.Exists).To(gomega.BeFalse())
+			})
 			ginkgo.It("should return email does not exist", func() {
 				var exists models.Exists
 				statusCode, err := TestRequestV1().
@@ -45,7 +55,7 @@ var _ = ginkgo.Describe("Users", func() {
 					ResponseBody(&exists).Do()
 				gomega.Expect(err).ToNot(gomega.HaveOccurred())
 				gomega.Expect(statusCode).To(gomega.Equal(http.StatusOK))
-				gomega.Expect(exists.Exists).To(gomega.Equal(false))
+				gomega.Expect(exists.Exists).To(gomega.BeFalse())
 			})
 
 			ginkgo.It("should be able to sign up and get an authentication token returned that can access pages", func() {
@@ -173,6 +183,18 @@ var _ = ginkgo.Describe("Users", func() {
 
 			ginkgo.AfterEach(func() {
 				deleteUser(user.ID)
+			})
+
+			ginkgo.It("should say username exists", func() {
+				var exists map[string]bool
+				statusCode, err := TestRequestV1().
+					Get(routes.ResourceUsers+routes.ResourceExists).
+					URLParam("userName", user.UserName).
+					ResponseBody(&exists).
+					Do()
+				gomega.Expect(err).ToNot(gomega.HaveOccurred())
+				gomega.Expect(statusCode).To(gomega.Equal(http.StatusOK))
+				gomega.Expect(exists["exists"]).To(gomega.BeTrue())
 			})
 
 			ginkgo.It("should not be able to sign up with the same email as an existing user", func() {

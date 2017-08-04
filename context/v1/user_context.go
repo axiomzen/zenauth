@@ -495,21 +495,28 @@ func (c *UserContext) Exists(rw web.ResponseWriter, req *web.Request) {
 	// check for email existance
 	queryMap := req.URL.Query()
 	response := models.Exists{}
-	_, ok := queryMap["email"]
+	_, emailOK := queryMap["email"]
+	_, userNameOK := queryMap["userName"]
 
-	if !ok {
-		model := models.NewErrorResponse(constants.APIParsingQueryParams, models.NewAZError("email expected"), "query parameter missing")
+	if !emailOK && !userNameOK {
+		model := models.NewErrorResponse(constants.APIParsingQueryParams, models.NewAZError("email or username expected"), "query parameter missing")
 		c.Render(constants.StatusBadRequest, model, rw, req)
 		return
 	}
-	// fixup email
-	email := strings.Replace(queryMap.Get("email"), " ", "+", -1)
-	email = strings.ToLower(strings.Trim(email, " "))
-
-	// check to see if user exists
 	var user models.User
-	user.Email = email
-	response.Exists = c.DAL.GetUserByEmail(&user) == nil
+
+	if emailOK {
+		// fixup email
+		email := strings.Replace(queryMap.Get("email"), " ", "+", -1)
+		email = strings.ToLower(strings.Trim(email, " "))
+
+		// check to see if user exists
+		user.Email = email
+	}
+	if userNameOK {
+		user.UserName = queryMap.Get("userName")
+	}
+	response.Exists = c.DAL.GetUserByEmailOrUserName(&user) == nil
 
 	// render resposne
 	c.Render(constants.StatusOK, &response, rw, req)

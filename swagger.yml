@@ -69,7 +69,12 @@ paths:
       - in: "query"
         name: "email"
         description: "user e-mail"
-        required: true
+        required: false
+        type: string
+      - in: "query"
+        name: "userName"
+        description: "userName"
+        required: false
         type: string
       responses:
         200:

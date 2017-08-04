@@ -135,7 +135,12 @@ func (dp *dataProvider) GetUserByEmail(user *models.User) error {
 	return wrapError(dp.db.Model(user).Where("email = ?email").Select())
 }
 
-// GetUserByEmail retrieves a user via email
+// GetUserByUserName retrieves a user via username
+func (dp *dataProvider) GetUserByUserName(user *models.User) error {
+	return wrapError(dp.db.Model(user).Where("user_name = ?user_name").Select())
+}
+
+// GetUserByEmailOrUserName retrieves a user via email or username
 func (dp *dataProvider) GetUserByEmailOrUserName(user *models.User) error {
 	return wrapError(dp.db.Model(user).Where("email = ?email OR user_name = ?user_name").Select())
 }
