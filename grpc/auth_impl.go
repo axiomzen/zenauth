@@ -316,3 +316,51 @@ func (auth *Auth) NewAuthToken(ID string) (string, error) {
 	err := jwt.Generate(claims, auth.Config.JwtUserTokenDuration)
 	return jwt.Token, err
 }
+
+// UpdateUserEmail updates the users email only
+func (auth *Auth) UpdateUserEmail(ctx context.Context, user *protobuf.UserEmailAuth) (*protobuf.User, error) {
+	userID, err := auth.getUserID(ctx)
+	if err != nil {
+		return nil, err
+	}
+	var userModel models.User
+	userChangeEmail := models.UserChangeEmail{
+		Email: strings.ToLower(strings.Trim(user.GetEmail(), " ")),
+		ID:    userID,
+	}
+
+	if len(userChangeEmail.Email) == 0 {
+		return nil, fmt.Errorf("Empty email sent")
+	}
+
+	// get user
+	if err := auth.DAL.UpdateUser(&userChangeEmail, &userModel); err != nil {
+		return nil, err
+	}
+
+	return userModel.Protobuf()
+}
+
+// UpdateUserName updates the users username only
+func (auth *Auth) UpdateUserName(ctx context.Context, user *protobuf.UserEmailAuth) (*protobuf.User, error) {
+	userID, err := auth.getUserID(ctx)
+	if err != nil {
+		return nil, err
+	}
+	var userModel models.User
+	userChangeUserName := models.UserChangeUserName{
+		UserName: user.GetUserName(),
+		ID:       userID,
+	}
+
+	if len(userChangeUserName.UserName) == 0 {
+		return nil, fmt.Errorf("Empty username sent")
+	}
+
+	// get user
+	if err := auth.DAL.UpdateUser(&userChangeUserName, &userModel); err != nil {
+		return nil, err
+	}
+
+	return userModel.Protobuf()
+}

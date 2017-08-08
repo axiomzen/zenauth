@@ -337,4 +337,44 @@ var _ = ginkgo.Describe("Auth GRPC", func() {
 		})
 
 	})
+
+	ginkgo.Context("UpdateUserEmail and UpdateUserName", func() {
+		var (
+			signup    protobuf.UserEmailAuth
+			protoUser *protobuf.User
+			authErr   error
+		)
+		ginkgo.BeforeEach(func() {
+			signup.Email = lorem.Email()
+			signup.UserName = lorem.Word(8, 16)
+			signup.Password = lorem.Word(8, 16)
+			protoUser, authErr = grpcAuthClient.AuthUserByEmail(context.Background(), &signup)
+			gomega.Expect(authErr).ToNot(gomega.HaveOccurred())
+		})
+		ginkgo.AfterEach(func() {
+			deleteUser(protoUser.Id)
+		})
+		ginkgo.It("Allows user to update email", func() {
+			emailUpdate := protobuf.UserEmailAuth{
+				Email: lorem.Email(),
+			}
+			authCtx := getGRPCAuthenticatedContext(protoUser.GetAuthToken())
+			updateUser, updateErr := grpcAuthClient.UpdateUserEmail(authCtx, &emailUpdate)
+
+			gomega.Expect(updateErr).ToNot(gomega.HaveOccurred())
+			gomega.Expect(updateUser.Email).To(gomega.Equal(emailUpdate.Email))
+			gomega.Expect(updateUser.UserName).To(gomega.Equal(protoUser.UserName))
+		})
+		ginkgo.It("Allows user to update username", func() {
+			userNameUpdate := protobuf.UserEmailAuth{
+				UserName: lorem.Word(5, 10),
+			}
+			authCtx := getGRPCAuthenticatedContext(protoUser.GetAuthToken())
+			updateUser, updateErr := grpcAuthClient.UpdateUserName(authCtx, &userNameUpdate)
+
+			gomega.Expect(updateErr).ToNot(gomega.HaveOccurred())
+			gomega.Expect(updateUser.Email).To(gomega.Equal(protoUser.Email))
+			gomega.Expect(updateUser.UserName).To(gomega.Equal(userNameUpdate.UserName))
+		})
+	})
 })

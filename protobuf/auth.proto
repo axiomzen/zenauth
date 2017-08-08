@@ -24,4 +24,6 @@ service Auth {
   rpc GetUsersByIDs(UserIDs) returns (UsersPublic) {}
   rpc AuthUserByEmail(UserEmailAuth) returns (User) {}
   rpc AuthUserByFacebook(UserFacebookAuth) returns (User) {}
+  rpc UpdateUserEmail(UserEmailAuth) returns (User) {}
+  rpc UpdateUserName(UserEmailAuth) returns (User) {}
 }
