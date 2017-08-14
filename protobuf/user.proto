@@ -6,6 +6,7 @@ enum UserStatus {
   invited = 0;
   created = 1;
   merged = 2;
+  new = 3;
 }
 
 message User {
