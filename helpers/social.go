@@ -13,7 +13,7 @@ import (
 )
 
 const (
-	facebookTokenURL = "https://graph.facebook.com/debug_token?" //fields=id&access_token=@accesstoken
+	facebookTokenURL = "https://graph.facebook.com/v2.10/debug_token?" //fields=id&access_token=@accesstoken
 )
 
 // ValidateFacebookLogin takes the id and token strings and sends them to the FACEBOOK_TOKEN_URL.
@@ -30,7 +30,7 @@ func ValidateFacebookLogin(id, token, appID, appSecret string) (bool, error) {
 	req.Header.Set("Content-Type", "application/json")
 	resp, err := client.Do(req)
 	defer func(resp *http.Response) {
-		if resp.Body != nil {
+		if resp != nil && resp.Body != nil {
 			resp.Body.Close()
 		}
 	}(resp)

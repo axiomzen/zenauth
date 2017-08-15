@@ -226,7 +226,9 @@ func (auth *Auth) AuthUserByEmail(ctx context.Context, emailAuth *protobuf.UserE
 		return nil, tokenErr
 	}
 	user.AuthToken = authToken
-	return user.Protobuf()
+	protoUser, protoErr := user.Protobuf()
+	protoUser.Status = protobuf.UserStatus_new
+	return protoUser, protoErr
 }
 
 // AuthUserByFacebook implements the action to return the user from the ID.
@@ -272,7 +274,9 @@ func (auth *Auth) AuthUserByFacebook(ctx context.Context, facebookAuth *protobuf
 		return nil, tokenErr
 	}
 	user.AuthToken = authToken
-	return user.Protobuf()
+	protoUser, protoErr := user.Protobuf()
+	protoUser.Status = protobuf.UserStatus_new
+	return protoUser, protoErr
 }
 
 func (auth *Auth) getUserToken(ctx context.Context) (string, error) {
