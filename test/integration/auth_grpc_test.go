@@ -154,7 +154,7 @@ var _ = ginkgo.Describe("Auth GRPC", func() {
 			gomega.Expect(protoUser.Email).To(gomega.Equal(signup.Email))
 			gomega.Expect(protoUser.UserName).To(gomega.Equal(signup.UserName))
 			gomega.Expect(protoUser.AuthToken).ToNot(gomega.BeEmpty())
-
+			gomega.Expect(protoUser.Status).To(gomega.Equal(protobuf.UserStatus_new))
 		})
 		ginkgo.It("Allows user to login", func() {
 			ctx := context.Background()
@@ -168,6 +168,7 @@ var _ = ginkgo.Describe("Auth GRPC", func() {
 			gomega.Expect(protoUser.Email).To(gomega.Equal(signup.Email))
 			gomega.Expect(protoUser.UserName).To(gomega.Equal(signup.UserName))
 			gomega.Expect(protoUser.AuthToken).ToNot(gomega.BeEmpty())
+			gomega.Expect(protoUser.Status).To(gomega.Equal(protobuf.UserStatus_created))
 		})
 	})
 
@@ -192,7 +193,7 @@ var _ = ginkgo.Describe("Auth GRPC", func() {
 			gomega.Expect(authErr).ToNot(gomega.HaveOccurred())
 			gomega.Expect(protoUser.FacebookID).To(gomega.Equal(facebook.FacebookID))
 			gomega.Expect(protoUser.AuthToken).ToNot(gomega.BeEmpty())
-
+			gomega.Expect(protoUser.Status).To(gomega.Equal(protobuf.UserStatus_new))
 		})
 		ginkgo.It("Allows user to login", func() {
 			ctx := context.Background()
@@ -205,6 +206,7 @@ var _ = ginkgo.Describe("Auth GRPC", func() {
 			gomega.Expect(authErr).ToNot(gomega.HaveOccurred())
 			gomega.Expect(protoUser.FacebookID).To(gomega.Equal(facebook.FacebookID))
 			gomega.Expect(protoUser.AuthToken).ToNot(gomega.BeEmpty())
+			gomega.Expect(protoUser.Status).To(gomega.Equal(protobuf.UserStatus_created))
 		})
 	})
 
