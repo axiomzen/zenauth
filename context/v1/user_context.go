@@ -219,7 +219,7 @@ func (c *UserContext) VerifyEmail(rw web.ResponseWriter, req *web.Request) {
 func (c *UserContext) ForgotPassword(rw web.ResponseWriter, req *web.Request) {
 
 	queryMap := req.URL.Query()
-	emailSlice, emailOk := queryMap["email"]
+	_, emailOk := queryMap["email"]
 
 	if !emailOk {
 		model := models.NewErrorResponse(constants.APIParsingQueryParams, models.NewAZError("email expected"), "query parameter missing")
@@ -229,10 +229,12 @@ func (c *UserContext) ForgotPassword(rw web.ResponseWriter, req *web.Request) {
 
 	// generate a JWT with expiry and other claims (email) so that we don't have to check the DB on the get
 	claims := make(map[string]interface{}, 2)
-	// TODO: why did we do this?
+	// This is here because in the query string, + are replaced by spaces, so undoing bad encoding
+	// TODO: this is not the best way to handle. Need to think up a better solution
 	//email := strings.Replace(emailSlice[0], " ", "+", -1)
+	emailStr := strings.Replace(helpers.EmailSanitize(queryMap.Get("email")), " ", "+", -1)
 	// TODO: test email with spaces
-	claims[c.Config.JwtClaimUserEmail] = emailSlice[0]
+	claims[c.Config.JwtClaimUserEmail] = emailStr
 	jwt := helpers.JWTHelper{HashSecretBytes: c.Config.HashSecretBytes}
 	err := jwt.Generate(claims, c.Config.PasswordResetValidTokenDuration)
 
@@ -248,8 +250,8 @@ func (c *UserContext) ForgotPassword(rw web.ResponseWriter, req *web.Request) {
 	// anyways
 
 	var user models.User
-	//fmt.Printf("user email: %s\n", emailSlice[0])
-	user.Email = emailSlice[0]
+	// fmt.Printf("user email: %s\n", emailStr)
+	user.Email = emailStr
 	user.ResetToken = &jwt.Token
 	//fmt.Printf("reset token before: %s\n", user.ResetToken.String)
 
