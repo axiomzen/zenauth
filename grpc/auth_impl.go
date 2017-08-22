@@ -5,7 +5,7 @@ import (
 	"strings"
 
 	context "golang.org/x/net/context"
-
+	"google.golang.org/grpc"
 	"google.golang.org/grpc/metadata"
 
 	"github.com/Sirupsen/logrus"
@@ -20,9 +20,10 @@ import (
 )
 
 type Auth struct {
-	Config *config.ZENAUTHConfig
-	DAL    data.ZENAUTHProvider
-	Log    *logrus.Entry
+	Config  *config.ZENAUTHConfig
+	DAL     data.ZENAUTHProvider
+	Log     *logrus.Entry
+	monitor helpers.Monitor
 }
 
 // GetCurrentUser implements the action to return the user from the session token.
@@ -367,4 +368,36 @@ func (auth *Auth) UpdateUserName(ctx context.Context, user *protobuf.UserEmailAu
 	}
 
 	return userModel.Protobuf()
+}
+
+// AuthUnaryInterceptor GRPC middleware
+// https://godoc.org/google.golang.org/grpc#UnaryServerInterceptor
+func (auth *Auth) AuthUnaryInterceptor(
+	ctx context.Context,
+	req interface{},
+	info *grpc.UnaryServerInfo,
+	handler grpc.UnaryHandler,
+) (interface{}, error) {
+	md, ok := metadata.FromContext(ctx)
+	if !ok {
+		auth.Log.Errorf("Error getting the metadata of the context in AuthUnaryInterceptor")
+		return handler(ctx, req)
+	}
+	tokenSlice := md[auth.Config.RequestIDHeader]
+	reqID := ""
+	if len(tokenSlice) < 1 {
+		reqID = uuid.NewV4().String()
+	} else {
+		reqID = tokenSlice[0]
+	}
+	txn := auth.monitor.StartTransaction(info.FullMethod, nil, nil)
+	auth.monitor.AddAttribute(txn, "requestID", reqID)
+	defer auth.monitor.EndTransaction(txn)
+	// add request ID to the context
+	res, err := handler(context.WithValue(ctx, "requestID", reqID), req)
+	if err != nil {
+		auth.monitor.NoticeErr(txn, err)
+		auth.Log.WithError(err).Errorf("Auth GRPC Error")
+	}
+	return res, err
 }
