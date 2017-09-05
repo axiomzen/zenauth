@@ -66,6 +66,8 @@ type ZENAUTHProvider interface {
 	DeleteUser(user *models.User) error
 	// MergeUsers merges the users, with the first user taking precedence.
 	MergeUsers(firstUser, secondUser *models.User) error
+	// GetUsernameCount counts this username
+	GetUsernameCount(username string) (int, error)
 
 	// CreateInvitations creates a list of invitations
 	CreateInvitations(invitations *models.Invitations) error

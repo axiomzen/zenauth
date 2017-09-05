@@ -2,6 +2,7 @@ package grpc
 
 import (
 	"fmt"
+	"strconv"
 	"strings"
 
 	context "golang.org/x/net/context"
@@ -263,6 +264,12 @@ func (auth *Auth) AuthUserByFacebook(ctx context.Context, facebookAuth *protobuf
 		}
 		user.AuthToken = authToken
 		return user.Protobuf()
+	}
+
+	if count, err := auth.DAL.GetUsernameCount(user.UserName); err != nil {
+		auth.Log.WithError(err).Errorf("Could not count similar usernames")
+	} else if count > 0 {
+		user.UserName = user.UserName + "-" + strconv.Itoa(count)
 	}
 
 	// Else signup

@@ -328,3 +328,8 @@ func (dp *dataProvider) ClearUserResetToken(user *models.User) error {
 	}
 	return wrapError(err)
 }
+
+func (dp *dataProvider) GetUsernameCount(username string) (int, error) {
+	count, err := dp.db.Model(&models.User{}).Where("user_name LIKE ?", username+"%").Count()
+	return count, wrapError(err)
+}

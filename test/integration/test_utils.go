@@ -277,6 +277,7 @@ func fireUpApp() error {
 	theConf.DomainHost = "localhost"
 	theConf.Environment = constants.EnvironmentTest
 	theConf.LogLevel = log.InfoLevel.String()
+	theConf.LogQueries = true
 
 	theConf.PostgreSQLHost = os.Getenv("ZENAUTH_POSTGRESQLHOST")
 	theConf.PostgreSQLUsername = "postgres"

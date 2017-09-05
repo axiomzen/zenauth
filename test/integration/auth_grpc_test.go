@@ -206,6 +206,27 @@ var _ = ginkgo.Describe("Auth GRPC", func() {
 			gomega.Expect(protoUser.FacebookID).To(gomega.Equal(facebook.FacebookID))
 			gomega.Expect(protoUser.AuthToken).ToNot(gomega.BeEmpty())
 		})
+
+		ginkgo.It("Allows repeated usernames by adding number", func() {
+			ctx := context.Background()
+			signup := protobuf.UserEmailAuth{
+				Email:    lorem.Email(),
+				UserName: lorem.Word(8, 16),
+				Password: lorem.Word(8, 16),
+			}
+
+			protoUser, authErr = grpcAuthClient.AuthUserByEmail(ctx, &signup)
+			gomega.Expect(authErr).ToNot(gomega.HaveOccurred())
+			gomega.Expect(protoUser.UserName).To(gomega.Equal(signup.UserName))
+
+			// Signup
+			facebook.FacebookUsername = signup.UserName
+			protoUser, authErr = grpcAuthClient.AuthUserByFacebook(ctx, &facebook)
+			gomega.Expect(authErr).ToNot(gomega.HaveOccurred())
+			gomega.Expect(protoUser.FacebookID).To(gomega.Equal(facebook.FacebookID))
+			gomega.Expect(protoUser.UserName).To(gomega.Equal(facebook.FacebookUsername + "-1"))
+			gomega.Expect(protoUser.AuthToken).ToNot(gomega.BeEmpty())
+		})
 	})
 
 	ginkgo.Context("LinkUser", func() {
