@@ -140,6 +140,8 @@ const (
 	APILoginSignupInvalidCombination
 	// APILoginNotVerified the email address has not been verified
 	APILoginNotVerified
+	// APIIncorrectAccountType incorrect account type
+	APIIncorrectAccountType
 )
 
 const (

@@ -177,14 +177,14 @@ func (auth *Auth) AuthUserByEmail(ctx context.Context, emailAuth *protobuf.UserE
 		// Can just login
 		// check that they have a password - not sure how they wouldn't
 		if helpers.IsZeroString(user.Hash) {
-			return nil, fmt.Errorf("Wrong account type (No password saved)")
+			return nil, fmt.Errorf("%d: Wrong account type (No password saved)", constants.APIIncorrectAccountType)
 		}
 
 		if passwordOK, err := helpers.CheckPasswordBcrypt(*user.Hash, emailAuth.GetPassword()); err != nil {
-			return nil, err
+			return nil, fmt.Errorf("%d: %s", constants.APIParsingPasswordHash, err.Error())
 		} else if !passwordOK {
 			// wrong password
-			return nil, fmt.Errorf("Invalid email/username/password combination")
+			return nil, fmt.Errorf("%d: Invalid email/username/password combination", constants.APILoginSignupInvalidCombination)
 		}
 		authToken, tokenErr := auth.NewAuthToken(user.ID)
 		if tokenErr != nil {
@@ -196,24 +196,25 @@ func (auth *Auth) AuthUserByEmail(ctx context.Context, emailAuth *protobuf.UserE
 
 	if dalErr, isDALError := err.(data.DALError); isDALError && dalErr.ErrorCode != data.DALErrorCodeNoneAffected {
 		// Error getting user, not that it doesn't exist
-		return nil, err
+		return nil, fmt.Errorf("%d: %s", constants.APIDatabaseGetUser, err.Error())
 	}
 	// Else, Sign Up
 	// Validate
-	if len(emailAuth.GetPassword()) < int(auth.Config.MinPasswordLength) {
-		// check password long enough
-		return nil, fmt.Errorf("Password too short")
-	} else if strings.Count(user.Email, "@") == 0 {
+	// if len(emailAuth.GetPassword()) < int(auth.Config.MinPasswordLength) {
+	// 	// check password long enough
+	// 	return nil, fmt.Errorf("%d: Password too short", constants.APIValidationPasswordTooShort)
+	// } else
+	if strings.Count(user.Email, "@") == 0 {
 		// check email
-		return nil, fmt.Errorf("Invalid Email")
+		return nil, fmt.Errorf("%d: Invalid Email", constants.APIValidationEmailNotValid)
 	} else if auth.Config.RequireUsername && user.UserName == "" {
-		return nil, fmt.Errorf("Please enter a username")
+		return nil, fmt.Errorf("%d: Please enter a username", constants.APIValidationUserNameNotValid)
 	}
 
 	hash, hashErr := helpers.HashPasswordBcrypt(emailAuth.GetPassword(), int(auth.Config.BcryptCost))
 
 	if hashErr != nil {
-		return nil, hashErr
+		return nil, fmt.Errorf("%d: %s", constants.APIParsingPasswordHash, hashErr.Error())
 	}
 
 	user.Hash = &hash
@@ -224,7 +225,7 @@ func (auth *Auth) AuthUserByEmail(ctx context.Context, emailAuth *protobuf.UserE
 	// Generate the auth token
 	authToken, tokenErr := auth.NewAuthToken(user.ID)
 	if tokenErr != nil {
-		return nil, tokenErr
+		return nil, fmt.Errorf("%d: %s", constants.APIAuthTokenCreation, tokenErr.Error())
 	}
 	user.AuthToken = authToken
 	protoUser, protoErr := user.Protobuf()
