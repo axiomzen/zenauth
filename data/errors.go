@@ -16,6 +16,8 @@ const (
 	DALErrorCodeUniqueEmail
 	// DALErrorCodeFacebookIDUnique retured when the facebook id already exists
 	DALErrorCodeFacebookIDUnique
+	// DALErrorCodeUniqueUsername returned when the username already exists
+	DALErrorCodeUniqueUsername
 )
 
 // DALError The error from the data access layer

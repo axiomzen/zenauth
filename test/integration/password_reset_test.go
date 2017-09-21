@@ -48,11 +48,11 @@ var _ = ginkgo.Describe("Password Reset Functionality", func() {
 				gomega.Expect(statusCode).To(gomega.Equal(http.StatusNoContent))
 			})
 
-			ginkgo.It("should still get status ok if try to reset using an email that is not a valid user", func() {
+			ginkgo.It("should fail if using an email that is not a valid user", func() {
 				// ask for reset
 				statusCode, err := TestRequestV1().Put(routes.ResourceUsers+routes.ResourceForgotPassword).URLParam("email", lorem.Email()).Do()
 				gomega.Expect(err).ToNot(gomega.HaveOccurred())
-				gomega.Expect(statusCode).To(gomega.Equal(http.StatusNoContent))
+				gomega.Expect(statusCode).To(gomega.Equal(http.StatusBadRequest))
 			})
 
 			ginkgo.It("should not be able to actually reset their password without any token", func() {
