@@ -259,9 +259,11 @@ func (c *UserContext) ForgotPassword(rw web.ResponseWriter, req *web.Request) {
 		// check to see what kind of error; if its none affected just return no content anyways
 		dalErr, _ := err.(data.DALError)
 		if dalErr.ErrorCode == data.DALErrorCodeNoneAffected {
-			// this email was invalid, but we don't allow them to know that
-			// and we don't send emails to random email addresses
-			c.Render(constants.StatusNoContent, nil, rw, req)
+			// Previously was hiding if users has email in our service or not
+			// For now, this seems unimportant compared to importance in UX
+			model := models.NewErrorResponse(constants.APIEmailNotFound,
+				models.NewAZError(err.Error()), "Email does not exist")
+			c.Render(constants.StatusBadRequest, model, rw, req)
 			return
 		}
 		// some other error

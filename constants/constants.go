@@ -142,6 +142,8 @@ const (
 	APILoginNotVerified
 	// APIIncorrectAccountType incorrect account type
 	APIIncorrectAccountType
+	// APIEmailNotFound Email does not exist in our db
+	APIEmailNotFound
 )
 
 const (
