@@ -30,24 +30,26 @@ func (user *User) Protobuf() (*protobuf.User, error) {
 		return nil, err
 	}
 	return &protobuf.User{
-		Id:         user.ID,
-		AuthToken:  user.AuthToken,
-		Email:      user.Email,
-		Verified:   user.Verified,
-		CreatedAt:  createdAt,
-		UpdatedAt:  updatedAt,
-		Status:     protobuf.UserStatus_created,
-		FacebookID: user.FacebookID,
-		UserName:   user.UserName,
+		Id:              user.ID,
+		AuthToken:       user.AuthToken,
+		Email:           user.Email,
+		Verified:        user.Verified,
+		CreatedAt:       createdAt,
+		UpdatedAt:       updatedAt,
+		Status:          protobuf.UserStatus_created,
+		FacebookID:      user.FacebookID,
+		UserName:        user.UserName,
+		FacebookPicture: user.FacebookPicture,
 	}, nil
 }
 func (user *User) ProtobufPublic() (*protobuf.UserPublic, error) {
 	return &protobuf.UserPublic{
-		Id:         user.ID,
-		Email:      user.Email,
-		Status:     protobuf.UserStatus_created,
-		FacebookID: user.FacebookID,
-		UserName:   user.UserName,
+		Id:              user.ID,
+		Email:           user.Email,
+		Status:          protobuf.UserStatus_created,
+		FacebookID:      user.FacebookID,
+		UserName:        user.UserName,
+		FacebookPicture: user.FacebookPicture,
 	}, nil
 }
 func (user *User) Merge(mergeWith *User) {
@@ -78,6 +80,9 @@ func (user *User) Merge(mergeWith *User) {
 	}
 	if user.FacebookEmail == "" {
 		user.FacebookEmail = mergeWith.FacebookEmail
+	}
+	if user.FacebookPicture == "" {
+		user.FacebookPicture = mergeWith.FacebookPicture
 	}
 
 }
