@@ -10,4 +10,5 @@ type FacebookUser struct {
 	FacebookUsername string `sql:",null" form:"facebookUsername" json:"facebookUsername" lorem:"word,2,10"`
 	FacebookToken    string `sql:",null" form:"facebookToken"    json:"facebookToken"    lorem:"-"`
 	FacebookEmail    string `sql:",null" form:"facebookEmail"    json:"facebookEmail"    lorem:"email"`
+	FacebookPicture  string `sql:",null" form:"facebookPicture"    json:"facebookPicture"    lorem:"url"`
 }

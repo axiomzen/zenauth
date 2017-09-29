@@ -32,6 +32,16 @@ func (c *FacebookContext) validateFacebookUser(fbUser *models.FacebookUser, rw w
 		c.Render(constants.StatusBadRequest, model, rw, req)
 		return false
 	}
+	fbAPIUser, err := helpers.GetFacebookUserInfo(
+		fbUser.FacebookID,
+		fbUser.FacebookToken,
+		c.Config.FacebookAppID,
+		c.Config.FacebookAppSecret)
+	if err != nil {
+		c.Log.WithError(err).Error("Could not retreive user profile picture")
+	} else {
+		fbUser.FacebookPicture = fbAPIUser.ProfilePicture
+	}
 	return true
 }
 
@@ -194,7 +204,7 @@ func (c *FacebookContext) Facebook(rw web.ResponseWriter, req *web.Request) {
 	user := models.User{}
 	user.FacebookUser = fbSignup.FacebookUser
 
-	if err := c.DAL.UpdateUserFacebookToken(&user); err == nil {
+	if err := c.DAL.UpdateUserFacebookInfo(&user); err == nil {
 		c.renderUserResponseWithNewToken(&user, constants.StatusOK, false, rw, req)
 		return
 	}

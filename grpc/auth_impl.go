@@ -258,7 +258,18 @@ func (auth *Auth) AuthUserByFacebook(ctx context.Context, facebookAuth *protobuf
 			FacebookToken:    facebookAuth.GetFacebookToken(),
 		},
 	}
-	if err := auth.DAL.UpdateUserFacebookToken(&user); err == nil {
+	fbAPIUser, err := helpers.GetFacebookUserInfo(
+		facebookAuth.GetFacebookID(),
+		facebookAuth.GetFacebookToken(),
+		auth.Config.FacebookAppID,
+		auth.Config.FacebookAppSecret)
+	if err != nil {
+		auth.Log.WithError(err).Error("Could not retreive user profile picture")
+	} else {
+		user.FacebookPicture = fbAPIUser.ProfilePicture
+	}
+
+	if err := auth.DAL.UpdateUserFacebookInfo(&user); err == nil {
 		authToken, tokenErr := auth.NewAuthToken(user.ID)
 		if tokenErr != nil {
 			return nil, tokenErr

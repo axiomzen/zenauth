@@ -43,8 +43,8 @@ type ZENAUTHProvider interface {
 	GetUsersByIDs(users *models.Users) error
 	// GetUserByFacebookID retrieves a user from the facebook id
 	GetUserByFacebookID(user *models.User) error
-	// UpdateUserFacebookToken updates the user's facebook token
-	UpdateUserFacebookToken(user *models.User) error
+	// UpdateUserFacebookInfo updates the user's facebook token
+	UpdateUserFacebookInfo(user *models.User) error
 	// GetUserByResetToken returns the user via reset token
 	//GetUserByResetToken(resetToken string, user *models.User) error
 
