@@ -224,8 +224,13 @@ func (dp *dataProvider) UpdateUserVerified(user *models.User) error {
 	return wrapError(err)
 }
 
-func (dp *dataProvider) UpdateUserFacebookToken(user *models.User) error {
-	res, err := dp.db.Model(user).Set("facebook_token = ?facebook_token").Where("facebook_id = ?facebook_id").Returning("*").Update()
+func (dp *dataProvider) UpdateUserFacebookInfo(user *models.User) error {
+	res, err := dp.db.Model(user).
+		Set("facebook_token = ?facebook_token").
+		Set("facebook_picture = ?facebook_picture").
+		Where("facebook_id = ?facebook_id").
+		Returning("*").
+		Update()
 	if err == nil {
 		if res.Affected() != 1 {
 			return DALError{Inner: errNoneAffected, ErrorCode: DALErrorCodeNoneAffected}

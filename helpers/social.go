@@ -14,7 +14,13 @@ import (
 
 const (
 	facebookTokenURL = "https://graph.facebook.com/v2.10/debug_token?" //fields=id&access_token=@accesstoken
+	facebookUserURL  = "https://graph.facebook.com/v2.10/"
 )
+
+// FacebookAPIUser represents the parts of the user we're interested about
+type FacebookAPIUser struct {
+	ProfilePicture string `json:"profile_pic"`
+}
 
 // ValidateFacebookLogin takes the id and token strings and sends them to the FACEBOOK_TOKEN_URL.
 // If the inputs are valid, returns true, else it returns false and an error
@@ -64,4 +70,43 @@ func ValidateFacebookLogin(id, token, appID, appSecret string) (bool, error) {
 	}
 
 	return true, nil
+}
+
+// GetFacebookUserInfo takes the id and token strings and sends them to the facebookUserURL.
+// Returns a FacebookAPIUser struct
+func GetFacebookUserInfo(id, token, appID, appSecret string) (*FacebookAPIUser, error) {
+
+	client := http.Client{}
+	urlValues := url.Values{}
+	urlValues.Set("input_token", token)
+	urlValues.Set("access_token", appID+"|"+appSecret)
+	req, _ := http.NewRequest("GET", facebookUserURL+id, nil)
+	req.Close = true
+	// Accept type?
+	req.Header.Set("Content-Type", "application/json")
+	resp, err := client.Do(req)
+	defer func(resp *http.Response) {
+		if resp != nil && resp.Body != nil {
+			resp.Body.Close()
+		}
+	}(resp)
+	if err != nil {
+		return nil, err
+	}
+
+	if resp.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("Could not get facebook user, response code: %d", resp.StatusCode)
+	}
+	apiUser := FacebookAPIUser{}
+	contentType := req.Header.Get("Content-Type")
+	if strings.Contains(contentType, "application/json") {
+		decoder := json.NewDecoder(resp.Body)
+		parseErr := decoder.Decode(&apiUser)
+		if parseErr != nil {
+			return nil, parseErr
+		}
+		return &apiUser, nil
+	}
+	return nil, errors.New("unexpected content type")
+
 }
