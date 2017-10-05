@@ -1,3 +1,8 @@
+FROM golang:latest
+ADD . /go/src/github.com/axiomzen/zenauth
+WORKDIR /go/src/github.com/axiomzen/zenauth
+RUN CGO_ENABLED=0 go build -v
+
 # Load a base image
 FROM scratch
 
@@ -17,4 +22,4 @@ ADD https://s3.amazonaws.com/rds-downloads/rds-combined-ca-bundle.pem /etc/ssl/c
 ADD data/migrations /data/migrations
 
 # Always add the binary last to maximize caching
-ADD zenauth /zenauth
+COPY --from=0 /go/src/github.com/axiomzen/zenauth /zenauth
