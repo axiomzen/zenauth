@@ -133,6 +133,51 @@ var _ = ginkgo.Describe("Auth GRPC", func() {
 		})
 	})
 
+	ginkgo.Context("GetUsersByFacebookIDs", func() {
+		var (
+			user2 models.User
+		)
+
+		ginkgo.BeforeEach(func() {
+			var fbsignup models.FacebookSignup
+			gomega.Expect(lorem.Fill(&fbsignup)).To(gomega.Succeed())
+			fbsignup.FacebookID = FacebookTestId
+			fbsignup.FacebookToken = FacebookTestToken
+
+			statusCode, err := TestRequestV1().
+				Post(routes.ResourceUsers + routes.ResourceFacebookSignup).
+				RequestBody(&fbsignup).
+				ResponseBody(&user2).
+				Do()
+			gomega.Expect(err).ToNot(gomega.HaveOccurred())
+			gomega.Expect(statusCode).To(gomega.Equal(http.StatusCreated))
+		})
+		ginkgo.AfterEach(func() {
+			deleteUser(user2.ID)
+		})
+
+		ginkgo.It("Returns the users", func() {
+			ctx := getGRPCAuthenticatedContext(user.AuthToken)
+			grpcUsers, err := grpcAuthClient.GetUsersByFacebookIDs(ctx, &protobuf.UserIDs{
+				Ids: []string{user2.FacebookID},
+			})
+			gomega.Expect(err).ToNot(gomega.HaveOccurred())
+			gomega.Expect(len(grpcUsers.Users)).To(gomega.Equal(1))
+			gomega.Expect(grpcUsers.Users[0].Id).To(gomega.Equal(user2.ID))
+			gomega.Expect(grpcUsers.Users[0].Email).To(gomega.Equal(user2.Email))
+			gomega.Expect(grpcUsers.Users[0].FacebookID).To(gomega.Equal(user2.FacebookID))
+
+		})
+		ginkgo.It("Returns error if the user is not logged in", func() {
+			ctx := getGRPCAuthenticatedContext("INVALID_TOKEN")
+			grpcUsers, err := grpcAuthClient.GetUsersByFacebookIDs(ctx, &protobuf.UserIDs{
+				Ids: []string{user2.ID},
+			})
+			gomega.Expect(grpcUsers).To(gomega.BeNil())
+			gomega.Expect(err).To(gomega.HaveOccurred())
+		})
+	})
+
 	ginkgo.Context("AuthUserByEmail", func() {
 		var (
 			signup    protobuf.UserEmailAuth
