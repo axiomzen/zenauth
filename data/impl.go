@@ -201,14 +201,16 @@ func (dp *dataProvider) GetUserByFacebookID(user *models.User) error {
 // No order or length guarantee
 func (dp *dataProvider) GetUsersByFacebookIDs(users *models.Users) error {
 	ids := make([]interface{}, len(*users))
+	outUsers := models.Users{}
 
 	for idx, user := range *users {
 		ids[idx] = user.FacebookID
 	}
 
-	err := dp.db.Model(users).
+	err := dp.db.Model(&outUsers).
 		Where("facebook_id IN (?)", types.In(ids)).
 		Select()
+	*users = outUsers
 
 	return wrapError(err)
 }
