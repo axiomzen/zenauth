@@ -199,20 +199,10 @@ func (dp *dataProvider) GetUserByFacebookID(user *models.User) error {
 
 // GetUsersByFacebookIDs retrieves users via facebook ids
 // No order or length guarantee
-func (dp *dataProvider) GetUsersByFacebookIDs(users *models.Users) error {
-	ids := make([]interface{}, len(*users))
-	outUsers := models.Users{}
-
-	for idx, user := range *users {
-		ids[idx] = user.FacebookID
-	}
-
-	err := dp.db.Model(&outUsers).
-		Where("facebook_id IN (?)", types.In(ids)).
-		Select()
-	*users = outUsers
-
-	return wrapError(err)
+func (dp *dataProvider) GetUsersByFacebookIDs(fbIDs []string, users *models.Users) error {
+	return wrapError(dp.db.Model(users).
+		Where("facebook_id IN (?)", types.In(fbIDs)).
+		Select())
 }
 
 // UpdateUser updates a user

@@ -168,16 +168,12 @@ func (auth *Auth) GetUsersByFacebookIDs(ctx context.Context, userIDs *protobuf.U
 	}
 
 	var users models.Users
-	for _, id := range userIDs.GetIds() {
-		users = append(users, &models.User{
-			FacebookUser: models.FacebookUser{FacebookID: id},
-		})
-	}
 
 	// get users
-	if err := auth.DAL.GetUsersByFacebookIDs(&users); err != nil {
+	if err := auth.DAL.GetUsersByFacebookIDs(userIDs.GetIds(), &users); err != nil {
 		return nil, err
 	}
+	auth.Log.Info(userIDs.GetIds(), users)
 
 	return users.ProtobufPublic()
 }
