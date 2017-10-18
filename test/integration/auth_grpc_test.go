@@ -252,7 +252,7 @@ var _ = ginkgo.Describe("Auth GRPC", func() {
 			gomega.Expect(protoUser.AuthToken).ToNot(gomega.BeEmpty())
 		})
 
-		ginkgo.It("Allows repeated usernames by adding number", func() {
+		ginkgo.PIt("Allows repeated usernames by adding number", func() {
 			ctx := context.Background()
 			signup := protobuf.UserEmailAuth{
 				Email:    lorem.Email(),

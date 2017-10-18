@@ -84,7 +84,7 @@ func GetFacebookUserInfo(id, token, appID, appSecret string) (*FacebookAPIUser, 
 	urlValues.Set("input_token", token)
 	urlValues.Set("access_token", appID+"|"+appSecret)
 	urlValues.Set("fields", "name,first_name,last_name,email")
-	req, _ := http.NewRequest("GET", facebookUserURL+id, nil)
+	req, _ := http.NewRequest("GET", facebookUserURL+id+"?"+urlValues.Encode(), nil)
 	req.Close = true
 	// Accept type?
 	req.Header.Set("Content-Type", "application/json")
@@ -109,11 +109,10 @@ func GetFacebookUserInfo(id, token, appID, appSecret string) (*FacebookAPIUser, 
 		if parseErr != nil {
 			return nil, parseErr
 		}
+		apiUser.ProfilePicture = GetFacebookUserPictureURL(id)
 		return &apiUser, nil
 	}
-	apiUser.ProfilePicture = GetFacebookUserPictureURL(id)
 	return nil, errors.New("unexpected content type")
-
 }
 
 func GetFacebookUserPictureURL(id string) string {

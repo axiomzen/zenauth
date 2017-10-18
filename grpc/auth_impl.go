@@ -286,9 +286,9 @@ func (auth *Auth) AuthUserByFacebook(ctx context.Context, facebookAuth *protobuf
 	if err != nil {
 		auth.Log.WithError(err).Error("Could not retreive user profile picture")
 	} else {
-		// user.FacebookPicture = fbAPIUser.ProfilePicture
 		user.FacebookEmail = fbAPIUser.Email
 		user.FacebookUsername = fbAPIUser.Name
+		user.FacebookPicture = fbAPIUser.ProfilePicture
 		if user.FacebookUsername != "" {
 			user.UserName = fbAPIUser.Name
 		}
