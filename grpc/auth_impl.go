@@ -268,9 +268,6 @@ func (auth *Auth) AuthUserByFacebook(ctx context.Context, facebookAuth *protobuf
 	}
 	// create a user
 	user := models.User{
-		UserBase: models.UserBase{
-			UserName: facebookAuth.GetFacebookUsername(),
-		},
 		FacebookUser: models.FacebookUser{
 			FacebookID:       facebookAuth.GetFacebookID(),
 			FacebookEmail:    facebookAuth.GetFacebookEmail(),
@@ -289,9 +286,6 @@ func (auth *Auth) AuthUserByFacebook(ctx context.Context, facebookAuth *protobuf
 		user.FacebookEmail = fbAPIUser.Email
 		user.FacebookUsername = fbAPIUser.Name
 		user.FacebookPicture = fbAPIUser.ProfilePicture
-		if user.FacebookUsername != "" {
-			user.UserName = fbAPIUser.Name
-		}
 	}
 
 	if err := auth.DAL.UpdateUserFacebookInfo(&user); err == nil {
@@ -303,13 +297,16 @@ func (auth *Auth) AuthUserByFacebook(ctx context.Context, facebookAuth *protobuf
 		return user.Protobuf()
 	}
 
+	// Else signup for new legends account
+	if user.UserName == "" {
+		user.UserName = user.FacebookUsername
+	}
 	if count, err := auth.DAL.GetUsernameCount(user.UserName); err != nil {
 		auth.Log.WithError(err).Errorf("Could not count similar usernames")
 	} else if count > 0 {
-		user.UserName = user.UserName + "-" + strconv.Itoa(count)
+		user.UserName = user.UserName + " " + strconv.Itoa(count)
 	}
 
-	// Else signup
 	if err := auth.DAL.CreateUser(&user); err != nil {
 		return nil, err
 	}
