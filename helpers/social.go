@@ -20,9 +20,17 @@ const (
 
 // FacebookAPIUser represents the parts of the user we're interested about
 type FacebookAPIUser struct {
-	Name           string `json:"name"`
-	Email          string `json:"email"`
-	ProfilePicture string `json:"profile_pic"`
+	Name    string `json:"name"`
+	Email   string `json:"email"`
+	Picture FBData `json:"picture"`
+}
+
+type FBData struct {
+	Data map[string]interface{} `json:"data"`
+}
+
+func (fbu *FacebookAPIUser) ProfilePictureURL() string {
+	return fbu.Picture.Data["url"].(string)
 }
 
 // ValidateFacebookLogin takes the id and token strings and sends them to the FACEBOOK_TOKEN_URL.
@@ -83,7 +91,7 @@ func GetFacebookUserInfo(id, token, appID, appSecret string) (*FacebookAPIUser, 
 	urlValues := url.Values{}
 	urlValues.Set("input_token", token)
 	urlValues.Set("access_token", appID+"|"+appSecret)
-	urlValues.Set("fields", "name,first_name,last_name,email")
+	urlValues.Set("fields", "name,first_name,last_name,email,picture.type(large){url}")
 	req, _ := http.NewRequest("GET", facebookUserURL+id+"?"+urlValues.Encode(), nil)
 	req.Close = true
 	// Accept type?
@@ -109,12 +117,7 @@ func GetFacebookUserInfo(id, token, appID, appSecret string) (*FacebookAPIUser, 
 		if parseErr != nil {
 			return nil, parseErr
 		}
-		apiUser.ProfilePicture = GetFacebookUserPictureURL(id)
 		return &apiUser, nil
 	}
 	return nil, errors.New("unexpected content type")
-}
-
-func GetFacebookUserPictureURL(id string) string {
-	return fmt.Sprintf(facebookUserPictureURL, id)
 }

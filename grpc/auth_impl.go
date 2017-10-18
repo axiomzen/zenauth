@@ -285,7 +285,7 @@ func (auth *Auth) AuthUserByFacebook(ctx context.Context, facebookAuth *protobuf
 	} else {
 		user.FacebookEmail = fbAPIUser.Email
 		user.FacebookUsername = fbAPIUser.Name
-		user.FacebookPicture = fbAPIUser.ProfilePicture
+		user.FacebookPicture = fbAPIUser.ProfilePictureURL()
 	}
 
 	if err := auth.DAL.UpdateUserFacebookInfo(&user); err == nil {
