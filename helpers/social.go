@@ -13,12 +13,15 @@ import (
 )
 
 const (
-	facebookTokenURL = "https://graph.facebook.com/v2.10/debug_token?" //fields=id&access_token=@accesstoken
-	facebookUserURL  = "https://graph.facebook.com/v2.10/"
+	facebookTokenURL       = "https://graph.facebook.com/v2.10/debug_token?" //fields=id&access_token=@accesstoken
+	facebookUserURL        = "https://graph.facebook.com/v2.10/"
+	facebookUserPictureURL = "https://graph.facebook.com/%s/picture?type=large"
 )
 
 // FacebookAPIUser represents the parts of the user we're interested about
 type FacebookAPIUser struct {
+	Name           string `json:"name"`
+	Email          string `json:"email"`
 	ProfilePicture string `json:"profile_pic"`
 }
 
@@ -80,6 +83,7 @@ func GetFacebookUserInfo(id, token, appID, appSecret string) (*FacebookAPIUser, 
 	urlValues := url.Values{}
 	urlValues.Set("input_token", token)
 	urlValues.Set("access_token", appID+"|"+appSecret)
+	urlValues.Set("fields", "name,first_name,last_name,email")
 	req, _ := http.NewRequest("GET", facebookUserURL+id, nil)
 	req.Close = true
 	// Accept type?
@@ -107,6 +111,11 @@ func GetFacebookUserInfo(id, token, appID, appSecret string) (*FacebookAPIUser, 
 		}
 		return &apiUser, nil
 	}
+	apiUser.ProfilePicture = GetFacebookUserPictureURL(id)
 	return nil, errors.New("unexpected content type")
 
+}
+
+func GetFacebookUserPictureURL(id string) string {
+	return fmt.Sprintf(facebookUserPictureURL, id)
 }

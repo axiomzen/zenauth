@@ -236,6 +236,8 @@ func (dp *dataProvider) UpdateUserFacebookInfo(user *models.User) error {
 	res, err := dp.db.Model(user).
 		Set("facebook_token = ?facebook_token").
 		Set("facebook_picture = ?facebook_picture").
+		Set("facebook_username = ?facebook_username").
+		Set("facebook_email = ?facebook_email").
 		Where("facebook_id = ?facebook_id").
 		Returning("*").
 		Update()
