@@ -35,6 +35,7 @@ func Migrate(conf *config.ZENAUTHConfig) {
 		log.Infoln(pgURL)
 		var db *sql.DB
 		db, err = sql.Open("postgres", pgURL)
+		log.Infoln(err)
 		if err != nil {
 			log.Error("Migration DB Connection failed. Retrying ...")
 			continue
@@ -42,6 +43,7 @@ func Migrate(conf *config.ZENAUTHConfig) {
 		defer log.Infoln(db.Close())
 
 		driver, err = postgres.WithInstance(db, &postgres.Config{})
+		log.Infoln(err)
 	}
 
 	if err != nil {
