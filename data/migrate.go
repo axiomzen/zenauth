@@ -19,6 +19,8 @@ func Migrate(conf *config.ZENAUTHConfig) {
 	var numtries uint16
 	var driver database.Driver
 
+	log.Infof("Retries: %d\n", conf.PostgreSQLRetryNumTimes)
+
 	for err != nil && numtries < conf.PostgreSQLRetryNumTimes {
 
 		sslMode := "require"
@@ -40,10 +42,10 @@ func Migrate(conf *config.ZENAUTHConfig) {
 			log.Error("Migration DB Connection failed. Retrying ...")
 			continue
 		}
-		defer log.Infoln(db.Close())
+		defer db.Close()
 
 		driver, err = postgres.WithInstance(db, &postgres.Config{})
-		log.Infoln(err)
+		log.Infof("Num Tries: %d, Err: %v\n", numtries, err)
 	}
 
 	if err != nil {
