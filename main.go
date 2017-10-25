@@ -22,7 +22,7 @@ import (
 )
 
 func main() {
-	log.Infof(os.Getenv("ZENAUTH_ENVIRONMENT"))
+	log.Infoln(os.Getenv("ZENAUTH_ENVIRONMENT"))
 
 	// set just in case someone has go 1.4
 	runtime.GOMAXPROCS(runtime.NumCPU())
@@ -40,7 +40,7 @@ func main() {
 		// die, we are not configured properly
 		log.Fatal(err.Error())
 	}
-
+	log.Infoln("Migrating DB ...")
 	switch conf.Environment {
 	case constants.EnvironmentStaging, constants.EnvironmentProduction, constants.EnvironmentDevelopment:
 		data.Migrate(conf)
@@ -58,6 +58,7 @@ func main() {
 	}
 
 	// set logging level
+	log.Infoln("Log Level: " + conf.LogLevel)
 	switch strings.ToLower(conf.LogLevel) {
 	default:
 		fallthrough
@@ -75,6 +76,7 @@ func main() {
 		log.SetLevel(log.PanicLevel)
 	}
 
+	log.Infoln("Connecting to DB ...")
 	// database
 	dataP, dataErr := data.Get(conf)
 
@@ -104,7 +106,7 @@ func main() {
 		},
 	}
 
-	log.Println("Starting Server on Port " + strconv.FormatInt(int64(conf.Port), 10))
+	log.Infoln("Starting Server on Port " + strconv.FormatInt(int64(conf.Port), 10))
 	go func() {
 		errChn <- srv.ListenAndServe()
 	}()
