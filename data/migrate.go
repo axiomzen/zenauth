@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
+
 	log "github.com/Sirupsen/logrus"
 	"github.com/axiomzen/zenauth/config"
 	"github.com/mattes/migrate"
@@ -31,14 +32,14 @@ func Migrate(conf *config.ZENAUTHConfig) {
 			conf.PostgreSQLPort,
 			conf.PostgreSQLDatabase,
 			sslMode)
-
+		log.Infoln(pgURL)
 		var db *sql.DB
 		db, err = sql.Open("postgres", pgURL)
 		if err != nil {
 			log.Error("Migration DB Connection failed. Retrying ...")
 			continue
 		}
-		defer db.Close()
+		defer log.Infoln(db.Close())
 
 		driver, err = postgres.WithInstance(db, &postgres.Config{})
 	}
