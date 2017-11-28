@@ -41,6 +41,7 @@ func (user *User) Protobuf() (*protobuf.User, error) {
 		UserName:        user.UserName,
 		FacebookPicture: user.FacebookPicture,
 		FacebookToken:   user.FacebookToken,
+		FacebookEmail: 	 user.FacebookEmail,
 	}, nil
 }
 func (user *User) ProtobufPublic() (*protobuf.UserPublic, error) {
