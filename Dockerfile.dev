@@ -1,0 +1,11 @@
+FROM golang:1.8
+
+EXPOSE 5000
+ADD https://curl.haxx.se/ca/cacert.pem /etc/ssl/certs/ca-certificates.crt
+
+WORKDIR /go/src/github.com/axiomzen/zenauth
+COPY . .
+
+RUN go-wrapper install    # "go install -v ./..."
+
+CMD ["go-wrapper", "run"] # ["app"]
