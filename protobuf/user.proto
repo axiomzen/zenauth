@@ -21,6 +21,7 @@ message User {
   string userName = 9;
   string facebookPicture = 10;
   string facebookToken = 11;
+  string facebookEmail = 12;
 }
 
 message UserPublic {
