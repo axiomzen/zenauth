@@ -65,7 +65,7 @@ func (c *TestContext) UserPasswordResetTokenGet(rw web.ResponseWriter, req *web.
 	emailValues, emailOk := queryMap["email"]
 
 	if !emailOk || len(emailValues) <= 0 {
-		model := models.NewErrorResponse(constants.APIParsingQueryParams, models.NewAZError("Could not find email in url"), "Query params error")
+		model := models.NewErrorResponse(constants.APIParsingQueryParams, models.NewAZError("Could not find email in url"))
 		c.Render(constants.StatusBadRequest, model, rw, req)
 		return
 	}
@@ -82,7 +82,7 @@ func (c *TestContext) UserPasswordResetTokenGet(rw web.ResponseWriter, req *web.
 			c.Render(constants.StatusNotFound, nil, rw, req)
 			return
 		}
-		model := models.NewErrorResponse(constants.APIDatabaseGetUser, models.NewAZError(err.Error()), "Error retrieving user")
+		model := models.NewErrorResponse(constants.APIDatabaseGetUser, models.NewAZError(err.Error()))
 		c.Render(constants.StatusInternalServerError, model, rw, req)
 		return
 	}
@@ -90,7 +90,7 @@ func (c *TestContext) UserPasswordResetTokenGet(rw web.ResponseWriter, req *web.
 	fmt.Printf("test user reset token: %v\n", *user.ResetToken)
 
 	if helpers.IsZeroString(user.ResetToken) {
-		model := models.NewErrorResponse(constants.APIDatabaseGetUser, models.NewAZError("reset token was empty"), "Error user has no token")
+		model := models.NewErrorResponse(constants.APIDatabaseGetUser, models.NewAZError("reset token was empty"))
 		c.Render(constants.StatusBadRequest, model, rw, req)
 		return
 	}
@@ -139,7 +139,7 @@ func (c *TestContext) UserPasswordResetTokenDelete(rw web.ResponseWriter, req *w
 			return
 		}
 
-		model := models.NewErrorResponse(constants.APIDatabaseUpdateUser, models.NewAZError(err.Error()), "Error updating user")
+		model := models.NewErrorResponse(constants.APIDatabaseUpdateUser, models.NewAZError(err.Error()))
 		c.Render(constants.StatusInternalServerError, model, rw, req)
 		return
 	}
@@ -170,7 +170,7 @@ func (c *TestContext) UserDelete(rw web.ResponseWriter, req *web.Request) {
 			c.Render(constants.StatusNotFound, nil, rw, req)
 			return
 		}
-		model := models.NewErrorResponse(constants.APIDatabaseDeleteUser, models.NewAZError(err.Error()), "Error deleting user")
+		model := models.NewErrorResponse(constants.APIDatabaseDeleteUser, models.NewAZError(err.Error()))
 		c.Render(constants.StatusInternalServerError, model, rw, req)
 		return
 	}
@@ -186,13 +186,13 @@ func (c *TestContext) UserDelete(rw web.ResponseWriter, req *web.Request) {
 func (c *TestContext) InvitationsDelete(rw web.ResponseWriter, req *web.Request) {
 	invites := models.Invitations{}
 	if err := c.DAL.GetAllInvitations(&invites); err != nil {
-		model := models.NewErrorResponse(constants.APIDatabaseDeleteUser, models.NewAZError(err.Error()), "Error deleting invites")
+		model := models.NewErrorResponse(constants.APIDatabaseDeleteUser, models.NewAZError(err.Error()))
 		c.Render(constants.StatusInternalServerError, model, rw, req)
 		return
 	}
 	for _, invite := range invites {
 		if err := c.DAL.DeleteInvitation(invite); err != nil {
-			model := models.NewErrorResponse(constants.APIDatabaseDeleteUser, models.NewAZError(err.Error()), "Error deleting invites")
+			model := models.NewErrorResponse(constants.APIDatabaseDeleteUser, models.NewAZError(err.Error()))
 			c.Render(constants.StatusInternalServerError, model, rw, req)
 			return
 		}

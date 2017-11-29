@@ -65,18 +65,7 @@ func getErrorLocation() string {
 }
 
 // NewErrorResponse creates a new outer APIError
-func NewErrorResponse(apiErrorCode constants.APIErrorCode, err *AZError, msgs ...string) *ErrorResponse {
-
-	var buffer bytes.Buffer
-	for _, m := range msgs {
-		buffer.WriteString(m)
-		buffer.WriteString(" ")
-	}
-	if buffer.Len() > 0 {
-		buffer.Truncate(buffer.Len() - 1)
-	}
-	msg := buffer.String()
-
+func NewErrorResponse(apiErrorCode constants.APIErrorCode, err *AZError) *ErrorResponse {
 	if err == nil {
 		// Use some Generic error message if the error is nil
 		location := getErrorLocation()
@@ -85,7 +74,7 @@ func NewErrorResponse(apiErrorCode constants.APIErrorCode, err *AZError, msgs ..
 
 	apiErr := ErrorResponse{
 		Code:         apiErrorCode,
-		ErrorMessage: msg,
+		ErrorMessage: apiErrorCode.String(),
 		GoError:      *err,
 	}
 	return &apiErr

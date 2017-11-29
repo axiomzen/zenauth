@@ -68,7 +68,7 @@ func (c *UserContext) renderUserResponseWithNewToken(user *models.User, status c
 	tokenHelper, tokenErr := c.NewAuthToken(user.ID)
 
 	if tokenErr != nil {
-		model := models.NewErrorResponse(constants.APIAuthTokenCreation, models.NewAZError(tokenErr.Error()), "Could not create auth token")
+		model := models.NewErrorResponse(constants.APIAuthTokenCreation, models.NewAZError(tokenErr.Error()))
 		c.Render(constants.StatusInternalServerError, model, w, r)
 		return
 	}
@@ -106,7 +106,7 @@ func (c *UserContext) renderUserResponseWithNewToken(user *models.User, status c
 		// put email in it for claims
 		emailer, err := email.Get(c.Config)
 		if err != nil {
-			model := models.NewErrorResponse(constants.APIVerifyEmailMessageError, models.NewAZError(err.Error()), "unable to generate verification email")
+			model := models.NewErrorResponse(constants.APIVerifyEmailMessageError, models.NewAZError(err.Error()))
 			c.Render(constants.StatusInternalServerError, model, w, r)
 			return
 		}
@@ -115,7 +115,7 @@ func (c *UserContext) renderUserResponseWithNewToken(user *models.User, status c
 		claims[c.Config.JwtClaimUserEmail] = user.Email
 		jwt := helpers.JWTHelper{HashSecretBytes: c.Config.HashSecretBytes}
 		if err := jwt.Generate(claims, c.Config.PasswordResetValidTokenDuration); err != nil {
-			model := models.NewErrorResponse(constants.APIVerifyEmailMessageError, models.NewAZError(err.Error()), "unable to generate verification token")
+			model := models.NewErrorResponse(constants.APIVerifyEmailMessageError, models.NewAZError(err.Error()))
 			c.Render(constants.StatusInternalServerError, model, w, r)
 			return
 		}
@@ -123,7 +123,7 @@ func (c *UserContext) renderUserResponseWithNewToken(user *models.User, status c
 
 		msg, err := email.GetVerifyEmailMessage(c.Config, user)
 		if err != nil {
-			model := models.NewErrorResponse(constants.APIVerifyEmailMessageError, models.NewAZError(err.Error()), "unable to generate verification email")
+			model := models.NewErrorResponse(constants.APIVerifyEmailMessageError, models.NewAZError(err.Error()))
 			c.Render(constants.StatusInternalServerError, model, w, r)
 			return
 		}
@@ -222,7 +222,7 @@ func (c *UserContext) ForgotPassword(rw web.ResponseWriter, req *web.Request) {
 	_, emailOk := queryMap["email"]
 
 	if !emailOk {
-		model := models.NewErrorResponse(constants.APIParsingQueryParams, models.NewAZError("email expected"), "query parameter missing")
+		model := models.NewErrorResponse(constants.APIParsingQueryParams, models.NewAZError("email expected"))
 		c.Render(constants.StatusBadRequest, model, rw, req)
 		return
 	}
@@ -239,7 +239,7 @@ func (c *UserContext) ForgotPassword(rw web.ResponseWriter, req *web.Request) {
 	err := jwt.Generate(claims, c.Config.PasswordResetValidTokenDuration)
 
 	if err != nil {
-		model := models.NewErrorResponse(constants.APIParsingQueryParams, models.NewAZError(err.Error()), "unable to generate reset token")
+		model := models.NewErrorResponse(constants.APIParsingQueryParams, models.NewAZError(err.Error()))
 		c.Render(constants.StatusInternalServerError, model, rw, req)
 		return
 	}
@@ -267,7 +267,7 @@ func (c *UserContext) ForgotPassword(rw web.ResponseWriter, req *web.Request) {
 			return
 		}
 		// some other error
-		model := models.NewErrorResponse(constants.APIParsingQueryParams, models.NewAZError(err.Error()), "unable to save reset token")
+		model := models.NewErrorResponse(constants.APIParsingQueryParams, models.NewAZError(err.Error()))
 		c.Render(constants.StatusInternalServerError, model, rw, req)
 		return
 	}
@@ -277,13 +277,13 @@ func (c *UserContext) ForgotPassword(rw web.ResponseWriter, req *web.Request) {
 	// send the reset password email with the generated token
 	emailer, err := email.Get(c.Config)
 	if err != nil {
-		model := models.NewErrorResponse(constants.APIForgotPasswordMessageError, models.NewAZError(err.Error()), "unable to generate reset token email")
+		model := models.NewErrorResponse(constants.APIForgotPasswordMessageError, models.NewAZError(err.Error()))
 		c.Render(constants.StatusInternalServerError, model, rw, req)
 		return
 	}
 	msg, err := email.GetResetPasswordMessage(c.Config, &user)
 	if err != nil {
-		model := models.NewErrorResponse(constants.APIForgotPasswordMessageError, models.NewAZError(err.Error()), "unable to generate reset token email")
+		model := models.NewErrorResponse(constants.APIForgotPasswordMessageError, models.NewAZError(err.Error()))
 		c.Render(constants.StatusInternalServerError, model, rw, req)
 		return
 	}
@@ -431,7 +431,7 @@ func (c *UserContext) ResetPassword(rw web.ResponseWriter, req *web.Request) {
 
 		if len(userPasswordReset.NewPassword) < int(c.Config.MinPasswordLength) {
 			model := models.NewErrorResponse(constants.APIValidationPasswordTooShort,
-				models.NewAZError(fmt.Sprintf("Password needs to be at least %d characters long!", c.Config.MinPasswordLength)), "Could not create account")
+				models.NewAZError(fmt.Sprintf("Password needs to be at least %d characters long!", c.Config.MinPasswordLength)))
 			c.Render(constants.StatusBadRequest, model, rw, req)
 			return
 		}
@@ -443,7 +443,7 @@ func (c *UserContext) ResetPassword(rw web.ResponseWriter, req *web.Request) {
 		newHash, hashErr := helpers.HashPasswordBcrypt(userPasswordReset.NewPassword, int(c.Config.BcryptCost))
 
 		if hashErr != nil {
-			model := models.NewErrorResponse(constants.APIParsingPasswordHash, models.NewAZError(hashErr.Error()), "Could not update user")
+			model := models.NewErrorResponse(constants.APIParsingPasswordHash, models.NewAZError(hashErr.Error()))
 			c.Render(constants.StatusInternalServerError, model, rw, req)
 			return
 		}
@@ -462,7 +462,7 @@ func (c *UserContext) ResetPassword(rw web.ResponseWriter, req *web.Request) {
 				return
 			}
 
-			model := models.NewErrorResponse(constants.APIParsingPasswordHash, models.NewAZError(err.Error()), "Could not update user")
+			model := models.NewErrorResponse(constants.APIParsingPasswordHash, models.NewAZError(err.Error()))
 			c.Render(constants.StatusInternalServerError, model, rw, req)
 			return
 		}
@@ -503,7 +503,7 @@ func (c *UserContext) Exists(rw web.ResponseWriter, req *web.Request) {
 	_, userNameOK := queryMap["userName"]
 
 	if !emailOK && !userNameOK {
-		model := models.NewErrorResponse(constants.APIParsingQueryParams, models.NewAZError("email or username expected"), "query parameter missing")
+		model := models.NewErrorResponse(constants.APIParsingQueryParams, models.NewAZError("email or username expected"))
 		c.Render(constants.StatusBadRequest, model, rw, req)
 		return
 	}
@@ -546,7 +546,7 @@ func (c *UserContext) GetSelf(rw web.ResponseWriter, req *web.Request) {
 			return
 		}
 
-		model := models.NewErrorResponse(constants.APIDatabaseGetUser, models.NewAZError(err.Error()), "Could not get user")
+		model := models.NewErrorResponse(constants.APIDatabaseGetUser, models.NewAZError(err.Error()))
 		c.Render(constants.StatusInternalServerError, model, rw, req)
 		return
 	}
@@ -582,13 +582,13 @@ func (c *UserContext) Get(rw web.ResponseWriter, req *web.Request) {
 			return
 		}
 
-		model := models.NewErrorResponse(constants.APIDatabaseGetUser, models.NewAZError(err.Error()), "Could not get user")
+		model := models.NewErrorResponse(constants.APIDatabaseGetUser, models.NewAZError(err.Error()))
 		c.Render(constants.StatusInternalServerError, model, rw, req)
 		return
 	}
 	view, err := user.ProtobufPublic()
 	if err != nil {
-		model := models.NewErrorResponse(constants.APIDatabaseGetUser, models.NewAZError(err.Error()), "Could not generate view for the user")
+		model := models.NewErrorResponse(constants.APIDatabaseGetUser, models.NewAZError(err.Error()))
 		c.Render(constants.StatusInternalServerError, model, rw, req)
 		return
 	}
@@ -606,7 +606,7 @@ func (c *UserContext) renderInvitation(rw web.ResponseWriter, req *web.Request, 
 	}
 	view, err := invitation.UserPublicProtobuf()
 	if err != nil {
-		model := models.NewErrorResponse(constants.APIDatabaseGetUser, models.NewAZError(err.Error()), "Could not generate view for the user")
+		model := models.NewErrorResponse(constants.APIDatabaseGetUser, models.NewAZError(err.Error()))
 		c.Render(constants.StatusInternalServerError, model, rw, req)
 		return true
 	}
@@ -634,7 +634,7 @@ func (c *UserContext) PasswordPut(rw web.ResponseWriter, req *web.Request) {
 	// check new password
 	if len(userChangePassword.NewPassword) < int(c.Config.MinPasswordLength) {
 		model := models.NewErrorResponse(constants.APIValidationPasswordTooShort,
-			models.NewAZError(fmt.Sprintf("Password needs to be at least %d characters long!", c.Config.MinPasswordLength)), "Could not update password")
+			models.NewAZError(fmt.Sprintf("Password needs to be at least %d characters long!", c.Config.MinPasswordLength)))
 		c.Render(constants.StatusBadRequest, model, rw, req)
 		return
 	}
@@ -653,7 +653,7 @@ func (c *UserContext) PasswordPut(rw web.ResponseWriter, req *web.Request) {
 			c.NotFound(rw, req)
 			return
 		}
-		model := models.NewErrorResponse(constants.APIDatabaseGetUser, models.NewAZError(err.Error()), "Could not get user")
+		model := models.NewErrorResponse(constants.APIDatabaseGetUser, models.NewAZError(err.Error()))
 		c.Render(constants.StatusInternalServerError, model, rw, req)
 		return
 	}
@@ -665,7 +665,7 @@ func (c *UserContext) PasswordPut(rw web.ResponseWriter, req *web.Request) {
 			email = user.Email
 		}
 		model := models.NewErrorResponse(constants.APIDatabaseUpdateUser,
-			models.NewAZError("No password associated with this email: "+email), "Could not update user")
+			models.NewAZError("No password associated with this email: "+email))
 		c.Render(constants.StatusBadRequest, model, rw, req)
 		return
 	}
@@ -676,12 +676,12 @@ func (c *UserContext) PasswordPut(rw web.ResponseWriter, req *web.Request) {
 
 	if passwordOK, err := helpers.CheckPasswordBcrypt(*user.Hash, userChangePassword.OldPassword); err != nil {
 
-		model := models.NewErrorResponse(constants.APIDatabaseUpdateUser, models.NewAZError(err.Error()), "Could not check user password")
+		model := models.NewErrorResponse(constants.APIDatabaseUpdateUser, models.NewAZError(err.Error()))
 		c.Render(constants.StatusInternalServerError, model, rw, req)
 		return
 	} else if !passwordOK {
 		// wrong password
-		model := models.NewErrorResponse(constants.APIDatabaseUpdateUser, models.NewAZError("Old password incorrect"), "Could not update user")
+		model := models.NewErrorResponse(constants.APIDatabaseUpdateUser, models.NewAZError("Old password incorrect"))
 		c.Render(constants.StatusBadRequest, model, rw, req)
 		return
 	}
@@ -692,7 +692,7 @@ func (c *UserContext) PasswordPut(rw web.ResponseWriter, req *web.Request) {
 	newHash, hashErr := helpers.HashPasswordBcrypt(userChangePassword.NewPassword, int(c.Config.BcryptCost))
 
 	if hashErr != nil {
-		model := models.NewErrorResponse(constants.APIParsingPasswordHash, models.NewAZError(hashErr.Error()), "Could not generate user hash")
+		model := models.NewErrorResponse(constants.APIParsingPasswordHash, models.NewAZError(hashErr.Error()))
 		c.Render(constants.StatusInternalServerError, model, rw, req)
 		return
 	}
@@ -704,7 +704,7 @@ func (c *UserContext) PasswordPut(rw web.ResponseWriter, req *web.Request) {
 			c.NotFound(rw, req)
 			return
 		}
-		model := models.NewErrorResponse(constants.APIDatabaseUpdateUser, models.NewAZError(err.Error()), "Could not update user")
+		model := models.NewErrorResponse(constants.APIDatabaseUpdateUser, models.NewAZError(err.Error()))
 		c.Render(constants.StatusInternalServerError, model, rw, req)
 		return
 	}
@@ -741,7 +741,7 @@ func (c *UserContext) EmailPut(rw web.ResponseWriter, req *web.Request) {
 
 	// validate new email
 	if strings.Count(userChangeEmail.Email, "@") != 1 {
-		model := models.NewErrorResponse(constants.APIValidationEmailNotValid, models.NewAZError("Please enter a valid email address"), "Could not create account")
+		model := models.NewErrorResponse(constants.APIValidationEmailNotValid, models.NewAZError("Please enter a valid email address"))
 		c.Render(constants.StatusBadRequest, model, rw, req)
 		return
 	}
@@ -759,11 +759,11 @@ func (c *UserContext) EmailPut(rw web.ResponseWriter, req *web.Request) {
 			c.NotFound(rw, req)
 			return
 		} else if dalErr.ErrorCode == data.DALErrorCodeUniqueEmail {
-			model := models.NewErrorResponse(constants.APIDatabaseUpdateUser, models.NewAZError(err.Error()), "Could not update user")
+			model := models.NewErrorResponse(constants.APIDatabaseUpdateUser, models.NewAZError(err.Error()))
 			c.Render(constants.StatusBadRequest, model, rw, req)
 			return
 		}
-		model := models.NewErrorResponse(constants.APIDatabaseUpdateUser, models.NewAZError(err.Error()), "Could not update user")
+		model := models.NewErrorResponse(constants.APIDatabaseUpdateUser, models.NewAZError(err.Error()))
 		c.Render(constants.StatusInternalServerError, model, rw, req)
 		return
 	}
@@ -803,11 +803,11 @@ func (c *UserContext) Login(w web.ResponseWriter, req *web.Request) {
 				if err := c.DAL.GetUserByID(&user); err != nil {
 					dalErr, _ := err.(data.DALError)
 					if dalErr.ErrorCode == data.DALErrorCodeNoneAffected {
-						model := models.NewErrorResponse(constants.APIDatabaseGetUser, models.NewAZError(err.Error()), "User does not exist")
+						model := models.NewErrorResponse(constants.APIDatabaseGetUser, models.NewAZError(err.Error()))
 						c.Render(constants.StatusUnauthorized, model, w, req)
 						return
 					}
-					model := models.NewErrorResponse(constants.APIDatabaseGetUser, models.NewAZError(err.Error()), "Could not get user")
+					model := models.NewErrorResponse(constants.APIDatabaseGetUser, models.NewAZError(err.Error()))
 					c.Render(constants.StatusInternalServerError, model, w, req)
 					return
 				}
@@ -843,11 +843,11 @@ func (c *UserContext) Login(w web.ResponseWriter, req *web.Request) {
 	if err != nil {
 		dalErr, _ := err.(data.DALError)
 		if dalErr.ErrorCode == data.DALErrorCodeNoneAffected {
-			model := models.NewErrorResponse(constants.APILoginSignupInvalidCombination, models.NewAZError(err.Error()), "Invalid email/username/password combination")
+			model := models.NewErrorResponse(constants.APILoginSignupInvalidCombination, models.NewAZError(err.Error()))
 			c.Render(constants.StatusUnauthorized, model, w, req)
 			return
 		}
-		model := models.NewErrorResponse(constants.APIDatabaseGetUser, models.NewAZError(err.Error()), "Could not get user")
+		model := models.NewErrorResponse(constants.APIDatabaseGetUser, models.NewAZError(err.Error()))
 		c.Render(constants.StatusInternalServerError, model, w, req)
 		return
 	}
@@ -863,7 +863,7 @@ func (c *UserContext) Login(w web.ResponseWriter, req *web.Request) {
 
 	// check that they have a password - not sure how they wouldn't
 	if helpers.IsZeroString(user.Hash) {
-		model := models.NewErrorResponse(constants.APILoginSignupInvalidCombination, models.NewAZError("No password associated with this email: "+user.Email), "Invalid email/username/password combination")
+		model := models.NewErrorResponse(constants.APILoginSignupInvalidCombination, models.NewAZError("No password associated with this email: "+user.Email))
 		c.Render(constants.StatusBadRequest, model, w, req)
 		return
 	}
@@ -873,12 +873,12 @@ func (c *UserContext) Login(w web.ResponseWriter, req *web.Request) {
 
 	if passwordOK, err := helpers.CheckPasswordBcrypt(*user.Hash, login.Password); err != nil {
 
-		model := models.NewErrorResponse(constants.APIDatabaseUpdateUser, models.NewAZError(err.Error()), "Could not check user password")
+		model := models.NewErrorResponse(constants.APIDatabaseUpdateUser, models.NewAZError(err.Error()))
 		c.Render(constants.StatusInternalServerError, model, w, req)
 		return
 	} else if !passwordOK {
 		// wrong password
-		model := models.NewErrorResponse(constants.APILoginSignupInvalidCombination, models.NewAZError("Username/Password combination incorrect"), "Invalid email/username/password combination")
+		model := models.NewErrorResponse(constants.APILoginSignupInvalidCombination, models.NewAZError("Username/Password combination incorrect"))
 		c.Render(constants.StatusUnauthorized, model, w, req)
 		return
 	}
@@ -922,7 +922,7 @@ func (c *UserContext) Signup(w web.ResponseWriter, req *web.Request) {
 	//check password long enough
 	if len(signup.Password) < int(c.Config.MinPasswordLength) {
 		model := models.NewErrorResponse(constants.APIValidationPasswordTooShort,
-			models.NewAZError(fmt.Sprintf("Password needs to be at least %d characters long!", c.Config.MinPasswordLength)), "Could not create account")
+			models.NewAZError(fmt.Sprintf("Password needs to be at least %d characters long!", c.Config.MinPasswordLength)))
 		c.Render(constants.StatusBadRequest, model, w, req)
 		return
 	}
@@ -930,13 +930,13 @@ func (c *UserContext) Signup(w web.ResponseWriter, req *web.Request) {
 	// check email
 	// TODO: perhaps refactor
 	if strings.Count(signup.Email, "@") == 0 {
-		model := models.NewErrorResponse(constants.APIValidationEmailNotValid, models.NewAZError("Please enter a valid email address"), "Could not create account")
+		model := models.NewErrorResponse(constants.APIValidationEmailNotValid, models.NewAZError("Please enter a valid email address"))
 		c.Render(constants.StatusBadRequest, model, w, req)
 		return
 	}
 
 	if c.Config.RequireUsername && signup.UserName == "" {
-		model := models.NewErrorResponse(constants.APIValidationUserNameNotValid, models.NewAZError("Please enter a username"), "Could not create account")
+		model := models.NewErrorResponse(constants.APIValidationUserNameNotValid, models.NewAZError("Please enter a username"))
 		c.Render(constants.StatusBadRequest, model, w, req)
 		return
 	}
@@ -952,15 +952,15 @@ func (c *UserContext) Signup(w web.ResponseWriter, req *web.Request) {
 	// Verify that no user with this email exists
 	if c.Config.RequireUsername {
 		if err := c.DAL.GetUserByEmailOrUserName(&user); err == nil {
-			model := models.NewErrorResponse(constants.APIDatabaseGetUser,
-				models.NewAZError("User with email/username already exists"), "Email or Username already in use/exists")
+			model := models.NewErrorResponse(constants.APIEmailInUse,
+				models.NewAZError("User with email/username already exists"))
 			c.Render(constants.StatusForbidden, model, w, req)
 			return
 		}
 	} else {
 		if err := c.DAL.GetUserByEmail(&user); err == nil {
-			model := models.NewErrorResponse(constants.APIDatabaseGetUser,
-				models.NewAZError("User with email already exists"), "Email already in use/exists")
+			model := models.NewErrorResponse(constants.APIEmailInUse,
+				models.NewAZError("User with email already exists"))
 			c.Render(constants.StatusForbidden, model, w, req)
 			return
 		}
@@ -969,7 +969,7 @@ func (c *UserContext) Signup(w web.ResponseWriter, req *web.Request) {
 	hash, hashErr := helpers.HashPasswordBcrypt(signup.Password, int(c.Config.BcryptCost))
 
 	if hashErr != nil {
-		model := models.NewErrorResponse(constants.APIParsingPasswordHash, models.NewAZError(hashErr.Error()), "Could not create new user")
+		model := models.NewErrorResponse(constants.APIParsingPasswordHash, models.NewAZError(hashErr.Error()))
 		c.Render(constants.StatusBadRequest, model, w, req)
 		return
 	}
@@ -983,12 +983,12 @@ func (c *UserContext) Signup(w web.ResponseWriter, req *web.Request) {
 		dalErr, _ := userErr.(data.DALError)
 
 		if dalErr.ErrorCode == data.DALErrorCodeUniqueEmail {
-			model := models.NewErrorResponse(constants.APIEmailInUse, models.NewAZError(userErr.Error()), "Email already in use/exists")
+			model := models.NewErrorResponse(constants.APIEmailInUse, models.NewAZError(userErr.Error()))
 			c.Render(constants.StatusForbidden, model, w, req)
 			return
 		}
 
-		model := models.NewErrorResponse(constants.APIDatabaseCreateUser, models.NewAZError(userErr.Error()), "Could not create new user")
+		model := models.NewErrorResponse(constants.APIDatabaseCreateUser, models.NewAZError(userErr.Error()))
 		c.Render(constants.StatusBadRequest, model, w, req)
 		return
 	}
